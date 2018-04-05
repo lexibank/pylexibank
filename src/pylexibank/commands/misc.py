@@ -1,0 +1,346 @@
+# coding: utf8
+from __future__ import unicode_literals, print_function, division
+from collections import defaultdict, Counter, OrderedDict
+
+from six import PY2
+from segments.tokenizer import Tokenizer
+from clldutils import licenses
+from clldutils.path import Path, Manifest
+from clldutils.dsv import UnicodeWriter, reader
+from clldutils.markup import Table
+from clldutils.clilib import command, confirm
+from clldutils.text import truncate_with_ellipsis
+from pyglottolog.api import Glottolog
+from pybtex.database import parse_file, BibliographyData
+from pyconcepticon.api import Concepticon
+
+from pylexibank.commands.util import with_dataset, get_dataset
+from pylexibank.util import log_dump
+from pylexibank.dataset import Dataset
+from pylexibank.lingpy_util import lingpy_subset
+from pylexibank.db import Database
+
+
+@command()
+def orthography(args):  # pragma: no cover
+    ds = get_dataset(args)
+    out = ds.dir.joinpath('orthography.tsv')
+    if out.exists():
+        if not confirm(
+                'There already is an orthography profile for this dataset. Overwrite?',
+                default=False):
+            return
+
+    graphemes = Counter()
+    for line in ds.run('lexemes'):
+        graphemes.update(Tokenizer.grapheme_pattern.findall(line))
+
+    with UnicodeWriter(out, delimiter='\t') as writer:
+        writer.writerow(['graphemes', 'frequency', 'IPA'])
+        for grapheme, frequency in graphemes.most_common():
+            writer.writerow([grapheme, '{0}'.format(frequency), grapheme])
+
+    log_dump(out, log=args.log)
+
+
+@command()
+def download(args):
+    """
+    Download the raw data for a dataset.
+
+    lexibank download DATASET_ID
+    """
+    with_dataset(args, Dataset._download)
+
+
+@command()
+def check(args):
+    def _check(ds, log=None, **kw):
+        if 'raw' in ds.status.dirs:
+            if ds.status.dirs['raw'].manifest != Manifest.from_dir(ds.raw):
+                log.warn(
+                    'raw directory does not match status. You may have to run download')
+            else:
+                log.info('raw directory matches status')
+        if 'cldf' in ds.status.dirs:
+            if ds.status.dirs['cldf'].manifest != Manifest.from_dir(ds.cldf_dir):
+                log.warn(
+                    'cldf directory does not match status. You may have to run install')
+            else:
+                log.info('cldf directory matches status')
+            ds.cldf.validate(log=log)
+    with_dataset(args, _check)
+
+
+@command()
+def wordlength(args):
+    import unicodedata
+
+    concepts = Concepticon(args.cfg['paths']['concepticon']).conceptsets
+    header = ['language_id', 'language_name', 'parameter_id', 'form', 'segments']
+    languoids = {l.id: l for l in Glottolog(args.cfg['paths']['glottolog']).languoids()}
+    languoids.update({
+        'jiar1239': languoids['jiar1240'],
+        'yiry1247': languoids['jirj1239'],
+        'guug1239': languoids['gugu1255'],
+        'miya1256': languoids['waka1283'],
+    })
+    ml = set()
+
+    with UnicodeWriter('wordlength.csv') as writer, UnicodeWriter('wordlength_all.csv') as writer_all:
+        writer.writerow('Concepticon_ID Gloss Semanticfield Category Glottocode Variety Family Form Length'.split())
+        writer_all.writerow('Concepticon_ID Gloss Semanticfield Category Glottocode Variety Family Form Length'.split())
+        for ds in args.datasets:
+            for mdp in ds._iter_cldf():
+                csvp = mdp.parent.joinpath(mdp.name.split('-metadata')[0])
+                for row in reader(csvp, dicts=True):
+                    lang = languoids.get(row['Language_ID'])
+                    if lang and row['Parameter_ID'] in concepts:
+                        concept = concepts[row['Parameter_ID']]
+                        form = unicodedata.normalize('NFC', row['Form'])
+                        writer_all.writerow([
+                            concept.id,
+                            concept.gloss,
+                            concept.semanticfield,
+                            concept.ontological_category,
+                            lang.id,
+                            row['Language_name'],
+                            languoids[lang.lineage[0][1]].name if lang.lineage else '',
+                            ' '.join(form),
+                            '{0}'.format(len(form)),
+                        ])
+                    if row['Language_ID'] and not lang:
+                        ml.add(row['Language_ID'])
+                for row in lingpy_subset(csvp, header):
+                    lid, lname, pid, form, segments, length = row
+                    lang = languoids.get(lid)
+                    if not lang:
+                        continue
+                    concept = concepts[pid]
+                    lang = languoids[lid]
+                    writer.writerow([
+                        concept.id,
+                        concept.gloss,
+                        concept.semanticfield,
+                        concept.ontological_category,
+                        lang.id,
+                        lname,
+                        languoids[lang.lineage[0][1]].name if lang.lineage else '',
+                        segments,
+                        length,
+                    ])
+    print(ml)
+
+
+@command()
+def ls(args):
+    """
+    lexibank ls [COLS]+
+
+    column specification:
+    - license
+    - lexemes
+    - macroareas
+    """
+    db = Database()
+    # FIXME: how to smartly choose columns?
+    table = Table('ID', 'Status', 'Title')
+    cols = OrderedDict([
+        (col, {}) for col in args.args if col in [
+            'license',
+            'all_lexemes',
+            'lexemes',
+            'concepts',
+            'languages',
+            'families',
+            'varieties',
+            'macroareas',
+        ]])
+    tl = 40
+    if cols:
+        tl = 25
+        table.columns.extend(col.capitalize() for col in cols)
+
+    for col, sql in [
+        ('languages', 'glottocodes_by_dataset'),
+        ('concepts', 'conceptsets_by_dataset'),
+        ('lexemes', 'mapped_lexemes_by_dataset'),
+        ('all_lexemes', 'lexemes_by_dataset'),
+        ('macroareas', 'macroareas_by_dataset'),
+        ('families', 'families_by_dataset'),
+    ]:
+        if col in cols:
+            cols[col] = {r[0]: r[1] for r in db.fetchall(sql)}
+    for ds in args.datasets:
+        row = [
+            ds.id,
+            ds.status.status.description,
+            truncate_with_ellipsis(ds.metadata.title or '', width=tl)]
+        for col in cols:
+            if col == 'license':
+                lic = licenses.find(ds.metadata.license or '')
+                row.append(lic.id if lic else ds.metadata.license)
+            elif col in ['languages', 'concepts', 'lexemes', 'all_lexemes', 'families']:
+                row.append(float(cols[col].get(ds.id, 0)))
+            elif col == 'macroareas':
+                row.append(', '.join(sorted((cols[col].get(ds.id) or '').split(','))))
+            else:
+                row.append('')
+
+        table.append(row)
+    totals = ['zztotal', '', len(args.datasets)]
+    for i, col in enumerate(cols):
+        if col in ['lexemes', 'all_lexemes']:
+            totals.append(sum([r[i + 3] for r in table]))
+        elif col == 'languages':
+            totals.append(float(db.fetchone(
+                "SELECT count(distinct glottocode) FROM languagetable")[0]))
+        elif col == 'concepts':
+            totals.append(float(db.fetchone(
+                "SELECT count(distinct conceptset) FROM parametertable")[0]))
+        elif col == 'families':
+            totals.append(float(db.fetchone(
+                "SELECT count(distinct family) FROM languagetable")[0]))
+        else:
+            totals.append('')
+    table.append(totals)
+    res = table.render(
+        tablefmt='simple', sortkey=lambda r: r[0], condensed=False, floatfmt=',.0f')
+    if PY2:
+        res = res.encode('utf8')
+    print(res)
+
+
+@command()
+def bib(args):
+    gbib = BibliographyData()
+
+    def _harvest(ds, **kw):
+        for bib in ds.cldf_dir.glob('*.bib'):
+            bib = parse_file(bib.as_posix())
+            for id_, entry in bib.entries.items():
+                id_ = '{0}:{1}'.format(ds.id, id_)
+                if id_ not in gbib.entries:
+                    gbib.add_entry(id_, entry)
+
+    with_dataset(args, _harvest)
+    gbib.to_file(Path(args.cfg['paths']['lexibank']).joinpath('lexibank.bib').as_posix())
+
+
+@command()
+def install(args):
+    """
+    Create CLDF datasets from the raw data for a dataset.
+
+    lexibank install [DATASET_ID]
+
+    Pass the --verbose option to print unmapped languages and concepts.
+    """
+    def _install(ds, **kw):
+        ds._clean(**kw)
+        ds._install(**kw)
+        try:
+            db = Database()
+            if db.fname.exists():
+                args.log.info('updating DB')
+                db.update(ds)
+        except:
+            pass
+
+    with_dataset(args, _install)
+
+
+@command()
+def clean(args):
+    """
+    Remove CLDF formatted data for given dataset.
+
+    lexibank clean [DATASET_ID]
+    """
+    with_dataset(args, Dataset._clean)
+
+
+# -------------------------------------------------------------------
+#  - need set of all concepts per variety.
+#  - loop over concept lists
+#  - if concept ids is subset of variety, count that language.
+@command()
+def coverage(args):  # pragma: no cover
+    from pyconcepticon.api import Concepticon
+
+    varieties = defaultdict(set)
+    glangs = defaultdict(set)
+    concept_count = defaultdict(set)
+    res80 = Counter()
+    res85 = Counter()
+    res90 = Counter()
+    res80v = Counter()
+    res85v = Counter()
+    res90v = Counter()
+
+    def _coverage(ds, **kw):
+        ds.coverage(varieties, glangs, concept_count)
+
+    with_dataset(args, _coverage)
+
+    print('varieties', len(varieties))
+
+    concepticon = Concepticon(args.cfg['paths']['concepticon'])
+    for cl in concepticon.conceptlists.values():
+        try:
+            concepts = set(
+                int(cc.concepticon_id) for cc in cl.concepts.values() if cc.concepticon_id
+            )
+        except:
+            continue
+        for varid, meanings in varieties.items():
+            # compute relative size of intersection instead!
+            c = len(concepts.intersection(meanings)) / len(concepts)
+            if c >= 0.8:
+                res80v.update([cl.id])
+            if c >= 0.85:
+                res85v.update([cl.id])
+            if c >= 0.9:
+                res90v.update([cl.id])
+
+        for varid, meanings in glangs.items():
+            # compute relative size of intersection instead!
+            c = len(concepts.intersection(meanings)) / len(concepts)
+            if c >= 0.8:
+                res80.update([cl.id])
+            if c >= 0.85:
+                res85.update([cl.id])
+            if c >= 0.9:
+                res90.update([cl.id])
+
+    def print_count(count):
+        t = Table('concept list', 'glang count')
+        for p in count.most_common(n=10):
+            t.append(list(p))
+        print(t.render(tablefmt='simple', condensed=False))
+
+    print('\nGlottolog languages with coverage > 80%:')
+    print_count(res80)
+
+    print('\nGlottolog languages with coverage > 85%:')
+    print_count(res85)
+
+    print('\nGlottolog languages with coverage > 90%:')
+    print_count(res90)
+
+    print('\nVarieties with coverage > 80%:')
+    print_count(res80v)
+
+    print('\nVarieties with coverage > 85%:')
+    print_count(res85v)
+
+    print('\nVarieties with coverage > 90%:')
+    print_count(res90v)
+
+    print('\ntop-200 concepts:')
+    t = Table('cid', 'gloss', 'varieties')
+    for n, m in sorted(
+            [(cid, len(vars)) for cid, vars in concept_count.items()],
+            key=lambda i: -i[1])[:200]:
+        t.append([n, concepticon.conceptsets['%s' % n].gloss, m])
+    print(t.render(tablefmt='simple', condensed=False))
