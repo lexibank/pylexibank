@@ -222,6 +222,12 @@ class Dataset(six.with_metaclass(DatasetMeta, object)):
         if cpath.exists():
             self.concepts = list(reader(cpath, dicts=True))
 
+        # sources
+        self.sources = []
+        spath = self.dir.joinpath('sources.csv')
+        if spath.exists():
+            self.sources = list(reader(spath, dicts=True))
+            
         self.lexemes = {}
         lpath = self.dir.joinpath('lexemes.csv')
         if lpath.exists():
