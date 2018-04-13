@@ -5,7 +5,7 @@ from collections import defaultdict, Counter, OrderedDict
 from six import PY2
 from segments.tokenizer import Tokenizer
 from clldutils import licenses
-from clldutils.path import Path, Manifest
+from clldutils.path import Path
 from clldutils.dsv import UnicodeWriter, reader
 from clldutils.markup import Table
 from clldutils.clilib import command, confirm
@@ -51,25 +51,6 @@ def download(args):
     lexibank download DATASET_ID
     """
     with_dataset(args, Dataset._download)
-
-
-@command()
-def check(args):
-    def _check(ds, log=None, **kw):
-        if 'raw' in ds.status.dirs:
-            if ds.status.dirs['raw'].manifest != Manifest.from_dir(ds.raw):
-                log.warn(
-                    'raw directory does not match status. You may have to run download')
-            else:
-                log.info('raw directory matches status')
-        if 'cldf' in ds.status.dirs:
-            if ds.status.dirs['cldf'].manifest != Manifest.from_dir(ds.cldf_dir):
-                log.warn(
-                    'cldf directory does not match status. You may have to run install')
-            else:
-                log.info('cldf directory matches status')
-            ds.cldf.validate(log=log)
-    with_dataset(args, _check)
 
 
 @command()

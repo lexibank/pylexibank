@@ -15,19 +15,8 @@ def get_dataset(args, name=None):
 
 
 def with_dataset(args, func):
-    process, first = True, None
-    if args.args:
-        if 'start-with' == args.args[0]:  # pragma: no cover
-            first = args.args[1]
-            process = False
-        else:
-            func(get_dataset(args), **vars(args))
-            return
-
     for dataset in args.datasets:
-        if not process:  # pragma: no cover
-            process = dataset.id == first
-        if process:
+        if dataset.id in args.args:
             s = time()
             print('processing %s ...' % dataset.id)
             func(get_dataset(args, dataset.id), **vars(args))

@@ -44,6 +44,7 @@ setup(
         'termcolor',
         'tqdm',
         'xlrd',
+        'prompt_toolkit',
     ],
     extras_require={
         'dev': ['flake8', 'wheel', 'twine'],
