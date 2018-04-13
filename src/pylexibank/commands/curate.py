@@ -1,5 +1,8 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function, division
+
+import traceback
+
 from prompt_toolkit import prompt
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
@@ -56,6 +59,12 @@ def curate(args):
             continue
 
         args.args = user_input[1:]
-        commands[user_input[0]](args)
+        try:
+            commands[user_input[0]](args)
+        except Exception as e:
+            if not args.verbosity:
+                print(colored('{0}: {1}'.format(e.__class__.__name__, e), 'red'))
+            else:
+                traceback.print_exc()
 
     print('see ya!')
