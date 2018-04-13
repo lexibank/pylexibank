@@ -31,11 +31,11 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath):
     ls(_args('test_dataset', 'license'))
     out, err = capsys.readouterr()
 
-    analyze(_args('test_dataset'))
+    analyze(dataset, **vars(_args('test_dataset')))
     out, err = capsys.readouterr()
 
     assert not dataset.stats
-    report(_args('test_dataset'))
+    report(dataset, **vars(_args('test_dataset')))
     out, err = capsys.readouterr()
     assert dataset.stats
 
