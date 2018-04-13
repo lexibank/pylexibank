@@ -1,16 +1,15 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function, division
 import logging
-import inspect
+from datetime import datetime
 
 import attr
 import six
 from clldutils.dsv import reader
-from clldutils.path import Manifest, as_unicode
 from clldutils.text import split_text_with_context, strip_brackets
-from clldutils.misc import cached_property
+from clldutils.misc import lazyproperty
 from clldutils.loglib import Logging
-from clldutils.path import remove, rmtree
+from clldutils.path import remove, rmtree, write_text
 from clldutils import licenses
 from clldutils import jsonlib
 from pyglottolog.languoids import Glottocode
@@ -21,10 +20,7 @@ from segments.tokenizer import Tokenizer
 import pylexibank
 from pylexibank.util import get_variety_id, DataDir
 from pylexibank import cldf
-from pylexibank.status import Status, Workflow
 
-# We store classes derived from the Dataset class in a global list:
-DATASET_CLASSES = []
 NOOP = -1
 
 
@@ -120,14 +116,6 @@ class Cognate(FieldnamesMixin):
         return 'CognateTable'
 
 
-class DatasetMeta(type):
-    def __init__(self, name, bases, dct):
-        super(DatasetMeta, self).__init__(name, bases, dct)
-        self.dir = DataDir(inspect.getfile(self)).parent
-        if not self.virtual():
-            DATASET_CLASSES.append(self)
-
-
 @attr.s
 class Metadata(object):
     title = attr.ib(default=None)
@@ -159,7 +147,7 @@ class Metadata(object):
         }
 
 
-class Dataset(six.with_metaclass(DatasetMeta, object)):
+class Dataset(object):
     """
     A lexibank dataset.
 
@@ -168,17 +156,20 @@ class Dataset(six.with_metaclass(DatasetMeta, object)):
     - concept list as attribute `concepts`
     - concepticon concept-list ID as attribute `conceptlist`
     """
-    metadata = Metadata()
+    dir = None  # Derived classes must provide an existing directory here!
     lexeme_class = Lexeme
     cognate_class = Cognate
     language_class = Language
     concept_class = Concept
     log = logging.getLogger(pylexibank.__name__)
-    dir = DataDir(__file__).parent
 
-    @property
+    @lazyproperty
     def id(self):
         return self.dir.name
+
+    @lazyproperty
+    def metadata(self):
+        return Metadata(**jsonlib.load(self.dir / 'metadata.json'))
 
     @property
     def stats(self):
@@ -186,27 +177,19 @@ class Dataset(six.with_metaclass(DatasetMeta, object)):
             return jsonlib.load(self.dir.joinpath('README.json'))
         return {}
 
-    @classmethod
-    def virtual(cls):
-        return cls.dir.parent.name != 'datasets' or cls.dir.name.startswith('_')
-
     def __init__(self, concepticon=None, glottolog=None):
-        self.status = Status.from_file(self.dir.joinpath('status.json'))
         self.unmapped = Unmapped()
+        self.dir = DataDir(self.dir)
 
         # raw data, either downloaded or commited to the repository
         self.raw = DataDir(self.dir.joinpath('raw'))
-        if not self.raw.parent.exists() and not self.virtual():  # pragma: no cover
-            raise ValueError('Missing sub-directory "raw" in dataset {0}'.format(self.id))
 
         # cldf directory
         self.cldf_dir = self.dir.joinpath('cldf')
-        if not self.cldf_dir.exists() and not self.virtual():
-            self.cldf_dir.mkdir()
 
         # languages
         self.languages = []
-        lpath = self.dir.joinpath('languages.csv')
+        lpath = self.dir / 'etc' / 'languages.csv'
         if lpath.exists():
             for item in reader(lpath, dicts=True):
                 if item.get('GLOTTOCODE', None) and not \
@@ -218,18 +201,18 @@ class Dataset(six.with_metaclass(DatasetMeta, object)):
         # concepts
         self.conceptlist = {}
         self.concepts = []
-        cpath = self.dir.joinpath('concepts.csv')
+        cpath = self.dir / 'etc' / 'concepts.csv'
         if cpath.exists():
             self.concepts = list(reader(cpath, dicts=True))
 
         # sources
         self.sources = []
-        spath = self.dir.joinpath('sources.csv')
+        spath = self.dir / 'etc' / 'sources.csv'
         if spath.exists():
             self.sources = list(reader(spath, dicts=True))
             
         self.lexemes = {}
-        lpath = self.dir.joinpath('lexemes.csv')
+        lpath = self.dir / 'etc' / 'lexemes.csv'
         if lpath.exists():
             for item in reader(lpath, dicts=True):
                 self.lexemes[item['LEXEME']] = item['REPLACEMENT']
@@ -291,22 +274,17 @@ class Dataset(six.with_metaclass(DatasetMeta, object)):
 
     # ---------------------------------------------------------------
     def _download(self, **kw):
-        if self.cmd_download(**kw) != NOOP:
-            self.status.register_command(Workflow.download, kw['cfg'], kw['log'])
-            self.status.register_dir(self.raw)
+        if not self.raw.exists():
+            self.raw.mkdir()
+
+        self.cmd_download(**kw)
+        write_text(
+            self.raw / 'README.md',
+            'Raw data downloaded {0}'.format(datetime.utcnow().isoformat()))
 
     def _install(self, **kw):
-        if not self.cldf_dir.is_dir():
-            raise IOError("CLDF dir doesn't exist at %s" % self.cldf_dir)
-
-        if not self.status.valid_action(Workflow.install, kw['log']):
-            return
-
-        cm = {as_unicode(k): v for k, v in Manifest.from_dir(self.raw).items()}
-        if cm != self.status.dirs['raw'].manifest:
-            kw['log'].error('{0} does not match checksums in {1}'.format(
-                self.raw.as_posix(), self.status.fname))
-            return
+        if not self.cldf_dir.exists():
+            self.cldf_dir.mkdir()
 
         self.unmapped.clear()
 
@@ -317,21 +295,20 @@ class Dataset(six.with_metaclass(DatasetMeta, object)):
             if kw.get('verbose'):
                 self.unmapped.pprint()
             self.cldf.validate(kw['log'])
-            self.status.register_command(Workflow.install, kw['cfg'], kw['log'])
-            self.status.register_dir(self.cldf_dir)
 
     def _clean(self, **kw):
         self.log.debug('removing CLDF directory %s' % self.cldf_dir)
-        for f in self.cldf_dir.iterdir():
-            if f.is_file():
-                remove(f)
-            else:
-                rmtree(f)
+        if self.cldf_dir.exists():
+            for f in self.cldf_dir.iterdir():
+                if f.is_file():
+                    remove(f)
+                else:
+                    rmtree(f)
 
     def _not_implemented(self, method):
         self.log.warn('cmd_{0} not implemented for dataset {1}'.format(method, self.id))
 
-    @cached_property()
+    @lazyproperty
     def _tokenizer(self):
         return self.get_tokenizer()
 

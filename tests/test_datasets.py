@@ -5,19 +5,19 @@ import logging
 import pytest
 from clldutils.loglib import Logging
 
-from pylexibank import dataset
+from pylexibank.dataset import Lexeme, Unmapped, Dataset, NOOP
 
 
 def test_Item():
     with pytest.raises(TypeError):
-        dataset.Lexeme()
+        Lexeme()
 
     with pytest.raises(ValueError):
-        dataset.Lexeme(ID=1, Form='a', Value='', Language_ID='l', Parameter_ID='p')
+        Lexeme(ID=1, Form='a', Value='', Language_ID='l', Parameter_ID='p')
 
 
 def test_Unmapped(capsys):
-    unmapped = dataset.Unmapped()
+    unmapped = Unmapped()
     unmapped.add_language(id='tl', name='the language')
     unmapped.add_concept(id='tc', gloss='the concept')
     unmapped.pprint()
@@ -25,11 +25,21 @@ def test_Unmapped(capsys):
     assert 'tc,"the concept",,' in out.split('\n')
 
 
-def test_Dataset():
-    ds = dataset.Dataset()
-    with ds.debug():
+def test_BaseDataset(mocker, repos):
+    class TestDataset(Dataset):
+        dir = repos / 'datasets' / 'test_dataset'
+
+    ds = TestDataset(glottolog=mocker.Mock(), concepticon=mocker.Mock())
+    assert ds.cmd_download() == NOOP
+    assert ds.cmd_install() == NOOP
+    t = ds.get_tokenizer()
+    assert t(None, 'a') == ['b']
+
+
+def test_Dataset(dataset):
+    with dataset.debug():
         pass
-    with Logging(ds.log, logging.CRITICAL):
-        ds.cmd_download()
-        ds.cmd_install()
-    assert ds.get_tokenizer() is None
+    with Logging(dataset.log, logging.CRITICAL):
+        dataset.cmd_download()
+        dataset.cmd_install()
+    assert dataset.get_tokenizer()

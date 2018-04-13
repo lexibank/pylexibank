@@ -16,7 +16,8 @@ def test_wordlist2cognates(repos, mocker):
         Concept = attr.ib(default=None)
 
     dsdir = repos / 'datasets' / 'test_dataset'
-    dsdir.joinpath('cldf').mkdir()
+    if not dsdir.joinpath('cldf').exists():
+        dsdir.joinpath('cldf').mkdir()
     ds = Dataset(mocker.Mock(
         lexeme_class=Lexeme,
         cognate_class=dataset.Cognate,

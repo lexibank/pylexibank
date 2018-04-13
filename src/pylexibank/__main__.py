@@ -17,24 +17,22 @@ import os
 import argparse
 import readline
 import glob
+import pkg_resources
 
 from termcolor import colored
 from appdirs import user_config_dir
 from six.moves import input
 from clldutils.inifile import INI
 from clldutils.clilib import ArgumentParserWithLogging
-from clldutils.path import Path, import_module
+from clldutils.path import Path
 
 import pylexibank
-from pylexibank.util import data_path
-from pylexibank.dataset import DATASET_CLASSES
 from pylexibank.glottolog import Glottolog
 from pylexibank.concepticon import Concepticon
 import pylexibank.commands
 assert pylexibank.commands
 
 REPOS = [
-    ('lexibank', 'glottobank/lexibank-data'),
     ('glottolog', 'clld/glottolog'),
     ('concepticon', 'clld/concepticon-data'),
 ]
@@ -46,6 +44,7 @@ def complete_dir(text, state):  # pragma: no cover
     if os.path.isdir(text) and not text.endswith(os.sep):
         text += os.sep
     return ([p for p in glob.glob(text + '*') if os.path.isdir(p)] + [None])[state]
+
 
 readline.parse_and_bind("tab: complete")
 readline.set_completer_delims('\t')
@@ -100,22 +99,12 @@ such as the logging level.""".format(cfgpath.resolve()))
     else:
         cfg = INI.from_file(cfgpath)
 
-    for d in data_path(repos=Path(cfg['paths']['lexibank'])).iterdir():
-        if d.is_dir() and d.joinpath('__init__.py').exists():
-            try:
-                import_module(d)
-            except ImportError:
-                if not d.name[0] == '_':
-                    print('{0[0]}, {0[1]}, {1}'.format(sys.exc_info(), d))
-
     datasets = []
-    for ds in DATASET_CLASSES:
-        try:
-            datasets.append(ds(
-                glottolog=Glottolog(cfg['paths']['glottolog']),
-                concepticon=Concepticon(cfg['paths']['concepticon'])))
-        except ValueError as ex:
-            print("ValueError while parsing dataset '%s': %s" % (ds, ex))
+    for ep in pkg_resources.iter_entry_points('lexibank.dataset'):
+        ds_class = ep.load()
+        datasets.append(ds_class(
+            glottolog=Glottolog(cfg['paths']['glottolog']),
+            concepticon=Concepticon(cfg['paths']['concepticon'])))
 
     return cfg, sorted(datasets, key=lambda d: d.id)
 
@@ -125,4 +114,5 @@ def main():  # pragma: no cover
     parser = ArgumentParserWithLogging(pylexibank.__name__)
     parser.add_argument('--cfg', help=argparse.SUPPRESS, default=cfg)
     parser.add_argument('--datasets', help=argparse.SUPPRESS, default=datasets)
+    parser.add_argument('--db', help=argparse.SUPPRESS, default=None)
     sys.exit(parser.main())

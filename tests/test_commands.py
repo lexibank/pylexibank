@@ -35,8 +35,10 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath):
     analyze(_args('test_dataset'))
     out, err = capsys.readouterr()
 
+    assert not dataset.stats
     report(_args('test_dataset'))
     out, err = capsys.readouterr()
+    assert dataset.stats
 
     bib(_args())
     assert repos.joinpath('lexibank.bib').exists()

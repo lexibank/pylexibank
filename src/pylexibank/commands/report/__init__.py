@@ -8,7 +8,6 @@ from pylexibank.util import textdump
 from pylexibank.commands.util import with_dataset
 from pylexibank.commands.report import readme
 from pylexibank.commands.report import transcription
-from pylexibank.status import Workflow
 
 
 @command()
@@ -18,15 +17,13 @@ def report(args):
     lexibank report [DATASET_ID]
     """
     def _run(ds, **kw):
-        if ds.status.valid_action(Workflow.report, kw['log']):
-            tr = jsonlib.load(ds.dir.joinpath('transcription.json'))
-            textdump(
-                transcription.report(tr, **kw),
-                ds.dir.joinpath('TRANSCRIPTION.md'),
-                log=args.log)
-            res = readme.report(ds, tr, **kw)
-            if res:
-                textdump(res, ds.dir.joinpath('README.md'), log=args.log)
-            ds.status.register_command(Workflow.report, kw['cfg'], kw['log'])
+        tr = jsonlib.load(ds.dir.joinpath('transcription.json'))
+        textdump(
+            transcription.report(tr, **kw),
+            ds.dir.joinpath('TRANSCRIPTION.md'),
+            log=args.log)
+        res = readme.report(ds, tr, **kw)
+        if res:
+            textdump(res, ds.dir.joinpath('README.md'), log=args.log)
 
     with_dataset(args, _run)

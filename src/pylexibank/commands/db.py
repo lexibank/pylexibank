@@ -11,7 +11,7 @@ from pylexibank.db import Database
 
 @command()
 def dbcreate(args):
-    db = Database(getattr(args, 'db', None))
+    db = Database(args.db)
     db.create()
     for ds in args.datasets:
         if ds.cldf_dir.joinpath('forms.csv').exists():
@@ -22,7 +22,7 @@ def dbcreate(args):
 
 @command()
 def dbload(args):
-    db = Database(getattr(args, 'db', None))
+    db = Database(args.db)
     for name, api_cls in [('glottolog', Glottolog), ('concepticon', Concepticon)]:
         if (not args.args) or (name in args.args):
             getattr(db, 'load_{0}_data'.format(name))(api_cls(args.cfg['paths'][name]))
@@ -30,7 +30,7 @@ def dbload(args):
 
 @command()
 def dbquery(args):
-    db = Database()
+    db = Database(args.db)
     args.log.info(db.fname)
     args.log.info(args.args[0])
     with db.connection() as conn:

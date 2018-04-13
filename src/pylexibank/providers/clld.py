@@ -23,6 +23,12 @@ class CLLD(Dataset):
             'languages.json',
             log=self.log)
 
+    def add_sources(self, ds):
+        archive = ZipFile(self.raw.joinpath('{0}.zip'.format(self.id)).as_posix())
+        for name in archive.namelist():
+            if name.endswith('.bib'):
+                ds.add_sources(archive.read(name).decode('utf8'))
+
     def iteritems(self):
         archive = ZipFile(self.raw.joinpath('{0}.zip'.format(self.id)).as_posix())
         names = [name[:-len(MD_SUFFIX)]

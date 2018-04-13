@@ -3,7 +3,7 @@ from __future__ import unicode_literals, print_function, division
 
 import attr
 from csvw.metadata import Column
-from clldutils.path import copy
+from clldutils.path import copy, Path
 from clldutils.misc import slug
 from pycldf.dataset import Wordlist
 
@@ -16,7 +16,7 @@ class Dataset(object):
 
         md = self.dataset.cldf_dir.joinpath('cldf-metadata.json')
         if not md.exists():
-            copy(self.dataset.dir.parent.parent.joinpath('cldf-metadata.json'), md)
+            copy(Path(__file__).parent / 'cldf-metadata.json', md)
         self.wl = Wordlist.from_metadata(md)
 
         self.objects = {}

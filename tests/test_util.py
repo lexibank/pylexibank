@@ -2,7 +2,6 @@
 from __future__ import unicode_literals, print_function, division
 from collections import Counter
 
-from nose.tools import assert_equal
 from clldutils.path import Path
 
 from pylexibank import util
@@ -74,6 +73,6 @@ def test_get_reference():
 def test_sorted_obj():
     d1 = {'a': [1, 2, 3], 'b': dict(a=3, b=1)}
     d2 = {'b': Counter('baaa'), 'a': [1, 2, 3]}
-    assert_equal(util.sorted_obj(d1), util.sorted_obj(d2))
-    assert_equal(util.sorted_obj(d2)['b']['a'], 3)
+    assert util.sorted_obj(d1) == util.sorted_obj(d2)
+    assert util.sorted_obj(d2)['b']['a'] == 3
     util.sorted_obj(['http://www.w3.org/ns/csvw', {'@language': 'en'}])

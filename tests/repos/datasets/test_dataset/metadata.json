@@ -1,12 +1,6 @@
 {
-    "@context": [
-        "http://www.w3.org/ns/csvw",
-        {
-            "@language": "en"
-        }
-    ],
-    "dc:title": "LABEL",
-    "dc:bibliographicCitation": "CITATION",
-    "dc:license": null,
-    "dc:identifier": "http://..."
+    "title": "LABEL",
+    "citation": "CITATION",
+    "license": null,
+    "url": "http://..."
 }

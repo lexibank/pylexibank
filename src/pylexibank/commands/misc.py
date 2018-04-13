@@ -144,7 +144,7 @@ def ls(args):
     """
     db = Database()
     # FIXME: how to smartly choose columns?
-    table = Table('ID', 'Status', 'Title')
+    table = Table('ID', 'Title')
     cols = OrderedDict([
         (col, {}) for col in args.args if col in [
             'license',
@@ -174,7 +174,6 @@ def ls(args):
     for ds in args.datasets:
         row = [
             ds.id,
-            ds.status.status.description,
             truncate_with_ellipsis(ds.metadata.title or '', width=tl)]
         for col in cols:
             if col == 'license':
@@ -188,10 +187,10 @@ def ls(args):
                 row.append('')
 
         table.append(row)
-    totals = ['zztotal', '', len(args.datasets)]
+    totals = ['zztotal', len(args.datasets)]
     for i, col in enumerate(cols):
         if col in ['lexemes', 'all_lexemes']:
-            totals.append(sum([r[i + 3] for r in table]))
+            totals.append(sum([r[i + 2] for r in table]))
         elif col == 'languages':
             totals.append(float(db.fetchone(
                 "SELECT count(distinct glottocode) FROM languagetable")[0]))
@@ -240,12 +239,12 @@ def install(args):
         ds._clean(**kw)
         ds._install(**kw)
         try:
-            db = Database()
+            db = Database(args.db)
             if db.fname.exists():
                 args.log.info('updating DB')
                 db.update(ds)
         except:
-            pass
+            raise
 
     with_dataset(args, _install)
 
