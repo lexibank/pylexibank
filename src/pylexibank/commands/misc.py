@@ -44,16 +44,6 @@ def orthography(args):  # pragma: no cover
 
 
 @command()
-def download(args):
-    """
-    Download the raw data for a dataset.
-
-    lexibank download DATASET_ID
-    """
-    with_dataset(args, Dataset._download)
-
-
-@command()
 def wordlength(args):
     import unicodedata
 
@@ -205,29 +195,6 @@ def bib(args):
 
     with_dataset(args, _harvest)
     gbib.to_file(Path(args.cfg['paths']['lexibank']).joinpath('lexibank.bib').as_posix())
-
-
-@command()
-def install(args):
-    """
-    Create CLDF datasets from the raw data for a dataset.
-
-    lexibank install [DATASET_ID]
-
-    Pass the --verbose option to print unmapped languages and concepts.
-    """
-    def _install(ds, **kw):
-        ds._clean(**kw)
-        ds._install(**kw)
-        try:
-            db = Database(args.db)
-            if db.fname.exists():
-                args.log.info('updating DB')
-                db.update(ds)
-        except:
-            raise
-
-    with_dataset(args, _install)
 
 
 @command()

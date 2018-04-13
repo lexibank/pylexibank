@@ -7,12 +7,7 @@ from pylexibank.glottolog import Glottolog
 
 
 @pytest.fixture
-def glottolog(mocker, repos):
-    class Cache(object):
-        def get(self, _, callable):
-            return callable()
-
-    mocker.patch('pylexibank.glottolog.Cache', Cache)
+def glottolog(repos):
     return Glottolog(repos)
 
 

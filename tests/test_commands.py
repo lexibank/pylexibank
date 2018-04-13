@@ -3,7 +3,6 @@ from __future__ import unicode_literals, print_function, division
 
 
 def test_workflow(repos, mocker, capsys, dataset, tmppath):
-    from pylexibank.commands.misc import install, download
     from pylexibank.commands.analyze import analyze
     from pylexibank.commands.report import report
     from pylexibank.commands.misc import ls, bib
@@ -17,16 +16,16 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath):
             db=tmppath / 'db.sqlite',
             args=list(args))
 
-    download(_args('test_dataset'))
+    dataset._download(**vars(_args('test_dataset')))
     out, err = capsys.readouterr()
 
-    install(_args('test_dataset'))
+    dataset._install(**vars(_args('test_dataset')))
     out, err = capsys.readouterr()
 
     dbcreate(_args('test_dataset'))
     out, err = capsys.readouterr()
 
-    install(_args('test_dataset'))
+    dataset._install(**vars(_args('test_dataset')))
     out, err = capsys.readouterr()
 
     ls(_args('test_dataset', 'license'))
