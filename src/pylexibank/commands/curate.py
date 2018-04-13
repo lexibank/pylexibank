@@ -12,14 +12,16 @@ from termcolor import colored
 from clldutils.clilib import command
 
 from pylexibank.commands.util import with_dataset
+from pylexibank.commands.analyze import analyze
+from pylexibank.commands.report import report
 from pylexibank.dataset import Dataset
 
 commands = {
     'quit': lambda args: None,
     'download': lambda args: with_dataset(args, Dataset._download),
     'convert': lambda args: with_dataset(args, Dataset._install),
-    'analyze': lambda args: None,
-    'report': lambda args: None,
+    'analyze': lambda args: with_dataset(args, analyze),
+    'report': lambda args: with_dataset(args, report),
     'orthography': lambda args: None,
 }
 
