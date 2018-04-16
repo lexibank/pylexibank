@@ -16,7 +16,7 @@ from six import text_type
 
 import attr
 from csvw.datatypes import DATATYPES
-from clldutils.path import Path, remove
+from clldutils.path import Path, remove, git_describe
 from clldutils.misc import nfilter
 
 from pycldf.terms import term_uri
@@ -228,7 +228,7 @@ class Database(object):
 CREATE TABLE dataset (
     ID TEXT PRIMARY KEY NOT NULL,
     name TEXT,
-    module TEXT,
+    version TEXT,
     metadata_json TEXT
 )""")
             db.execute("""\
@@ -329,8 +329,12 @@ CREATE TABLE SourceTable (
             insert(
                 db,
                 'dataset',
-                'ID,name,module,metadata_json',
-                (ds.id, '{0}'.format(dataset), dataset.module, dumps(dataset.metadata_dict)))
+                'ID,name,version,metadata_json',
+                (
+                    ds.id,
+                    '{0}'.format(dataset),
+                    git_describe(ds.dir),
+                    dumps(dataset.metadata_dict)))
             insert(
                 db,
                 'datasetmeta',

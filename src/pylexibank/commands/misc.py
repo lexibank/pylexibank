@@ -7,7 +7,7 @@ from six import PY2
 from termcolor import colored
 from segments.tokenizer import Tokenizer
 from clldutils import licenses
-from clldutils.path import Path
+from clldutils.path import Path, git_describe
 from clldutils.dsv import UnicodeWriter, reader
 from clldutils.markup import Table
 from clldutils.clilib import command, confirm
@@ -74,11 +74,12 @@ def ls(args):
     """
     db = Database(args.db)
     db.create(exists_ok=True)
-    in_db = set(r[0] for r in db.fetchall('select id from dataset'))
+    in_db = {r[0]: r[1] for r in db.fetchall('select id, version from dataset')}
     # FIXME: how to smartly choose columns?
     table = Table('ID', 'Title')
     cols = OrderedDict([
         (col, {}) for col in args.args if col in [
+            'version',
             'license',
             'all_lexemes',
             'lexemes',
@@ -109,7 +110,9 @@ def ls(args):
             truncate_with_ellipsis(ds.metadata.title or '', width=tl),
         ]
         for col in cols:
-            if col == 'license':
+            if col == 'version':
+                row.append(git_describe(ds.dir))
+            elif col == 'license':
                 lic = licenses.find(ds.metadata.license or '')
                 row.append(lic.id if lic else ds.metadata.license)
             elif col in ['languages', 'concepts', 'lexemes', 'all_lexemes', 'families']:
