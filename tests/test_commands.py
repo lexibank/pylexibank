@@ -6,7 +6,6 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath):
     from pylexibank.commands.analyze import analyze
     from pylexibank.commands.report import report
     from pylexibank.commands.misc import ls, bib
-    from pylexibank.commands.db import dbcreate
 
     def _args(*args):
         return mocker.Mock(
@@ -20,9 +19,6 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath):
     out, err = capsys.readouterr()
 
     dataset._install(**vars(_args('test_dataset')))
-    out, err = capsys.readouterr()
-
-    dbcreate(_args('test_dataset'))
     out, err = capsys.readouterr()
 
     dataset._install(**vars(_args('test_dataset')))

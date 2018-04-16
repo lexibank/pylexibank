@@ -17,6 +17,7 @@ from six import text_type
 import attr
 from csvw.datatypes import DATATYPES
 from clldutils.path import Path, remove
+from clldutils.misc import nfilter
 
 from pycldf.terms import term_uri
 from pycldf.sources import Sources
@@ -75,193 +76,6 @@ def insert(db, table, keys, *rows):
             rows)
 
 
-class _Database(object):
-    def __init__(self, fname):
-        """
-        A `Database` instance is initialized with a file path.
-
-        :param fname: Path to a file in the file system where the db is to be stored.
-        """
-        self.fname = Path(fname)
-
-    def drop(self):
-        if self.fname.exists():
-            remove(self.fname)
-
-    def connection(self):
-        return closing(sqlite3.connect(self.fname.as_posix()))
-
-    def create(self, force=False):
-        """
-        Creates a db file with the core schema.
-
-        :param force: If `True` an existing db file will be overwritten.
-        """
-        if self.fname and self.fname.exists():
-            if force:
-                self.drop()
-            else:
-                raise ValueError('db file already exists, use force=True to overwrite')
-        with self.connection() as db:
-            db.execute(
-                """\
-CREATE TABLE dataset (
-    ID INTEGER PRIMARY KEY NOT NULL,
-    name TEXT,
-    module TEXT,
-    metadata_json TEXT
-)""")
-            db.execute("""\
-CREATE TABLE datasetmeta (
-    dataset_ID INT ,
-    key TEXT,
-    value TEXT,
-    FOREIGN KEY(dataset_ID) REFERENCES dataset(ID)
-)""")
-            db.execute("""\
-CREATE TABLE SourceTable (
-    dataset_ID INT ,
-    ID TEXT PRIMARY KEY NOT NULL,
-    bibtex_type TEXT,
-    {0}
-    extra TEXT,
-    FOREIGN KEY(dataset_ID) REFERENCES dataset(ID)
-)""".format('\n    '.join('`{0}` TEXT,'.format(f) for f in BIBTEX_FIELDS)))
-
-    def fetchone(self, sql, conn=None):
-        return self._fetch(sql, 'fetchone', conn)
-
-    def fetchall(self, sql, conn=None):
-        return self._fetch(sql, 'fetchall', conn)
-
-    def _fetch(self, sql, method, conn):
-        def _do(conn, sql, method):
-            cu = conn.cursor()
-            cu.execute(sql)
-            return getattr(cu, method)()
-
-        if not conn:
-            with self.connection() as conn:
-                return _do(conn, sql, method)
-        else:
-            return _do(conn, sql, method)
-
-    def delete(self, dataset_id):
-        with self.connection() as db:
-            for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'"):
-                table = row[0]
-                if table != 'dataset':
-                    db.execute(
-                        "DELETE FROM {0} WHERE dataset_ID = ?".format(table),
-                        (dataset_id,))
-            db.execute("DELETE FROM dataset WHERE ID = ?", (dataset_id,))
-            db.commit()
-
-    def _create_table_if_not_exists(self, table):
-        if table.name in [r[0] for r in self.fetchall(
-                "SELECT name FROM sqlite_master WHERE type='table'")]:
-            return False
-
-        with self.connection() as conn:
-            conn.execute(table.sql)
-        return True
-
-    def load(self, dataset):
-        """
-        Load a CLDF dataset into the database.
-
-        :param dataset:
-        :return:
-        """
-        tables, ref_tables = schema(dataset)
-
-        # update the DB schema:
-        for t in tables:
-            if self._create_table_if_not_exists(t):
-                continue
-            db_cols = {r[1]: r[2] for r in self.fetchall(
-                "PRAGMA table_info({0})".format(t.name))}
-            for col in t.columns:
-                if col.name not in db_cols:
-                    with self.connection() as conn:
-                        conn.execute(
-                            "ALTER TABLE {0} ADD COLUMN `{1.name}` {1.db_type}".format(
-                                t.name, col))
-                else:
-                    if db_cols[col.name] != col.db_type:
-                        raise ValueError(
-                            'column {0}:{1} {2} redefined with new type {3}'.format(
-                                t.name, col.name, db_cols[col.name], col.db_type))
-
-        for t in ref_tables.values():
-            self._create_table_if_not_exists(t)
-
-        # then load the data:
-        with self.connection() as db:
-            db.execute('PRAGMA foreign_keys = ON;')
-            pk = max(
-                [r[0] for r in self.fetchall("SELECT ID FROM dataset", conn=db)] or
-                [0]) + 1
-            insert(
-                db,
-                'dataset',
-                'ID,name,module,metadata_json',
-                (pk, '{0}'.format(dataset), dataset.module, dumps(dataset.metadata_dict)))
-            insert(
-                db,
-                'datasetmeta',
-                'dataset_ID,key,value',
-                *[(pk, k, '{0}'.format(v)) for k, v in dataset.properties.items()])
-
-            # load sources:
-            rows = []
-            for src in dataset.sources.items():
-                values = [pk, src.id, src.genre] + [src.get(k) for k in BIBTEX_FIELDS]
-                values.append(
-                    dumps({k: v for k, v in src.items() if k not in BIBTEX_FIELDS}))
-                rows.append(tuple(values))
-            insert(
-                db,
-                'SourceTable',
-                ['dataset_ID', 'ID', 'bibtex_type'] + BIBTEX_FIELDS + ['extra'],
-                *rows)
-
-            # For regular tables, we extract and keep references to sources.
-            refs = defaultdict(list)
-
-            for t in tables:
-                cols = {col.name: col for col in t.columns}
-                ref_table = ref_tables.get(t.name)
-                rows, keys = [], []
-                for row in dataset[t.name]:
-                    keys, values = ['dataset_ID'], [pk]
-                    for k, v in row.items():
-                        if ref_table and k == ref_table.consumes:
-                            refs[ref_table.name].append((row[t.primary_key], v))
-                        else:
-                            col = cols[k]
-                            if isinstance(v, list):
-                                v = (col.separator or ';').join(
-                                    col.convert(vv) for vv in v)
-                            else:
-                                v = col.convert(v)
-                            keys.append("`{0}`".format(k))
-                            values.append(v)
-                    rows.append(tuple(values))
-                insert(db, t.name, keys, *rows)
-
-            # Now insert the references, i.e. the associations with sources:
-            for tname, items in refs.items():
-                rows = []
-                for oid, sources in items:
-                    for source in sources:
-                        sid, context = Sources.parse(source)
-                        rows.append([pk, oid, sid, context])
-                oid_col = '{0}_ID'.format(tname.replace('Source', ''))
-                insert(db, tname, ['dataset_ID', oid_col, 'Source_ID', 'Context'], *rows)
-            db.commit()
-
-
 @attr.s
 class ColSpec(object):
     """
@@ -301,7 +115,7 @@ class TableSpec(object):
     @property
     def sql(self):
         clauses = [col.sql for col in self.columns]
-        clauses.append('`dataset_ID` INTEGER NOT NULL')
+        clauses.append('`dataset_ID` TEXT NOT NULL')
         clauses.append('FOREIGN KEY(`dataset_ID`) REFERENCES dataset(`ID`)')
         for fk, ref, refcols in self.foreign_keys:
             clauses.append('FOREIGN KEY(`{0}`) REFERENCES {1}(`{2}`)'.format(
@@ -374,28 +188,202 @@ def schema(ds):
     return list(ordered.values()), ref_tables
 
 
-class Database(_Database):
+class Database(object):
     def __init__(self, fname=None):
+        """
+        A `Database` instance is initialized with a file path.
+
+        :param fname: Path to a file in the file system where the db is to be stored.
+        """
         if fname is None:
             fname = Path(user_cache_dir(pylexibank.__name__)).joinpath('db.sqlite')
             if not fname.parent.exists():
                 fname.parent.mkdir()
 
-        _Database.__init__(self, fname)
+        self.fname = Path(fname)
 
-    def delete(self, ds):
-        if not isinstance(ds, int):
-            ds = self.fetchone(
-                "SELECT dataset_id FROM datasetmeta "
-                "WHERE key = 'rdf:ID' and value = '{0}'".format(getattr(ds, 'id', ds)))
-            if ds is not None:
-                ds = ds[0]
-        if ds:
-            _Database.delete(self, ds)
+    def drop(self):
+        if self.fname.exists():
+            remove(self.fname)
 
-    def update(self, ds):
-        self.delete(ds)
-        self.load(ds.cldf.wl)
+    def connection(self):
+        return closing(sqlite3.connect(self.fname.as_posix()))
+
+    def create(self, force=False, exists_ok=False):
+        """
+        Creates a db file with the core schema.
+
+        :param force: If `True` an existing db file will be overwritten.
+        """
+        if self.fname and self.fname.exists():
+            if force:
+                self.drop()
+            elif exists_ok:
+                return
+            else:
+                raise ValueError('db file already exists, use force=True to overwrite')
+        with self.connection() as db:
+            db.execute(
+                """\
+CREATE TABLE dataset (
+    ID TEXT PRIMARY KEY NOT NULL,
+    name TEXT,
+    module TEXT,
+    metadata_json TEXT
+)""")
+            db.execute("""\
+CREATE TABLE datasetmeta (
+    dataset_ID TEXT ,
+    key TEXT,
+    value TEXT,
+    FOREIGN KEY(dataset_ID) REFERENCES dataset(ID)
+)""")
+            db.execute("""\
+CREATE TABLE SourceTable (
+    dataset_ID TEXT ,
+    ID TEXT PRIMARY KEY NOT NULL,
+    bibtex_type TEXT,
+    {0}
+    extra TEXT,
+    FOREIGN KEY(dataset_ID) REFERENCES dataset(ID)
+)""".format('\n    '.join('`{0}` TEXT,'.format(f) for f in BIBTEX_FIELDS)))
+
+    def fetchone(self, sql, conn=None, verbose=False):
+        return self._fetch(sql, 'fetchone', conn, verbose=verbose)
+
+    def fetchall(self, sql, conn=None, verbose=False):
+        return self._fetch(sql, 'fetchall', conn, verbose=verbose)
+
+    def _fetch(self, sql, method, conn, verbose=False):
+        sql = self.sql.get(sql, sql)
+
+        def _do(conn, sql, method):
+            cu = conn.cursor()
+            if verbose:
+                print(sql)
+            cu.execute(sql)
+            return getattr(cu, method)()
+
+        if not conn:
+            with self.connection() as conn:
+                return _do(conn, sql, method)
+        else:
+            return _do(conn, sql, method)
+
+    def unload(self, dataset_id):
+        dataset_id = getattr(dataset_id, 'id', dataset_id)
+        with self.connection() as db:
+            for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'"):
+                table = row[0]
+                if table != 'dataset':
+                    db.execute(
+                        "DELETE FROM {0} WHERE dataset_ID = ?".format(table),
+                        (dataset_id,))
+            db.execute("DELETE FROM dataset WHERE ID = ?", (dataset_id,))
+            db.commit()
+
+    def _create_table_if_not_exists(self, table):
+        if table.name in [r[0] for r in self.fetchall(
+            "SELECT name FROM sqlite_master WHERE type='table'")]:
+            return False
+
+        with self.connection() as conn:
+            conn.execute(table.sql)
+        return True
+
+    def load(self, ds):
+        """
+        Load a CLDF dataset into the database.
+
+        :param dataset:
+        :return:
+        """
+        self.unload(ds)
+        dataset = ds.cldf.wl
+        tables, ref_tables = schema(dataset)
+
+        # update the DB schema:
+        for t in tables:
+            if self._create_table_if_not_exists(t):
+                continue
+            db_cols = {r[1]: r[2] for r in self.fetchall(
+                "PRAGMA table_info({0})".format(t.name))}
+            for col in t.columns:
+                if col.name not in db_cols:
+                    with self.connection() as conn:
+                        conn.execute(
+                            "ALTER TABLE {0} ADD COLUMN `{1.name}` {1.db_type}".format(
+                                t.name, col))
+                else:
+                    if db_cols[col.name] != col.db_type:
+                        raise ValueError(
+                            'column {0}:{1} {2} redefined with new type {3}'.format(
+                                t.name, col.name, db_cols[col.name], col.db_type))
+
+        for t in ref_tables.values():
+            self._create_table_if_not_exists(t)
+
+        # then load the data:
+        with self.connection() as db:
+            db.execute('PRAGMA foreign_keys = ON;')
+            insert(
+                db,
+                'dataset',
+                'ID,name,module,metadata_json',
+                (ds.id, '{0}'.format(dataset), dataset.module, dumps(dataset.metadata_dict)))
+            insert(
+                db,
+                'datasetmeta',
+                'dataset_ID,key,value',
+                *[(ds.id, k, '{0}'.format(v)) for k, v in dataset.properties.items()])
+
+            # load sources:
+            rows = []
+            for src in dataset.sources.items():
+                values = [ds.id, src.id, src.genre] + [src.get(k) for k in BIBTEX_FIELDS]
+                values.append(
+                    dumps({k: v for k, v in src.items() if k not in BIBTEX_FIELDS}))
+                rows.append(tuple(values))
+            insert(
+                db,
+                'SourceTable',
+                ['dataset_ID', 'ID', 'bibtex_type'] + BIBTEX_FIELDS + ['extra'],
+                *rows)
+
+            # For regular tables, we extract and keep references to sources.
+            refs = defaultdict(list)
+
+            for t in tables:
+                cols = {col.name: col for col in t.columns}
+                ref_table = ref_tables.get(t.name)
+                rows, keys = [], []
+                for row in dataset[t.name]:
+                    keys, values = ['dataset_ID'], [ds.id]
+                    for k, v in row.items():
+                        if ref_table and k == ref_table.consumes:
+                            refs[ref_table.name].append((row[t.primary_key], v))
+                        else:
+                            col = cols[k]
+                            if isinstance(v, list):
+                                v = (col.separator or ';').join(
+                                    nfilter(col.convert(vv) for vv in v))
+                            else:
+                                v = col.convert(v)
+                            keys.append("`{0}`".format(k))
+                            values.append(v)
+                    rows.append(tuple(values))
+                insert(db, t.name, keys, *rows)
+
+            # Now insert the references, i.e. the associations with sources:
+            for tname, items in refs.items():
+                rows = []
+                for oid, sources in items:
+                    for source in sources:
+                        sid, context = Sources.parse(source)
+                        rows.append([ds.id, oid, sid, context])
+                oid_col = '{0}_ID'.format(tname.replace('Source', ''))
+                insert(db, tname, ['dataset_ID', oid_col, 'Source_ID', 'Context'], *rows)
+            db.commit()
 
     def load_concepticon_data(self, concepticon):
         conceptsets = []
@@ -429,39 +417,31 @@ class Database(_Database):
                 langs)
             db.commit()
 
-    def _fetch(self, sql, method, conn):
-        return _Database._fetch(self, self.sql.get(sql, sql), method, conn)
-
     sql = {
         "conceptsets_by_dataset":
-            "SELECT dsm.value, count(distinct p.conceptset) "
-            "FROM datasetmeta as dsm, parametertable as p "
-            "WHERE dsm.key = 'rdf:ID' and dsm.dataset_id = p.dataset_id "
-            "GROUP BY dsm.value",
+            "SELECT ds.id, count(distinct p.conceptset) "
+            "FROM dataset as ds, parametertable as p "
+            "WHERE ds.id = p.dataset_id GROUP BY ds.id",
         "families_by_dataset":
-            "SELECT dsm.value, count(distinct l.family) "
-            "FROM datasetmeta as dsm, languagetable as l "
-            "WHERE dsm.key = 'rdf:ID' and dsm.dataset_id = l.dataset_id "
-            "GROUP BY dsm.value",
+            "SELECT ds.id, count(distinct l.family) "
+            "FROM dataset as ds, languagetable as l "
+            "WHERE ds.id = l.dataset_id GROUP BY ds.id",
         "macroareas_by_dataset":
-            "SELECT dsm.value, group_concat(distinct l.macroarea) "
-            "FROM datasetmeta as dsm, languagetable as l "
-            "WHERE dsm.key = 'rdf:ID' and dsm.dataset_id = l.dataset_id "
-            "GROUP BY dsm.value",
+            "SELECT ds.id, group_concat(distinct l.macroarea) "
+            "FROM dataset as ds, languagetable as l "
+            "WHERE ds.id = l.dataset_id GROUP BY ds.id",
         "glottocodes_by_dataset":
-            "SELECT dsm.value, count(distinct l.glottocode) "
-            "FROM datasetmeta as dsm, languagetable as l "
-            "WHERE dsm.key = 'rdf:ID' and dsm.dataset_id = l.dataset_id "
-            "GROUP BY dsm.value",
+            "SELECT ds.id, count(distinct l.glottocode) "
+            "FROM dataset as ds, languagetable as l "
+            "WHERE ds.id = l.dataset_id GROUP BY ds.id",
         "mapped_lexemes_by_dataset":
-            "SELECT dsm.value, count(f.ID) FROM datasetmeta as dsm, formtable as f, "
-            "languagetable as l, parametertable as p "
-            "WHERE dsm.key = 'rdf:ID' and dsm.dataset_id = f.dataset_id "
-            "and f.Language_ID = l.ID and f.Parameter_ID = p.ID "
-            "and l.glottocode is not null and p.conceptset is not null "
-            "GROUP BY dsm.value",
+            "SELECT ds.id, count(f.ID) "
+            "FROM dataset as ds, formtable as f, languagetable as l, parametertable as p "
+            "WHERE ds.id = f.dataset_id and f.Language_ID = l.ID and "
+            "f.Parameter_ID = p.ID and l.glottocode is not null and "
+            "p.conceptset is not null "
+            "GROUP BY ds.id",
         "lexemes_by_dataset":
-            "SELECT dsm.value, count(f.ID) FROM datasetmeta as dsm, formtable as f "
-            "WHERE dsm.key = 'rdf:ID' and dsm.dataset_id = f.dataset_id "
-            "GROUP BY dsm.value",
+            "SELECT ds.id, count(f.ID) FROM dataset as ds, formtable as f "
+            "WHERE ds.id = f.dataset_id GROUP BY ds.id",
     }

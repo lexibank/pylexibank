@@ -1,8 +1,10 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function, division
 from collections import defaultdict, Counter, OrderedDict
+from subprocess import check_call
 
 from six import PY2
+from termcolor import colored
 from segments.tokenizer import Tokenizer
 from clldutils import licenses
 from clldutils.path import Path
@@ -44,63 +46,10 @@ def orthography(args):  # pragma: no cover
 
 
 @command()
-def wordlength(args):
-    import unicodedata
-
-    concepts = Concepticon(args.cfg['paths']['concepticon']).conceptsets
-    header = ['language_id', 'language_name', 'parameter_id', 'form', 'segments']
-    languoids = {l.id: l for l in Glottolog(args.cfg['paths']['glottolog']).languoids()}
-    languoids.update({
-        'jiar1239': languoids['jiar1240'],
-        'yiry1247': languoids['jirj1239'],
-        'guug1239': languoids['gugu1255'],
-        'miya1256': languoids['waka1283'],
-    })
-    ml = set()
-
-    with UnicodeWriter('wordlength.csv') as writer, UnicodeWriter('wordlength_all.csv') as writer_all:
-        writer.writerow('Concepticon_ID Gloss Semanticfield Category Glottocode Variety Family Form Length'.split())
-        writer_all.writerow('Concepticon_ID Gloss Semanticfield Category Glottocode Variety Family Form Length'.split())
-        for ds in args.datasets:
-            for mdp in ds._iter_cldf():
-                csvp = mdp.parent.joinpath(mdp.name.split('-metadata')[0])
-                for row in reader(csvp, dicts=True):
-                    lang = languoids.get(row['Language_ID'])
-                    if lang and row['Parameter_ID'] in concepts:
-                        concept = concepts[row['Parameter_ID']]
-                        form = unicodedata.normalize('NFC', row['Form'])
-                        writer_all.writerow([
-                            concept.id,
-                            concept.gloss,
-                            concept.semanticfield,
-                            concept.ontological_category,
-                            lang.id,
-                            row['Language_name'],
-                            languoids[lang.lineage[0][1]].name if lang.lineage else '',
-                            ' '.join(form),
-                            '{0}'.format(len(form)),
-                        ])
-                    if row['Language_ID'] and not lang:
-                        ml.add(row['Language_ID'])
-                for row in lingpy_subset(csvp, header):
-                    lid, lname, pid, form, segments, length = row
-                    lang = languoids.get(lid)
-                    if not lang:
-                        continue
-                    concept = concepts[pid]
-                    lang = languoids[lid]
-                    writer.writerow([
-                        concept.id,
-                        concept.gloss,
-                        concept.semanticfield,
-                        concept.ontological_category,
-                        lang.id,
-                        lname,
-                        languoids[lang.lineage[0][1]].name if lang.lineage else '',
-                        segments,
-                        length,
-                    ])
-    print(ml)
+def db(args):
+    db = str(Database(args.db).fname)
+    args.log.info('connecting to {0}'.format(colored(db, 'green')))
+    check_call(['sqlite3', db])
 
 
 @command()
@@ -113,7 +62,9 @@ def ls(args):
     - lexemes
     - macroareas
     """
-    db = Database()
+    db = Database(args.db)
+    db.create(exists_ok=True)
+    in_db = set(r[0] for r in db.fetchall('select id from dataset'))
     # FIXME: how to smartly choose columns?
     table = Table('ID', 'Title')
     cols = OrderedDict([
@@ -144,8 +95,9 @@ def ls(args):
             cols[col] = {r[0]: r[1] for r in db.fetchall(sql)}
     for ds in args.datasets:
         row = [
-            ds.id,
-            truncate_with_ellipsis(ds.metadata.title or '', width=tl)]
+            colored(ds.id, 'green' if ds.id in in_db else 'red'),
+            truncate_with_ellipsis(ds.metadata.title or '', width=tl),
+        ]
         for col in cols:
             if col == 'license':
                 lic = licenses.find(ds.metadata.license or '')
@@ -208,6 +160,66 @@ def clean(args):
 
 
 # -------------------------------------------------------------------
+@command()
+def wordlength(args):
+    import unicodedata
+
+    concepts = Concepticon(args.cfg['paths']['concepticon']).conceptsets
+    header = ['language_id', 'language_name', 'parameter_id', 'form', 'segments']
+    languoids = {l.id: l for l in Glottolog(args.cfg['paths']['glottolog']).languoids()}
+    languoids.update({
+        'jiar1239': languoids['jiar1240'],
+        'yiry1247': languoids['jirj1239'],
+        'guug1239': languoids['gugu1255'],
+        'miya1256': languoids['waka1283'],
+    })
+    ml = set()
+
+    with UnicodeWriter('wordlength.csv') as writer, UnicodeWriter('wordlength_all.csv') as writer_all:
+        writer.writerow('Concepticon_ID Gloss Semanticfield Category Glottocode Variety Family Form Length'.split())
+        writer_all.writerow('Concepticon_ID Gloss Semanticfield Category Glottocode Variety Family Form Length'.split())
+        for ds in args.datasets:
+            for mdp in ds._iter_cldf():
+                csvp = mdp.parent.joinpath(mdp.name.split('-metadata')[0])
+                for row in reader(csvp, dicts=True):
+                    lang = languoids.get(row['Language_ID'])
+                    if lang and row['Parameter_ID'] in concepts:
+                        concept = concepts[row['Parameter_ID']]
+                        form = unicodedata.normalize('NFC', row['Form'])
+                        writer_all.writerow([
+                            concept.id,
+                            concept.gloss,
+                            concept.semanticfield,
+                            concept.ontological_category,
+                            lang.id,
+                            row['Language_name'],
+                            languoids[lang.lineage[0][1]].name if lang.lineage else '',
+                            ' '.join(form),
+                            '{0}'.format(len(form)),
+                        ])
+                    if row['Language_ID'] and not lang:
+                        ml.add(row['Language_ID'])
+                for row in lingpy_subset(csvp, header):
+                    lid, lname, pid, form, segments, length = row
+                    lang = languoids.get(lid)
+                    if not lang:
+                        continue
+                    concept = concepts[pid]
+                    lang = languoids[lid]
+                    writer.writerow([
+                        concept.id,
+                        concept.gloss,
+                        concept.semanticfield,
+                        concept.ontological_category,
+                        lang.id,
+                        lname,
+                        languoids[lang.lineage[0][1]].name if lang.lineage else '',
+                        segments,
+                        length,
+                    ])
+    print(ml)
+
+
 #  - need set of all concepts per variety.
 #  - loop over concept lists
 #  - if concept ids is subset of variety, count that language.
