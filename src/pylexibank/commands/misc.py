@@ -16,7 +16,7 @@ from pyglottolog.api import Glottolog
 from pybtex.database import parse_file, BibliographyData
 from pyconcepticon.api import Concepticon
 
-from pylexibank.commands.util import with_dataset, get_dataset
+from pylexibank.commands.util import with_dataset, get_dataset, _load, _unload
 from pylexibank.util import log_dump
 from pylexibank.dataset import Dataset
 from pylexibank.lingpy_util import lingpy_subset
@@ -43,6 +43,16 @@ def orthography(args):  # pragma: no cover
             writer.writerow([grapheme, '{0}'.format(frequency), grapheme])
 
     log_dump(out, log=args.log)
+
+
+@command()
+def load(args):
+    with_dataset(args, _load)
+
+
+@command()
+def unload(args):
+    with_dataset(args, _unload)
 
 
 @command()

@@ -11,25 +11,10 @@ from termcolor import colored
 
 from clldutils.clilib import command
 
-from pylexibank.commands.util import with_dataset
+from pylexibank.commands.util import with_dataset, _load, _unload
 from pylexibank.commands.analyze import analyze
 from pylexibank.commands.report import report
 from pylexibank.dataset import Dataset
-from pylexibank.db import Database
-
-
-def _load(ds, **kw):
-    db = Database(kw['db'])
-    db.create(exists_ok=True)
-    db.load(ds)
-    db.load_concepticon_data(ds.concepticon)
-    db.load_glottolog_data(ds.glottolog)
-
-
-def _unload(ds, **kw):
-    db = Database(kw['db'])
-    db.create(exists_ok=True)
-    db.unload(ds)
 
 
 commands = {
