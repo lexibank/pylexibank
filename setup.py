@@ -24,6 +24,9 @@ setup(
     entry_points={
         'console_scripts': [
             'lexibank=pylexibank.__main__:main',
+        ],
+        'pytest11': [
+            'pytest_lexibank = pylexibank.pytest_plugin',
         ]
     },
     platforms='any',
@@ -41,8 +44,10 @@ setup(
         'appdirs',
         'requests',
         'termcolor',
+        'gitpython',
         'tqdm',
         'xlrd',
+        'goodtables',
         'prompt_toolkit~=1.0',
     ],
     extras_require={

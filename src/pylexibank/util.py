@@ -32,6 +32,10 @@ REPOS_PATH = Path(pylexibank.__file__).parent.parent
 YEAR_PATTERN = re.compile('\s+\(?(?P<year>[1-9][0-9]{3}(-[0-9]+)?)(\)|\.)')
 
 
+def git_hash(d):
+    return git_describe(d).split('-g')[-1]
+
+
 def pb(iterable=None, **kw):
     kw.setdefault('leave', False)
     return tqdm(iterable=iterable, **kw)

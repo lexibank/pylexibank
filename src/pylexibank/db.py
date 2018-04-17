@@ -16,7 +16,7 @@ from six import text_type
 
 import attr
 from csvw.datatypes import DATATYPES
-from clldutils.path import Path, remove, git_describe
+from clldutils.path import Path, remove
 from clldutils.misc import nfilter
 
 from pycldf.terms import term_uri
@@ -25,6 +25,7 @@ from pycldf.sources import Sources
 from appdirs import user_cache_dir
 
 import pylexibank
+from pylexibank.util import git_hash
 
 
 def identity(s):
@@ -333,7 +334,7 @@ CREATE TABLE SourceTable (
                 (
                     ds.id,
                     '{0}'.format(dataset),
-                    git_describe(ds.dir),
+                    git_hash(ds.dir),
                     dumps(dataset.metadata_dict)))
             insert(
                 db,

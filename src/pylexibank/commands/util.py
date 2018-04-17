@@ -20,9 +20,11 @@ def with_dataset(args, func):
     for dataset in args.datasets:
         if dataset.id in args.args:
             s = time()
-            print('processing %s ...' % dataset.id)
+            if args.verbosity:
+                print('processing %s ...' % dataset.id)
             func(get_dataset(args, dataset.id), **vars(args))
-            print('... done %s [%.1f secs]' % (dataset.id, time() - s))
+            if args.verbosity:
+                print('... done %s [%.1f secs]' % (dataset.id, time() - s))
 
 
 def _load(ds, **kw):

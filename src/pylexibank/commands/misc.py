@@ -5,9 +5,10 @@ from subprocess import check_call
 
 from six import PY2
 from termcolor import colored
+from git import Repo
 from segments.tokenizer import Tokenizer
 from clldutils import licenses
-from clldutils.path import Path, git_describe
+from clldutils.path import Path
 from clldutils.dsv import UnicodeWriter, reader
 from clldutils.markup import Table
 from clldutils.clilib import command, confirm
@@ -16,11 +17,32 @@ from pyglottolog.api import Glottolog
 from pybtex.database import parse_file, BibliographyData
 from pyconcepticon.api import Concepticon
 
+import pylexibank
 from pylexibank.commands.util import with_dataset, get_dataset, _load, _unload
-from pylexibank.util import log_dump
+from pylexibank.util import log_dump, git_hash
 from pylexibank.dataset import Dataset
 from pylexibank.lingpy_util import lingpy_subset
 from pylexibank.db import Database
+
+
+@command()
+def requirements(args):
+    if args.datasets:
+        print(
+            '-e git+https://github.com/clld/glottolog.git@{0}#egg=pyglottolog'.format(
+                git_hash(args.datasets[0].glottolog.repos)))
+        print(
+            '-e git+https://github.com/clld/concepticon-data.git@{0}#egg=pyconcepticon'.format(
+                git_hash(args.datasets[0].concepticon.repos)))
+    if pylexibank.__version__.endswith('dev0'):
+        print(
+            '-e git+https://github.com/lexibank/pylexibank.git@{0}#egg=pylexibank'.format(
+                git_hash(Path(pylexibank.__file__).parent.parent.parent)))
+    db = Database(args.db)
+    db.create(exists_ok=True)
+    for r in db.fetchall('select id, version from dataset'):
+        print(
+            '-e git+https://github.com/lexibank/{0}.git@{1}#egg=lexibank_{0}'.format(*r))
 
 
 @command()
@@ -63,6 +85,28 @@ def db(args):
 
 
 @command()
+def diff(args):
+    def _diff(ds, **kw):
+        repo = Repo(str(ds.dir))
+        if repo.is_dirty():
+            print('{0} at {1}'.format(
+                colored(ds.id, 'blue', attrs=['bold']),
+                colored(str(ds.dir), 'blue')))
+            for i, item in enumerate(repo.index.diff(None)):
+                if i == 0:
+                    print(colored('modified:', attrs=['bold']))
+                print(colored(item.a_path, 'green'))
+            for i, path in enumerate(repo.untracked_files):
+                if i == 0:
+                    print(colored('untracked:', attrs=['bold']))
+                print(colored(path, 'green'))
+            print()
+    if not args.args:
+        args.args = [ds.id for ds in args.datasets]
+    with_dataset(args, _diff)
+
+
+@command()
 def ls(args):
     """
     lexibank ls [COLS]+
@@ -80,6 +124,8 @@ def ls(args):
     cols = OrderedDict([
         (col, {}) for col in args.args if col in [
             'version',
+            'location',
+            'changes',
             'license',
             'all_lexemes',
             'lexemes',
@@ -111,7 +157,11 @@ def ls(args):
         ]
         for col in cols:
             if col == 'version':
-                row.append(git_describe(ds.dir))
+                row.append(git_hash(ds.dir))
+            elif col == 'location':
+                row.append(colored(str(ds.dir), 'green'))
+            elif col == 'changes':
+                row.append(Repo(str(ds.dir)).is_dirty())
             elif col == 'license':
                 lic = licenses.find(ds.metadata.license or '')
                 row.append(lic.id if lic else ds.metadata.license)
