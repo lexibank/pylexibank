@@ -38,7 +38,6 @@ setup(
         'pyclpa',
         'segments',
         'lingpy',
-        'dill',
         'appdirs',
         'requests',
         'termcolor',
