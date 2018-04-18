@@ -24,7 +24,7 @@ Your command prompt should now show `(venv)` before all your commands; this mean
 Let's continue by installing the necessary requirements (everything still happens in the `lexibank-working` directory with the previously activated virtual environment):
 
 ```
-pip install https://github.com/lexibank/pylexibank/archive/master.zip
+pip install pylexibank
 git clone https://github.com/clld/glottolog
 git clone https://github.com/clld/concepticon-data
 ```
