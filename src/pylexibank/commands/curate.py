@@ -26,6 +26,7 @@ commands = {
     'load': lambda args: with_dataset(args, _load),
     'unload': lambda args: with_dataset(args, _unload),
     'orthography': lambda args: None,
+    'help': lambda args: print("Available Commands: %s" % ", ".join(sorted(commands))),
 }
 
 
@@ -59,6 +60,9 @@ def curate(args):
             ).split()
         except EOFError:
             break
+        
+        if len(user_input) == 0:
+            continue  # ignore empty commands
         if user_input[0] not in commands:
             print(colored('Invalid command!', 'red'))
             continue
