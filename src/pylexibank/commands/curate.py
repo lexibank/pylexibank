@@ -26,6 +26,7 @@ commands = {
     'load': lambda args: with_dataset(args, _load),
     'unload': lambda args: with_dataset(args, _unload),
     'orthography': lambda args: None,
+    'help': lambda args: print("Available Commands: %s" % ", ".join(sorted(commands))),
 }
 
 
