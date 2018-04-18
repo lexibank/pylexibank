@@ -127,7 +127,7 @@ class Dataset(object):
     def write(self, **kw):
         self.wl.properties.update(self.dataset.metadata.common_props)
         self.wl.properties['rdf:ID'] = self.dataset.id
-        self.wl._tg.notes.append({
+        self.wl.tablegroup.notes.append({
             'dc:title': 'environment',
             'properties': {
                 'concepticon_version': self.dataset.concepticon.version,

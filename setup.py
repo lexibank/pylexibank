@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name='pylexibank',
-    version='0.1.0',
+    version='0.1.1',
     author='Robert Forkel',
     author_email='forkel@shh.mpg.de',
     description='Python library implementing the lexibank workbench',
@@ -34,7 +34,7 @@ setup(
     install_requires=[
         'six',
         'attr',
-        'pycldf',
+        'pycldf>=1.1.1',
         'clldutils',
         'pyglottolog',
         'pyconcepticon',
@@ -47,7 +47,6 @@ setup(
         'gitpython',
         'tqdm',
         'xlrd',
-        'goodtables',
         'prompt_toolkit~=1.0',
     ],
     extras_require={
