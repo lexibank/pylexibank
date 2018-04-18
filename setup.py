@@ -8,7 +8,7 @@ def read(fname):
 
 setup(
     name='pylexibank',
-    version='0.1.1',
+    version='0.1.2',
     author='Robert Forkel',
     author_email='forkel@shh.mpg.de',
     description='Python library implementing the lexibank workbench',
