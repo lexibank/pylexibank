@@ -59,6 +59,9 @@ def curate(args):
             ).split()
         except EOFError:
             break
+        
+        if len(user_input) == 0:
+            continue  # ignore empty commands
         if user_input[0] not in commands:
             print(colored('Invalid command!', 'red'))
             continue
