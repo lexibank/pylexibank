@@ -1,18 +1,13 @@
 from setuptools import setup, find_packages
 
 
-def read(fname):
-    with open(fname) as fp:
-        return fp.read()
-
-
 setup(
     name='pylexibank',
     version='0.2.1.dev0',
     author='Robert Forkel',
     author_email='forkel@shh.mpg.de',
     description='Python library implementing the lexibank workbench',
-    long_description=read('README.md'),
+    long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     keywords='',
     license='Apache 2.0',

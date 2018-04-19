@@ -2,24 +2,36 @@
 from __future__ import unicode_literals, print_function, division
 import re
 
+import attr
 from six import text_type
-from clldutils.misc import xmlchars, slug
+from clldutils.misc import slug
 from clldutils.path import remove
 from clldutils.text import split_text_with_context
 from pycldf.sources import Source
 
 from pylexibank.lingpy_util import segmentize
 from pylexibank.util import pb
-from pylexibank.dataset import Dataset
+from pylexibank.dataset import Dataset, Language
 
-URL = "https://abvd.shh.mpg.de/utils/save/?type=xml&section=%s&language=%d"
+BASE_URL = "https://abvd.shh.mpg.de"
+URL = BASE_URL + "/utils/save/?type=xml&section=%s&language=%d"
 INVALID_LANGUAGE_IDS = {
     'austronesian': [261],  # Duplicate West Futuna list
 }
 
 
+@attr.s
+class BVDLanguage(Language):
+    author = attr.ib(default=None)
+    url = attr.ib(default=None)
+    typedby = attr.ib(default=None)
+    checkedby = attr.ib(default=None)
+    notes = attr.ib(default=None)
+
+
 class BVD(Dataset):
     SECTION = None
+    language_class = BVDLanguage
 
     def iter_wordlists(self, language_map):
         for xml in pb(list(self.raw.glob('*.xml')), desc='xml-to-wl'):
@@ -29,7 +41,9 @@ class BVD(Dataset):
                     wl.language.glottocode = language_map[wl.language.id]
                 else:
                     self.unmapped.add_language(
-                        id=wl.language.id, name=wl.language.name, iso=wl.language.iso
+                        ID=wl.language.id,
+                        Name=wl.language.name,
+                        ISO639P3code=wl.language.iso
                     )
             yield wl
 
@@ -117,7 +131,6 @@ class Entry(XmlElement):
         ('annotation', 'comment'),
         ('loan', ''),
         ('cognacy', ''),
-        #('pmpcognacy', ''),
     ]
 
     def __init__(self, e, section):
@@ -162,7 +175,7 @@ class Wordlist(object):
             and getattr(r.find('item'), 'text', None)
 
     def url(self, path):
-        return 'http://language.psy.auckland.ac.nz/%s/%s' % (self.section, path)
+        return '%s/bantu/%s/%s' % (BASE_URL, self.section, path)
 
     @property
     def name(self):
@@ -181,23 +194,6 @@ class Wordlist(object):
         if concept_key is None:
             concept_key = lambda entry: entry.word_id
 
-        #
-        # FIXME: The following should be written to a separate LanguageTable!
-        #
-        #ds.metadata['dc:creator'] = self.language.author
-        #ds.metadata['dc:identifier'] = self.url('language.php?id=%s' % self.language.id)
-        #if self.language.typedby:
-        #    ds.metadata['dc:contributor'] = self.language.typedby
-        #if self.language.checkedby:
-        #    ds.metadata['dc:contributor'] = self.language.checkedby
-        #if self.language.notes:
-        #    ds.metadata['dc:description'] = self.language.notes
-
-        #ds.table.schema.columns['Parameter_local_ID'].valueUrl = \
-        #    self.url('word.php?v=1{Parameter_local_ID}')
-        #ds.table.schema.columns['Language_local_ID'].valueUrl = \
-        #    self.url('language.php?id={Language_local_ID}')
-
         ref = None
         if citekey and source:
             ref = citekey
@@ -210,9 +206,15 @@ class Wordlist(object):
 
         ds.add_language(
             ID=self.language.id,
-            glottocode=self.language.glottocode,
-            iso=self.language.iso,
-            name=self.language.name)
+            Glottocode=self.language.glottocode,
+            ISO639P3code=self.language.iso,
+            Name=self.language.name,
+            author=self.language.author,
+            url=self.url('language.php?id=%s' % self.language.id),
+            typedby=self.language.typedby,
+            checkedby=self.language.checkedby,
+            notes=self.language.notes,
+        )
 
         for entry in self.entries:
             if entry.name is None or len(entry.name) == 0:  # skip empty entries
@@ -225,9 +227,9 @@ class Wordlist(object):
                     ds.add_sources(Source('misc', ref, title=src.text))
             cid = concept_map.get(concept_key(entry))
             if not cid:
-                self.dataset.unmapped.add_concept(id=entry.word_id, gloss=entry.word)
+                self.dataset.unmapped.add_concept(ID=entry.word_id, Name=entry.word)
 
-            ds.add_concept(ID=entry.word_id, gloss=entry.word, conceptset=cid)
+            ds.add_concept(ID=entry.word_id, Name=entry.word, Concepticon_ID=cid)
             for lex in ds.add_lexemes(
                 Language_ID=self.language.id,
                 Parameter_ID=entry.word_id,

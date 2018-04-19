@@ -59,8 +59,8 @@ class TOB(Dataset):
 
         with self.cldf as ds:
             for cid, concept, lid, gc, form, cogid in pb(self.raw.read_csv('output.csv')):
-                ds.add_language(ID=lid, name=lid, glottocode=gc)
-                ds.add_concept(ID=cid, gloss=concept, conceptset=concepticon[cid])
+                ds.add_language(ID=lid, Name=lid, Glottocode=gc)
+                ds.add_concept(ID=cid, Name=concept, Concepticon_ID=concepticon[cid])
                 for row in ds.add_lexemes(
                     Language_ID=lid,
                     Parameter_ID=cid,
@@ -70,4 +70,4 @@ class TOB(Dataset):
                     ds.add_cognate(
                         lexeme=row,
                         Cognateset_ID=cogid,
-                        Cognate_source=cognate_source.id)
+                        Source=[cognate_source.id])

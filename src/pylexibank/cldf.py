@@ -7,6 +7,8 @@ from clldutils.path import copy, Path
 from clldutils.misc import slug
 from pycldf.dataset import Wordlist
 
+MD_NAME = 'cldf-metadata.json'
+
 
 class Dataset(object):
     def __init__(self, dataset):
@@ -14,9 +16,8 @@ class Dataset(object):
         self._cognate_count = 0
         self.dataset = dataset
 
-        md = self.dataset.cldf_dir.joinpath('cldf-metadata.json')
-        if not md.exists():
-            copy(Path(__file__).parent / 'cldf-metadata.json', md)
+        md = self.dataset.cldf_dir / MD_NAME
+        copy(Path(__file__).parent / MD_NAME, md)
         self.wl = Wordlist.from_metadata(md)
 
         self.objects = {}
@@ -100,9 +101,9 @@ class Dataset(object):
 
     def add_cognate(self, lexeme=None, **kw):
         if lexeme:
-            kw.setdefault('Word_ID', lexeme['ID'])
+            kw.setdefault('Form_ID', lexeme['ID'])
             kw.setdefault('Form', lexeme['Form'])
-        kw.setdefault('Index', self.cognate_id())
+        kw.setdefault('ID', self.cognate_id())
         return self._add_object(self.dataset.cognate_class, **kw)
 
     def add_language(self, **kw):

@@ -40,12 +40,13 @@ class FieldnamesMixin(object):
 @attr.s(hash=False)
 class Language(FieldnamesMixin):
     ID = attr.ib(default='', hash=True)
-    name = attr.ib(default=None)
-    iso = attr.ib(default=None)
-    glottocode = attr.ib(default=None)
-    glottolog_name = attr.ib(default=None)
-    macroarea = attr.ib(default=None)
-    family = attr.ib(default=None)
+    Name = attr.ib(default=None)
+    ISO639P3code = attr.ib(default=None)
+    Glottocode = attr.ib(default=None)
+    Macroarea = attr.ib(default=None)
+
+    Glottolog_Name = attr.ib(default=None)
+    Family = attr.ib(default=None)
 
     @classmethod
     def __cldf_table__(cls):
@@ -55,9 +56,9 @@ class Language(FieldnamesMixin):
 @attr.s(hash=False)
 class Concept(FieldnamesMixin):
     ID = attr.ib(default='', hash=True)
-    gloss = attr.ib(default='')
-    conceptset = attr.ib(default='')
-    concepticon_gloss = attr.ib(default='')
+    Name = attr.ib(default='')
+    Concepticon_ID = attr.ib(default=None)
+    Concepticon_Gloss = attr.ib(default=None)
 
     @classmethod
     def __cldf_table__(cls):
@@ -79,7 +80,7 @@ class Lexeme(FieldnamesMixin):
     Value = attr.ib(validator=non_empty)  # the lexical item
     Language_ID = attr.ib(validator=non_empty)
     Parameter_ID = attr.ib(validator=non_empty)
-    Local_ID = attr.ib(default=None)
+    Local_ID = attr.ib(default=None)  # local ID of a lexeme in the source dataset
     Segments = attr.ib(
         default=attr.Factory(list),
         validator=attr.validators.instance_of(list))
@@ -100,18 +101,21 @@ class Lexeme(FieldnamesMixin):
 
 @attr.s
 class Cognate(FieldnamesMixin):
-    Word_ID = attr.ib(default=None)  # The lexibank-wide unique word ID.
-    Index = attr.ib(default=None)  # integer index used in lingpy wordlists.
+    ID = attr.ib(default=None)
+    Form_ID = attr.ib(default=None)
     Form = attr.ib(default=None)
     Cognateset_ID = attr.ib(default=None)
     Doubt = attr.ib(
         default=False, convert=lambda v: v if isinstance(v, bool) else eval(v))
-    Cognate_detection_method = attr.ib(default='expert')
-    Cognate_source = attr.ib(default=None)
+    Cognate_Detection_Method = attr.ib(default='expert')
+    Source = attr.ib(
+        default=attr.Factory(list),
+        validator=attr.validators.instance_of(list),
+        convert=lambda v: [v] if isinstance(v, six.string_types) else v)
     Alignment = attr.ib(
         default=None, convert=lambda v: ' '.join(v) if isinstance(v, list) else v)
-    Alignment_method = attr.ib(default=None)
-    Alignment_source = attr.ib(default=None)
+    Alignment_Method = attr.ib(default=None)
+    Alignment_Source = attr.ib(default=None)
 
     @classmethod
     def __cldf_table__(cls):
@@ -351,11 +355,9 @@ class Unmapped(object):
         self.concepts = set()
 
     def add_concept(self, **kw):
-        kw['ID'] = kw.pop('id')
         self.concepts.add(Concept(**kw))
 
     def add_language(self, **kw):
-        kw['ID'] = kw.pop('id')
         self.languages.add(Language(**kw))
 
     @staticmethod

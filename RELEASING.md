@@ -7,10 +7,9 @@ Releasing pylexibank
 tox -r
 ```
 
-- Make sure statement coverage is at 100%
 - Make sure flake8 passes:
 ```
-flake8
+flake8 src
 ```
 
 - Update the version number, by removing the trailing `.dev0` in:

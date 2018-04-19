@@ -402,14 +402,14 @@ CREATE TABLE SourceTable (
 
     def load_concepticon_data(self, concepticon):
         conceptsets = []
-        for csid in self.fetchall("SELECT distinct conceptset FROM parametertable"):
+        for csid in self.fetchall("SELECT distinct concepticon_id FROM parametertable"):
             cs = concepticon.conceptsets.get(csid[0])
             if cs:
                 conceptsets.append((cs.gloss, cs.id))
 
         with self.connection() as db:
             db.executemany(
-                "UPDATE parametertable SET concepticon_gloss = ? WHERE conceptset = ?",
+                "UPDATE parametertable SET concepticon_gloss = ? WHERE concepticon_id = ?",
                 conceptsets)
             db.commit()
 
@@ -434,7 +434,7 @@ CREATE TABLE SourceTable (
 
     sql = {
         "conceptsets_by_dataset":
-            "SELECT ds.id, count(distinct p.conceptset) "
+            "SELECT ds.id, count(distinct p.concepticon_id) "
             "FROM dataset as ds, parametertable as p "
             "WHERE ds.id = p.dataset_id GROUP BY ds.id",
         "families_by_dataset":
@@ -454,7 +454,7 @@ CREATE TABLE SourceTable (
             "FROM dataset as ds, formtable as f, languagetable as l, parametertable as p "
             "WHERE ds.id = f.dataset_id and f.Language_ID = l.ID and "
             "f.Parameter_ID = p.ID and l.glottocode is not null and "
-            "p.conceptset is not null "
+            "p.concepticon_id is not null "
             "GROUP BY ds.id",
         "lexemes_by_dataset":
             "SELECT ds.id, count(f.ID) FROM dataset as ds, formtable as f "

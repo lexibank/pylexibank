@@ -18,8 +18,8 @@ def test_Item():
 
 def test_Unmapped(capsys):
     unmapped = Unmapped()
-    unmapped.add_language(id='tl', name='the language')
-    unmapped.add_concept(id='tc', gloss='the concept')
+    unmapped.add_language(ID='tl', Name='the language')
+    unmapped.add_concept(ID='tc', Name='the concept')
     unmapped.pprint()
     out, err = capsys.readouterr()
     assert 'tc,"the concept",,' in out.split('\n')

@@ -16,3 +16,5 @@ def test_db(tmpdir, dataset, mocker):
     db.load(dataset)
     db.load_glottolog_data(dataset.glottolog)
     db.load_concepticon_data(mocker.Mock(conceptsets={}))
+    for sql in db.sql:
+        db.fetchall(sql)

@@ -44,13 +44,13 @@ def wordlist2cognates(wordlist, source, expert='expert', ref='cogid'):
     """Turn a wordlist into a cognate set list, using the cldf parameters."""
     for k in wordlist:
         yield dict(
-            Word_ID=wordlist[k, 'lid'],
-            Index=k,
+            Form_ID=wordlist[k, 'lid'],
+            ID=k,
             Form=wordlist[k, 'ipa'],
             Cognateset_ID='{0}-{1}'.format(
                 slug(wordlist[k, 'concept']), wordlist[k, ref]),
-            Cognate_detection_method=expert,
-            Cognate_source=source)
+            Cognate_Detection_Method=expert,
+            Source=source)
 
 
 @attr.s
@@ -178,10 +178,10 @@ def iter_cognates(dataset, column='Segments', method='turchin', threshold=0.5, *
             cogid = slug(row.get('Parameter_name') or row['Parameter_ID']) + '-' + sounds
             if '0' not in sounds:
                 yield dict(
-                    Word_ID=row['ID'],
+                    Form_ID=row['ID'],
                     Form=row['Value'],
                     Cognateset_ID=cogid,
-                    Cognate_detection_method='CMM')
+                    Cognate_Detection_Method='CMM')
 
     if method in ['sca', 'lexstat']:
         lex = _cldf2lexstat(dataset)
@@ -190,10 +190,10 @@ def iter_cognates(dataset, column='Segments', method='turchin', threshold=0.5, *
         lex.cluster(method=method, threshold=threshold, ref='cogid')
         for k in lex:
             yield Cognate(
-                Word_ID=lex[k, 'lid'],
+                Form_ID=lex[k, 'lid'],
                 Form=lex[k, 'value'],
                 Cognateset_ID=lex[k, 'cogid'],
-                Cognate_detection_method=method + '-t{0:.2f}'.format(threshold))
+                Cognate_Detection_Method=method + '-t{0:.2f}'.format(threshold))
 
 
 def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
@@ -202,7 +202,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
     """
     if not isinstance(dataset, lp.basic.parser.QLCParser):
         wordlist = _cldf2wordlist(dataset)
-        cognates = {r['Word_ID']: r for r in cognate_sets}
+        cognates = {r['Form_ID']: r for r in cognate_sets}
         wordlist.add_entries(
             'cogid',
             'lid',
@@ -221,7 +221,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
             if alm[k, 'lid'] in cognates:
                 cognate = cognates[alm[k, 'lid']]
                 cognate['Alignment'] = alm[k, 'alignment'].split(' ')
-                cognate['Alignment_method'] = method
+                cognate['Alignment_Method'] = method
     else:
         alm = lp.Alignments(dataset, ref='cogid')
         alm.align(method=method)
@@ -231,7 +231,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
             if idx is None:
                 idx = int(cognate['Word_ID'].split('-')[-1])
             cognate['Alignment'] = alm[idx, 'alignment'].split(' ')
-            cognate['Alignment_method'] = 'SCA-' + method
+            cognate['Alignment_Method'] = 'SCA-' + method
 
 
 def lingpy_subset(path, header, errors=2):

@@ -102,32 +102,32 @@
                         "datatype": "string"
                     },
                     {
-                        "name": "name",
+                        "name": "Name",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#name",
                         "datatype": "string"
                     },
                     {
-                        "name": "glottocode",
+                        "name": "Glottocode",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#glottocode",
                         "valueUrl": "http://glottolog.org/resource/languoid/id/{glottolog_id}",
                         "datatype": "string"
                     },
                     {
-                        "name": "glottolog_name",
+                        "name": "Glottolog_Name",
                         "datatype": "string"
                     },
                     {
-                        "name": "iso",
+                        "name": "ISO639P3code",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#iso639P3code",
                         "datatype": "string"
                     },
                     {
-                        "name": "macroarea",
+                        "name": "Macroarea",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#macroarea",
                         "datatype": "string"
                     },
                     {
-                        "name": "family",
+                        "name": "Family",
                         "datatype": "string"
                     }
                 ],
@@ -145,18 +145,18 @@
 		        		"datatype": "string"
 		        	},
 		        	{
-		        		"name": "gloss",
+		        		"name": "Name",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#name",
 		        		"datatype": "string"
 		        	},
                     {
-                        "name": "conceptset",
+                        "name": "Concepticon_ID",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#concepticonReference",
                         "valueUrl": "http://concepticon.clld.org/parameters/{concepticon_id}",
                         "datatype": "string"
                     },
                     {
-                        "name": "concepticon_gloss",
+                        "name": "Concepticon_Gloss",
                         "datatype": "string"
                     }
 		        ],
@@ -169,14 +169,14 @@
             "tableSchema": {
                 "columns": [
                     {
-                        "name": "Word_ID",
-                        "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#formReference",
-                        "datatype": "string"
-                    },
-                    {
-                        "name": "Index",
+                        "name": "ID",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#id",
                         "datatype": "integer"
+                    },
+                    {
+                        "name": "Form_ID",
+                        "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#formReference",
+                        "datatype": "string"
                     },
                     {
                         "name": "Form",
@@ -193,12 +193,12 @@
                         "datatype": "boolean"
                     },
                     {
-                        "name": "Cognate_detection_method",
+                        "name": "Cognate_Detection_Method",
                         "default": "expert",
                         "datatype": "string"
                     },
                     {
-                        "name": "Cognate_source",
+                        "name": "Source",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#source",
                         "separator": ";",
                         "datatype": "string"
@@ -210,17 +210,17 @@
                         "datatype": "string"
                     },
                     {
-                        "name": "Alignment_method",
+                        "name": "Alignment_Method",
                         "datatype": "string"
                     },
                     {
-                        "name": "Alignment_source",
+                        "name": "Alignment_Source",
                         "datatype": "string"
                     }
                 ],
                 "foreignKeys": [
                    {
-                        "columnReference": "Word_ID",
+                        "columnReference": "Form_ID",
                         "reference": {
                             "resource": "forms.csv",
                             "columnReference": "ID"
