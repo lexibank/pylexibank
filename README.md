@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/lexibank/pylexibank.png)](https://travis-ci.org/lexibank/pylexibank)
 [![codecov](https://codecov.io/gh/lexibank/pylexibank/branch/master/graph/badge.svg)](https://codecov.io/gh/lexibank/pylexibank)
-[![PyPI](https://img.shields.io/pypi/v/pylexibank.svg)](https://pypi.org/pypi/pylexibank)
+[![PyPI](https://img.shields.io/pypi/v/pylexibank.svg)](https://pypi.org/project/pylexibank)
 
 
 ## Install
