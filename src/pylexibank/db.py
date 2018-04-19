@@ -150,8 +150,14 @@ def schema(ds):
                     '{0}Source'.format(otype),
                     [ColSpec(otype + '_ID'), ColSpec('Source_ID'), ColSpec('Context')],
                     [
-                        (['dataset_ID', otype + '_ID'], ds.get_tabletype(table), ['dataset_ID', spec.primary_key]),
-                        (['dataset_ID', 'Source_ID'], 'SourceTable', ['dataset_ID', 'ID']),
+                        (
+                            ['dataset_ID', otype + '_ID'],
+                            ds.get_tabletype(table),
+                            ['dataset_ID', spec.primary_key]),
+                        (
+                            ['dataset_ID', 'Source_ID'],
+                            'SourceTable',
+                            ['dataset_ID', 'ID']),
                     ],
                     c.name)
             else:
@@ -285,15 +291,11 @@ CREATE TABLE SourceTable (
 
     def _create_table_if_not_exists(self, table):
         if table.name in [r[0] for r in self.fetchall(
-            "SELECT name FROM sqlite_master WHERE type='table'")]:
+                "SELECT name FROM sqlite_master WHERE type='table'")]:
             return False
 
         with self.connection() as conn:
-            try:
-                conn.execute(table.sql)
-            except:
-                print(table.sql)
-                raise
+            conn.execute(table.sql)
         return True
 
     def load(self, ds):

@@ -36,7 +36,7 @@ def getEvoBibAsBibtex(*keys, **kw):
         try:
             res.append('@' + bib.split('@')[1].split('</pre>')[0])
         except IndexError:
-            res.append('@misc{'+key+',\nNote={missing source}\n\n}')
+            res.append('@misc{' + key + ',\nNote={missing source}\n\n}')
     return '\n\n'.join(res)
 
 
@@ -87,8 +87,8 @@ def test_sequence(segments, analysis=None, model='dolgo', **keywords):
             x if y != '0' else '?' for x, y in
             zip(segments, tokens2class(segments, model))]
         clpa_analysis = clpa(segments)
-        for l, c in zip(lingpy_analysis, clpa_analysis):
-            if l == '?' or isinstance(c, Unknown):
+        for l_, c in zip(lingpy_analysis, clpa_analysis):
+            if l_ == '?' or isinstance(c, Unknown):
                 analysis.general_errors += 1
     except (ValueError, IndexError, AttributeError, TypeError, AssertionError):
         raise InvalidString()
@@ -175,7 +175,7 @@ def iter_cognates(dataset, column='Segments', method='turchin', threshold=0.5, *
             if sounds.startswith('V'):
                 sounds = 'H' + sounds
             sounds = '-'.join([s for s in sounds if s != 'V'][:2])
-            cogid = slug(row.get('Parameter_name') or row['Parameter_ID'])+'-'+sounds
+            cogid = slug(row.get('Parameter_name') or row['Parameter_ID']) + '-' + sounds
             if '0' not in sounds:
                 yield dict(
                     Word_ID=row['ID'],
@@ -231,7 +231,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
             if idx is None:
                 idx = int(cognate['Word_ID'].split('-')[-1])
             cognate['Alignment'] = alm[idx, 'alignment'].split(' ')
-            cognate['Alignment_method'] = 'SCA-'+method
+            cognate['Alignment_method'] = 'SCA-' + method
 
 
 def lingpy_subset(path, header, errors=2):
@@ -253,9 +253,9 @@ def lingpy_subset(path, header, errors=2):
                 if '0' in cv:
                     error_count += 1
                 else:
-                    l = sum(1 for x in cv if x != 'T')
-                    if l:
-                        goodlist += [(idx, l)]
+                    l_ = sum(1 for x in cv if x != 'T')
+                    if l_:
+                        goodlist += [(idx, l_)]
                 if error_count > errors:
                     goodlist = []
                     break

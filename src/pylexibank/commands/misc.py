@@ -237,7 +237,8 @@ def wordlength(args):
     })
     ml = set()
 
-    with UnicodeWriter('wordlength.csv') as writer, UnicodeWriter('wordlength_all.csv') as writer_all:
+    with UnicodeWriter('wordlength.csv') as writer, \
+            UnicodeWriter('wordlength_all.csv') as writer_all:
         writer.writerow('Concepticon_ID Gloss Semanticfield Category Glottocode Variety Family Form Length'.split())
         writer_all.writerow('Concepticon_ID Gloss Semanticfield Category Glottocode Variety Family Form Length'.split())
         for ds in args.datasets:

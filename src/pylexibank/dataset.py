@@ -205,7 +205,7 @@ class Dataset(object):
                 self.git_repo.remotes.origin.url)
             if match:
                 return match.group('org') + '/' + self.id
-        except:
+        except AttributeError:
             pass
 
     @lazyproperty
