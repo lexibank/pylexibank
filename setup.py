@@ -25,9 +25,6 @@ setup(
         'console_scripts': [
             'lexibank=pylexibank.__main__:main',
         ],
-        'pytest11': [
-            'pytest_lexibank = pylexibank.pytest_plugin',
-        ]
     },
     platforms='any',
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',

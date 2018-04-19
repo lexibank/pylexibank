@@ -22,9 +22,7 @@ from clldutils.misc import nfilter
 from pycldf.terms import term_uri
 from pycldf.sources import Sources
 
-from appdirs import user_cache_dir
 
-import pylexibank
 from pylexibank.util import git_hash
 
 
@@ -77,6 +75,10 @@ def insert(db, table, keys, *rows):
             rows)
 
 
+def quoted(*names):
+    return ','.join('`{0}`'.format(name) for name in names)
+
+
 @attr.s
 class ColSpec(object):
     """
@@ -98,8 +100,7 @@ class ColSpec(object):
 
     @property
     def sql(self):
-        return '`{0.name}` {0.db_type}{1}'.format(
-            self, ' PRIMARY KEY NOT NULL' if self.primary_key else '')
+        return '`{0.name}` {0.db_type}'.format(self)
 
 
 @attr.s
@@ -117,10 +118,12 @@ class TableSpec(object):
     def sql(self):
         clauses = [col.sql for col in self.columns]
         clauses.append('`dataset_ID` TEXT NOT NULL')
+        if self.primary_key:
+            clauses.append('PRIMARY KEY(`dataset_ID`, `{0}`)'.format(self.primary_key))
         clauses.append('FOREIGN KEY(`dataset_ID`) REFERENCES dataset(`ID`)')
         for fk, ref, refcols in self.foreign_keys:
-            clauses.append('FOREIGN KEY(`{0}`) REFERENCES {1}(`{2}`)'.format(
-                ','.join(fk), ref, ','.join(refcols)))
+            clauses.append('FOREIGN KEY({0}) REFERENCES {1}({2})'.format(
+                quoted(*fk), ref, quoted(*refcols)))
         return "CREATE TABLE {0} (\n    {1}\n)".format(self.name, ',\n    '.join(clauses))
 
 
@@ -147,8 +150,8 @@ def schema(ds):
                     '{0}Source'.format(otype),
                     [ColSpec(otype + '_ID'), ColSpec('Source_ID'), ColSpec('Context')],
                     [
-                        ([otype + '_ID'], ds.get_tabletype(table), [spec.primary_key]),
-                        (['Source_ID'], 'SourceTable', ['ID']),
+                        (['dataset_ID', otype + '_ID'], ds.get_tabletype(table), ['dataset_ID', spec.primary_key]),
+                        (['dataset_ID', 'Source_ID'], 'SourceTable', ['dataset_ID', 'ID']),
                     ],
                     c.name)
             else:
@@ -164,9 +167,9 @@ def schema(ds):
             ref = table_lookup[fk.reference.resource.string]
             if ds.get_tabletype(ref):
                 spec.foreign_keys.append((
-                    tuple(sorted(fk.columnReference)),
+                    tuple(['dataset_ID'] + sorted(fk.columnReference)),
                     ds.get_tabletype(table_lookup[fk.reference.resource.string]),
-                    tuple(sorted(fk.reference.columnReference))))
+                    tuple(['dataset_ID'] + sorted(fk.reference.columnReference))))
         tables[spec.name] = spec
 
     # must determine the order in which tables must be created!
@@ -190,17 +193,12 @@ def schema(ds):
 
 
 class Database(object):
-    def __init__(self, fname=None):
+    def __init__(self, fname):
         """
         A `Database` instance is initialized with a file path.
 
         :param fname: Path to a file in the file system where the db is to be stored.
         """
-        if fname is None:
-            fname = Path(user_cache_dir(pylexibank.__name__)).joinpath('db.sqlite')
-            if not fname.parent.exists():
-                fname.parent.mkdir()
-
         self.fname = Path(fname)
 
     def drop(self):
@@ -237,15 +235,17 @@ CREATE TABLE datasetmeta (
     dataset_ID TEXT ,
     key TEXT,
     value TEXT,
+    PRIMARY KEY (dataset_ID, key),
     FOREIGN KEY(dataset_ID) REFERENCES dataset(ID)
 )""")
             db.execute("""\
 CREATE TABLE SourceTable (
     dataset_ID TEXT ,
-    ID TEXT PRIMARY KEY NOT NULL,
+    ID TEXT ,
     bibtex_type TEXT,
     {0}
     extra TEXT,
+    PRIMARY KEY (dataset_ID, ID),
     FOREIGN KEY(dataset_ID) REFERENCES dataset(ID)
 )""".format('\n    '.join('`{0}` TEXT,'.format(f) for f in BIBTEX_FIELDS)))
 
@@ -289,7 +289,11 @@ CREATE TABLE SourceTable (
             return False
 
         with self.connection() as conn:
-            conn.execute(table.sql)
+            try:
+                conn.execute(table.sql)
+            except:
+                print(table.sql)
+                raise
         return True
 
     def load(self, ds):
@@ -299,6 +303,10 @@ CREATE TABLE SourceTable (
         :param dataset:
         :return:
         """
+        try:
+            self.fetchone('select ID from dataset')
+        except sqlite3.OperationalError:
+            self.create(force=True)
         self.unload(ds)
         dataset = ds.cldf.wl
         tables, ref_tables = schema(dataset)

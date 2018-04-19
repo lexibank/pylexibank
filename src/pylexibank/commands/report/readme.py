@@ -8,6 +8,16 @@ from collections import Counter, defaultdict
 from pylexibank.util import get_badge, get_variety_id, jsondump
 
 
+def build_status_badge(ds):
+    if not ds.dir.joinpath('.travis.yml').exists():
+        return ''
+    try:
+        return "[![Build Status](https://travis-ci.org/{0}.svg?branch=master)]" \
+               "(https://travis-ci.org/{0})".format(ds.github_repo)
+    except:
+        return ''
+
+
 def report(ds, tr_analysis, log=None, **kw):
     #
     # FIXME: write only summary into README.md
@@ -92,6 +102,7 @@ def report(ds, tr_analysis, log=None, **kw):
         return sum(v for k, v in totals[prop].items() if k) / float(totals['lexemes'])
 
     badges = [
+        build_status_badge(ds),
         get_badge(ratio('languages'), 'Glottolog'),
         get_badge(ratio('concepts'), 'Concepticon'),
         get_badge(ratio('sources'), 'Source'),

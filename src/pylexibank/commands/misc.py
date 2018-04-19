@@ -5,7 +5,6 @@ from subprocess import check_call
 
 from six import PY2
 from termcolor import colored
-from git import Repo
 from segments.tokenizer import Tokenizer
 from clldutils import licenses
 from clldutils.path import Path
@@ -87,7 +86,7 @@ def db(args):
 @command()
 def diff(args):
     def _diff(ds, **kw):
-        repo = Repo(str(ds.dir))
+        repo = ds.git_repo
         if repo.is_dirty():
             print('{0} at {1}'.format(
                 colored(ds.id, 'blue', attrs=['bold']),
@@ -161,7 +160,7 @@ def ls(args):
             elif col == 'location':
                 row.append(colored(str(ds.dir), 'green'))
             elif col == 'changes':
-                row.append(Repo(str(ds.dir)).is_dirty())
+                row.append(ds.git_repo.is_dirty())
             elif col == 'license':
                 lic = licenses.find(ds.metadata.license or '')
                 row.append(lic.id if lic else ds.metadata.license)

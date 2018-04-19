@@ -89,9 +89,9 @@ class Dataset(object):
         # Instantiating an object will trigger potential validators:
         d = attr.asdict(cls(**kw))
         for key in ['ID', 'Language_ID', 'Parameter_ID', 'Cognateset_ID']:
-            # We prefix IDs to make them lexibank-wide unique:
+            # sluggify identifiers:
             if d.get(key):
-                d[key] = '{0}-{1}'.format(self.dataset.id, slug('{0}'.format(d[key])))
+                d[key] = slug('{0}'.format(d[key]))
         if 'ID' not in d or d['ID'] not in self._obj_index[cls.__cldf_table__()]:
             if 'ID' in d:
                 self._obj_index[cls.__cldf_table__()].add(d['ID'])

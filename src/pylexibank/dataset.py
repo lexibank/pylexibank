@@ -2,9 +2,11 @@
 from __future__ import unicode_literals, print_function, division
 import logging
 from datetime import datetime
+import re
 
 import attr
 import six
+import git
 from clldutils.dsv import reader
 from clldutils.text import split_text_with_context, strip_brackets
 from clldutils.misc import lazyproperty
@@ -174,52 +176,63 @@ class Dataset(object):
     @property
     def stats(self):
         if self.dir.joinpath('README.json').exists():
-            return jsonlib.load(self.dir.joinpath('README.json'))
+            return jsonlib.load(self.dir / 'README.json')
         return {}
 
     def __init__(self, concepticon=None, glottolog=None):
         self.unmapped = Unmapped()
         self.dir = DataDir(self.dir)
+        self.raw = DataDir(self.dir / 'raw')
+        self.cldf_dir = self.dir / 'cldf'
 
-        # raw data, either downloaded or commited to the repository
-        self.raw = DataDir(self.dir.joinpath('raw'))
-
-        # cldf directory
-        self.cldf_dir = self.dir.joinpath('cldf')
-
-        # languages
-        self.languages = []
-        lpath = self.dir / 'etc' / 'languages.csv'
-        if lpath.exists():
-            for item in reader(lpath, dicts=True):
-                if item.get('GLOTTOCODE', None) and not \
-                        Glottocode.pattern.match(item['GLOTTOCODE']):  # pragma: no cover
-                    raise ValueError(
-                        "Wrong glottocode for item {0}".format(item['GLOTTOCODE']))
-                self.languages.append(item)
-
-        # concepts
         self.conceptlist = {}
-        self.concepts = []
-        cpath = self.dir / 'etc' / 'concepts.csv'
-        if cpath.exists():
-            self.concepts = list(reader(cpath, dicts=True))
-
-        # sources
-        self.sources = []
-        spath = self.dir / 'etc' / 'sources.csv'
-        if spath.exists():
-            self.sources = list(reader(spath, dicts=True))
-            
-        self.lexemes = {}
-        lpath = self.dir / 'etc' / 'lexemes.csv'
-        if lpath.exists():
-            for item in reader(lpath, dicts=True):
-                self.lexemes[item['LEXEME']] = item['REPLACEMENT']
-
-        # glottolog and concepticon
         self.glottolog = glottolog
         self.concepticon = concepticon
+        try:
+            self.git_repo = git.Repo(str(self.dir))  # pragma: no cover
+        except git.InvalidGitRepositoryError:
+            self.git_repo = None
+
+    def _iter_etc(self, what):
+        path = self.dir / 'etc' / what
+        return reader(path, dicts=True) if path.exists() else []
+
+    @lazyproperty
+    def github_repo(self):  # pragma: no cover
+        try:
+            match = re.search(
+                'github\.com/(?P<org>[^/]+)/%s\.git' % re.escape(self.id),
+                self.git_repo.remotes.origin.url)
+            if match:
+                return match.group('org') + '/' + self.id
+        except:
+            pass
+
+    @lazyproperty
+    def sources(self):
+        return list(self._iter_etc('sources.csv'))
+
+    @lazyproperty
+    def concepts(self):
+        return list(self._iter_etc('concepts.csv'))
+
+    @lazyproperty
+    def languages(self):
+        res = []
+        for item in self._iter_etc('languages.csv'):
+            if item.get('GLOTTOCODE', None) and not \
+                    Glottocode.pattern.match(item['GLOTTOCODE']):  # pragma: no cover
+                raise ValueError(
+                    "Wrong glottocode for item {0}".format(item['GLOTTOCODE']))
+            res.append(item)
+        return res
+
+    @lazyproperty
+    def lexemes(self):
+        res = {}
+        for item in self._iter_etc('lexemes.csv'):
+            res[item['LEXEME']] = item['REPLACEMENT']
+        return res
 
     def debug(self):
         return Logging(self.log)
@@ -255,9 +268,9 @@ class Dataset(object):
                 for form in split_text_with_context(value, separators='/,;')]
 
     def get_tokenizer(self):
-        profile = self.dir.joinpath('orthography.tsv')
+        profile = self.dir / 'etc' / 'orthography.tsv'
         if profile.exists():
-            obj = Tokenizer(profile=profile.as_posix())
+            obj = Tokenizer(profile=str(profile))
 
             def _tokenizer(item, string, **kw):
                 kw.setdefault("column", "IPA")

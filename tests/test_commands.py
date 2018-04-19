@@ -21,9 +21,6 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath):
     dataset._install(**vars(_args('test_dataset')))
     out, err = capsys.readouterr()
 
-    dataset._install(**vars(_args('test_dataset')))
-    out, err = capsys.readouterr()
-
     ls(_args('test_dataset', 'license'))
     out, err = capsys.readouterr()
 

@@ -114,5 +114,8 @@ def main():  # pragma: no cover
     parser = ArgumentParserWithLogging(pylexibank.__name__)
     parser.add_argument('--cfg', help=argparse.SUPPRESS, default=cfg)
     parser.add_argument('--datasets', help=argparse.SUPPRESS, default=datasets)
-    parser.add_argument('--db', help=argparse.SUPPRESS, default=None)
+    parser.add_argument(
+        '--db',
+        help=argparse.SUPPRESS,
+        default=os.path.join(os.getcwd(), 'lexibank.sqlite'))
     sys.exit(parser.main())
