@@ -2,6 +2,27 @@
 from __future__ import unicode_literals, print_function, division
 
 
+def test_with_dataset(mocker, capsys, dataset):
+    from pylexibank.commands.util import with_dataset
+
+    def func(*args, **kw):
+        print('hello!')
+
+    with_dataset(mocker.Mock(datasets=[dataset], args=['test_dataset']), func)
+    out, err = capsys.readouterr()
+    assert 'processing' in out
+    assert 'hello!' in out
+    assert 'done' in out
+
+
+def test_db(dataset):
+    from pylexibank.commands.util import _load, _unload
+
+    db = dataset.dir / 'db.sqlite'
+    _load(dataset, db=db)
+    _unload(dataset, db=db)
+
+
 def test_workflow(repos, mocker, capsys, dataset, tmppath):
     from pylexibank.commands.analyze import analyze
     from pylexibank.commands.report import report
@@ -13,6 +34,7 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath):
             cfg={'paths': {'lexibank': repos.as_posix()}},
             log=mocker.Mock(),
             db=tmppath / 'db.sqlite',
+            verbose=True,
             args=list(args))
 
     dataset._download(**vars(_args('test_dataset')))
@@ -35,3 +57,7 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath):
     bib(_args())
     assert repos.joinpath('lexibank.bib').exists()
     out, err = capsys.readouterr()
+
+    dataset.cldf_dir.joinpath('tmp').mkdir()
+    dataset._clean()
+    assert not dataset.cldf_dir.joinpath('tmp').exists()

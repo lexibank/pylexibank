@@ -1,13 +1,14 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function, division
+import re
 
 import attr
 from csvw.metadata import Column
 from clldutils.path import copy, Path
-from clldutils.misc import slug
 from pycldf.dataset import Wordlist
 
 MD_NAME = 'cldf-metadata.json'
+ID_PATTERN = re.compile('[A-Za-z0-9_\-]+$')
 
 
 class Dataset(object):
@@ -63,6 +64,10 @@ class Dataset(object):
         self._cognate_count += 1
         return self._cognate_count
 
+    def tokenize(self, item, string):
+        if self.dataset.tokenizer:
+            return self.dataset.tokenizer(item, string)
+
     def add_lexemes(self, **kw):
         """
         :return: list of dicts corresponding to newly created Lexemes
@@ -80,7 +85,7 @@ class Dataset(object):
                         'clean_form changed: "{0}" -> "{1}"'.format(form, _form))
                 form = _form.strip()
                 if form:
-                    kw_.setdefault('Segments', self.dataset._segment(kw_, form) or [])
+                    kw_.setdefault('Segments', self.tokenize(kw_, form) or [])
                     kw_.update(ID=self.lexeme_id(), Form=form)
                     lexemes.append(self._add_object(self.dataset.lexeme_class, **kw_))
 
@@ -89,14 +94,18 @@ class Dataset(object):
     def _add_object(self, cls, **kw):
         # Instantiating an object will trigger potential validators:
         d = attr.asdict(cls(**kw))
+        t = cls.__cldf_table__()
         for key in ['ID', 'Language_ID', 'Parameter_ID', 'Cognateset_ID']:
-            # sluggify identifiers:
-            if d.get(key):
-                d[key] = slug('{0}'.format(d[key]))
-        if 'ID' not in d or d['ID'] not in self._obj_index[cls.__cldf_table__()]:
+            # stringify/sluggify identifiers:
+            if d.get(key) is not None:
+                d[key] = '{0}'.format(d[key])
+                if not ID_PATTERN.match(d[key]):
+                    raise ValueError(
+                        'invalid CLDF identifier {0}-{1}: {2}'.format(t, key, d[key]))
+        if 'ID' not in d or d['ID'] not in self._obj_index[t]:
             if 'ID' in d:
-                self._obj_index[cls.__cldf_table__()].add(d['ID'])
-            self.objects[cls.__cldf_table__()].append(d)
+                self._obj_index[t].add(d['ID'])
+            self.objects[t].append(d)
         return d
 
     def add_cognate(self, lexeme=None, **kw):

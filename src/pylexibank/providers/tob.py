@@ -7,9 +7,8 @@ from bs4 import BeautifulSoup
 import bs4
 from clldutils.dsv import UnicodeWriter
 
-from pylexibank.lingpy_util import getEvoBibAsBibtex
-from pylexibank.dataset import Dataset, Cognate
-from pylexibank.util import pb
+from pylexibank.dataset import Dataset
+from pylexibank.util import pb, getEvoBibAsBibtex
 
 
 class TOB(Dataset):

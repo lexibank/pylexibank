@@ -277,11 +277,15 @@ CREATE TABLE SourceTable (
         else:
             return _do(conn, sql, method)
 
+    @property
+    def tables(self):
+        return [r[0] for r in self.fetchall(
+            "SELECT name FROM sqlite_master WHERE type='table'")]
+
     def unload(self, dataset_id):
         dataset_id = getattr(dataset_id, 'id', dataset_id)
         with self.connection() as db:
-            for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'"):
-                table = row[0]
+            for table in self.tables:
                 if table != 'dataset':
                     db.execute(
                         "DELETE FROM {0} WHERE dataset_ID = ?".format(table),
@@ -290,8 +294,7 @@ CREATE TABLE SourceTable (
             db.commit()
 
     def _create_table_if_not_exists(self, table):
-        if table.name in [r[0] for r in self.fetchall(
-                "SELECT name FROM sqlite_master WHERE type='table'")]:
+        if table.name in self.tables:
             return False
 
         with self.connection() as conn:
@@ -450,7 +453,7 @@ CREATE TABLE SourceTable (
             "FROM dataset as ds, languagetable as l "
             "WHERE ds.id = l.dataset_id GROUP BY ds.id",
         "mapped_lexemes_by_dataset":
-            "SELECT ds.id, count(f.ID) "
+            "SELECT ds.id, count(distinct f.ID) "
             "FROM dataset as ds, formtable as f, languagetable as l, parametertable as p "
             "WHERE ds.id = f.dataset_id and f.Language_ID = l.ID and "
             "f.Parameter_ID = p.ID and l.glottocode is not null and "

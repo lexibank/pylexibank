@@ -32,8 +32,8 @@ def test_BaseDataset(mocker, repos):
     ds = TestDataset(glottolog=mocker.Mock(), concepticon=mocker.Mock())
     assert ds.cmd_download() == NOOP
     assert ds.cmd_install() == NOOP
-    t = ds.get_tokenizer()
-    assert t(None, 'a') == ['b']
+    assert ds.tokenizer(None, 'a') == ['b']
+    assert ds.sources
 
 
 def test_Dataset(dataset):
@@ -42,4 +42,4 @@ def test_Dataset(dataset):
     with Logging(dataset.log, logging.CRITICAL):
         dataset.cmd_download()
         dataset.cmd_install()
-    assert dataset.get_tokenizer()
+    assert dataset.tokenizer

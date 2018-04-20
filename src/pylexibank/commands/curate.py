@@ -30,7 +30,7 @@ commands = {
 }
 
 
-def fuzzyfinder(infix, choices):
+def fuzzyfinder(infix, choices):  # pragma: no cover
     return [c for c in choices if infix in c]
 
 

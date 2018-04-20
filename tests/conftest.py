@@ -4,8 +4,7 @@ from tempfile import mkdtemp
 
 import pytest
 
-from clldutils.path import Path, copytree, copy, rmtree
-from clldutils.path import import_module
+from clldutils.path import Path, copytree, copy, rmtree, import_module, write_text
 
 import pylexibank
 from pylexibank.glottolog import Glottolog
@@ -37,6 +36,6 @@ def dataset(repos, tmpd):
     from mock import Mock
 
     mod = import_module(repos / 'datasets' / 'test_dataset')
-    ds = mod.Test(glottolog=Glottolog(tmpd), concepticon=Concepticon(tmpd))
+    ds = mod.Test(glottolog=Glottolog(repos), concepticon=Concepticon(repos))
     ds._install(log=Mock())
     return ds

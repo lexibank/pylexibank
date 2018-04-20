@@ -20,7 +20,7 @@ from lingpy.settings import rc
 from segments.tokenizer import Tokenizer
 
 import pylexibank
-from pylexibank.util import get_variety_id, DataDir
+from pylexibank.util import DataDir
 from pylexibank import cldf
 
 NOOP = -1
@@ -187,7 +187,9 @@ class Dataset(object):
         self.unmapped = Unmapped()
         self.dir = DataDir(self.dir)
         self.raw = DataDir(self.dir / 'raw')
+        self.raw.mkdir(exist_ok=True)
         self.cldf_dir = self.dir / 'cldf'
+        self.cldf_dir.mkdir(exist_ok=True)
 
         self.conceptlist = {}
         self.glottolog = glottolog
@@ -271,7 +273,25 @@ class Dataset(object):
         return [self.clean_form(item, form)
                 for form in split_text_with_context(value, separators='/,;')]
 
-    def get_tokenizer(self):
+    @lazyproperty
+    def tokenizer(self):
+        """
+        Datasets can provide support for segmentation (aka tokenization) in two ways:
+        - by providing an orthography profile at etc/orthography.tsv or
+        - by overwriting this method to return a custom tokenizer callable.
+
+        :return: A callable to do segmentation.
+
+        The expected signature of the callable is
+
+            def t(item, string, **kw)
+
+        where
+        - `item` is a `dict` representing the complete CLDF FormTable row
+        - `string` is the string to be segmented
+        - `kw` may be used to pass any context info to the tokenizer, when called
+          explicitly.
+        """
         profile = self.dir / 'etc' / 'orthography.tsv'
         if profile.exists():
             obj = Tokenizer(profile=str(profile))
@@ -285,24 +305,18 @@ class Dataset(object):
     # ---------------------------------------------------------------
     # CLDF dataset access
     # ---------------------------------------------------------------
-    @property
+    @lazyproperty
     def cldf(self):
         return cldf.Dataset(self)
 
     # ---------------------------------------------------------------
     def _download(self, **kw):
-        if not self.raw.exists():
-            self.raw.mkdir()
-
         self.cmd_download(**kw)
         write_text(
             self.raw / 'README.md',
             'Raw data downloaded {0}'.format(datetime.utcnow().isoformat()))
 
     def _install(self, **kw):
-        if not self.cldf_dir.exists():
-            self.cldf_dir.mkdir()
-
         self.unmapped.clear()
 
         if self.metadata.conceptlist:
@@ -325,21 +339,13 @@ class Dataset(object):
     def _not_implemented(self, method):
         self.log.warn('cmd_{0} not implemented for dataset {1}'.format(method, self.id))
 
-    @lazyproperty
-    def _tokenizer(self):
-        return self.get_tokenizer()
-
-    def _segment(self, item, string):
-        if self._tokenizer:
-            return self._tokenizer(item, string)
-
     def coverage(self, vars, glangs, c):  # pragma: no cover
         for row in self.cldf['FormTable']:
             try:
                 cid = int(row['Parameter_ID'])
             except (ValueError, TypeError):
                 continue
-            vid = self.id + '-' + get_variety_id(row)
+            vid = self.id + '-' + row['Language_ID']
             c[cid].add(vid)
             vars[vid].add(cid)
             glangs[row['Language_ID']].add(cid)

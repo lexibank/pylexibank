@@ -9,7 +9,6 @@ from clldutils.path import remove
 from clldutils.text import split_text_with_context
 from pycldf.sources import Source
 
-from pylexibank.lingpy_util import segmentize
 from pylexibank.util import pb
 from pylexibank.dataset import Dataset, Language
 
@@ -246,5 +245,4 @@ class Wordlist(object):
                 # sets to the first one!
                 break
 
-        segmentize(ds)
         return ds

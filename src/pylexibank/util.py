@@ -77,15 +77,6 @@ def data_path(*comps, **kw):
     return kw.get('repos', REPOS_PATH).joinpath('datasets', *comps)
 
 
-def get_variety_id(row):
-    lid = row.get('Language_local_ID')
-    if not lid:
-        lid = row.get('Language_name')
-    if not lid:
-        lid = row.get('Language_ID')
-    return lid
-
-
 def get_badge(ratio, name):
     if ratio >= 0.99:
         color = Colors.brightgreen
@@ -107,8 +98,7 @@ def sorted_obj(obj):
     res = obj
     if isinstance(obj, dict):
         res = OrderedDict()
-        if None in obj:
-            obj.pop(None)
+        obj.pop(None, None)
         for k, v in sorted(obj.items()):
             res[k] = sorted_obj(v)
     elif isinstance(obj, (list, set)):
@@ -221,3 +211,17 @@ class DataDir(type(Path())):
                     for path in paths:
                         zipf.extract(as_posix(path), path=tmpdir.as_posix())
                         copy(tmpdir.joinpath(path), self)
+
+
+def getEvoBibAsBibtex(*keys, **kw):
+    """Download bibtex format and parse it from EvoBib"""
+    res = []
+    for key in keys:
+        bib = get_url(
+            "http://bibliography.lingpy.org/raw.php?key=" + key,
+            log=kw.get('log')).text
+        try:
+            res.append('@' + bib.split('@')[1].split('</pre>')[0])
+        except IndexError:  # pragma: no cover
+            res.append('@misc{' + key + ',\nNote={missing source}\n\n}')
+    return '\n\n'.join(res)

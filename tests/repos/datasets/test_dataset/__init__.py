@@ -2,6 +2,7 @@
 from __future__ import unicode_literals, print_function, division
 
 from clldutils.path import Path
+from clldutils.misc import lazyproperty
 
 from pylexibank.dataset import Dataset
 
@@ -9,9 +10,10 @@ from pylexibank.dataset import Dataset
 class Test(Dataset):
     dir = Path(__file__).parent
 
-    def get_tokenizer(self):
-        from pylexibank.lingpy_util import segmentize
-        return lambda _, s: segmentize(s)
+    @lazyproperty
+    def tokenizer(self):
+        from lingpy.sequence.sound_classes import clean_string
+        return lambda _, s: clean_string(s)
 
     def cmd_download(self, **kw):
         pass
@@ -21,9 +23,9 @@ class Test(Dataset):
         self.raw.read_bib()
         with self.cldf as ds:
             ds.add_sources('@book{abc,\ntitle={The Title}\n}')
-            ds.add_language(ID='lang1')
+            ds.add_language(ID='lang1', Glottocode='abcd1234')
             ds.add_language(ID='lang2')
-            ds.add_concept(ID='param1')
+            ds.add_concept(ID='param1', Concepticon_ID=1)
             ds.add_concept(ID='param2')
             for l in ds.add_lexemes(
                 Language_ID='lang1',
@@ -32,7 +34,21 @@ class Test(Dataset):
             ):
                 ds.add_cognate(lexeme=l, Cognateset_ID='c-1')
             ds.add_lexemes(
+                Language_ID='lang1',
+                Parameter_ID='param1',
+                Value='a^b',
+                Source=['abc'],
+            )
+            ds.add_lexemes(
+                Language_ID='lang1',
+                Parameter_ID='param1',
+                Value='^^^'
+            )
+            ds.add_lexemes(
                 Language_ID='lang2',
                 Parameter_ID='param2',
                 Value='a~b')
-            list(iter_cognates(ds))
+            try:
+                list(iter_cognates(ds))
+            except ValueError:
+                pass

@@ -7,6 +7,13 @@ from clldutils.path import Path
 from pylexibank import util
 
 
+def test_getEvoBibAsBibtex(mocker):
+    bib = '<pre>@book{key,\ntitle={The Title}\n}\n</pre>'
+    mocker.patch(
+        'pylexibank.util.get_url', mocker.Mock(return_value=mocker.Mock(text=bib)))
+    assert '@book' in util.getEvoBibAsBibtex('')
+
+
 class MockResponse(object):
     def __init__(self, p):
         p = Path(p)

@@ -5,7 +5,17 @@ import attr
 from lingpy import rc
 
 from pylexibank.lingpy_util import test_sequences, TranscriptionAnalysis
-from pylexibank.util import get_variety_id, pb
+from pylexibank.util import pb
+from pylexibank.util import jsondump
+
+
+def analyze(ds, **kw):
+    """
+    Analyzes a dataset.
+
+    lexibank analyze DATASET_ID
+    """
+    jsondump(_analyze(ds), ds.dir / 'transcription.json', log=kw.get('log'))
 
 
 @attr.s
@@ -17,12 +27,9 @@ class TranscriptionStats(TranscriptionAnalysis):
     bad_words_count = attr.ib(default=0)
 
 
-def analyze(dataset):
+def _analyze(dataset):
     rc(schema=dataset.metadata.lingpy_schema or 'ipa')
-    ans, bad_words, invalid_words = test_sequences(
-        dataset.cldf,
-        get_variety_id,
-        model='dolgo')
+    ans, bad_words, invalid_words = test_sequences(dataset.cldf, model='dolgo')
 
     stats = TranscriptionStats(
         bad_words=sorted(bad_words[:100], key=lambda x: x['ID']),
@@ -37,21 +44,21 @@ def analyze(dataset):
 
     error_segments = stats.lingpy_errors.union(stats.clpa_errors)
     for i, row in pb(enumerate(stats.bad_words)):
-        analyzed_segements = []
+        analyzed_segments = []
         for s in row['Segments']:
-            analyzed_segements.append('<s> %s </s>' % s if s in error_segments else s)
+            analyzed_segments.append('<s> %s </s>' % s if s in error_segments else s)
         stats.bad_words[i] = [
             row['ID'],
-            row.get('Language_name', get_variety_id(row)),
-            row.get('Parameter_name', row['Parameter_ID']),
+            row['Language_ID'],
+            row['Parameter_ID'],
             row['Form'],
-            ' '.join(analyzed_segements)]
+            ' '.join(analyzed_segments)]
 
     for i, row in enumerate(stats.invalid_words):
         stats.invalid_words[i] = [
             row['ID'],
-            row.get('Language_name', get_variety_id(row)),
-            row.get('Parameter_name', row['Parameter_ID']),
+            row['Language_ID'],
+            row['Parameter_ID'],
             row['Form']]
 
     return dict(

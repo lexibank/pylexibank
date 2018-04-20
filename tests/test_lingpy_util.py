@@ -38,28 +38,13 @@ def test_wordlist2cognates(repos, mocker):
     assert isinstance(res[0], dict)
 
 
-def test_getEvoBibAsBibtex(mocker):
-    bib = '<pre>@book{key,\ntitle={The Title}\n}\n</pre>'
-    mocker.patch(
-        'pylexibank.lingpy_util.get_url', mocker.Mock(return_value=mocker.Mock(text=bib)))
-    assert '@book' in lingpy_util.getEvoBibAsBibtex('')
-
-
 def test_test_sequence():
-    if not lingpy_util.LINGPY:
-        return  # pragma: no cover
-    with pytest.raises(lingpy_util.InvalidString):
+    with pytest.raises(ValueError):
         lingpy_util.test_sequence('')
 
-    with pytest.raises(lingpy_util.InvalidString):
+    with pytest.raises(ValueError):
         lingpy_util.test_sequence('\n')
 
-    segments, la, clpa, analysis = lingpy_util.test_sequence('a^b')
+    segments, la, clpa, analysis = lingpy_util.test_sequence(['a', '^', 'b'])
+    assert segments == ['a', '^', 'b']
     assert analysis.general_errors == 1
-
-
-def test_segmentize():
-    if not lingpy_util.LINGPY:
-        return  # pragma: no cover
-    assert lingpy_util.segmentize('\n') is None
-    assert lingpy_util.segmentize('abc') == 'a b c'.split()

@@ -3,41 +3,15 @@ from __future__ import unicode_literals, print_function
 from collections import defaultdict, Counter
 from copy import deepcopy
 
+import lingpy
 from clldutils.misc import slug
-try:
-    from lingpy.sequence.sound_classes import clean_string, tokens2class
-    LINGPY = True
-except ImportError:  # pragma: no cover
-    LINGPY = False
-
-    def clean_string(seq, *args, **kw):
-        return [seq]
-
-    def tokens2class(seq, *args, **kw):
-        return []
-
-import lingpy as lp
 from pyclpa.base import get_clpa, Unknown, Sound
 import attr
 
 from pylexibank.dataset import Cognate
-from pylexibank.util import get_url
 
 clpa = get_clpa()
-
-
-def getEvoBibAsBibtex(*keys, **kw):
-    """Download bibtex format and parse it from EvoBib"""
-    res = []
-    for key in keys:
-        bib = get_url(
-            "http://bibliography.lingpy.org/raw.php?key=" + key,
-            log=kw.get('log')).text
-        try:
-            res.append('@' + bib.split('@')[1].split('</pre>')[0])
-        except IndexError:
-            res.append('@misc{' + key + ',\nNote={missing source}\n\n}')
-    return '\n\n'.join(res)
+REPLACEMENT_MARKER = '\ufffd'
 
 
 def wordlist2cognates(wordlist, source, expert='expert', ref='cogid'):
@@ -67,10 +41,6 @@ class TranscriptionAnalysis(object):
     general_errors = attr.ib(default=0)
 
 
-class InvalidString(Exception):
-    pass
-
-
 def test_sequence(segments, analysis=None, model='dolgo', **keywords):
     """
     Test a sequence for compatibility with CLPA and LingPy.
@@ -81,23 +51,21 @@ def test_sequence(segments, analysis=None, model='dolgo', **keywords):
 
     # clean the string at first, we only take the first item, ignore the rest
     try:
-        if not isinstance(segments, list):
-            segments = clean_string(segments, **keywords)[0].split(' ')
         lingpy_analysis = [
-            x if y != '0' else '?' for x, y in
-            zip(segments, tokens2class(segments, model))]
+            x if y != '0' else REPLACEMENT_MARKER for x, y in
+            zip(segments, lingpy.tokens2class(segments, model))]
         clpa_analysis = clpa(segments)
         for l_, c in zip(lingpy_analysis, clpa_analysis):
-            if l_ == '?' or isinstance(c, Unknown):
+            if l_ == REPLACEMENT_MARKER or isinstance(c, Unknown):
                 analysis.general_errors += 1
     except (ValueError, IndexError, AttributeError, TypeError, AssertionError):
-        raise InvalidString()
+        raise ValueError('invalid string')
 
     for a, b, c in zip(segments, lingpy_analysis, clpa_analysis):
         if a[0] in clpa.accents:
             a = a[1:]
         analysis.segments.update([a])
-        if b == '?':
+        if b == REPLACEMENT_MARKER:
             analysis.lingpy_errors.add(a)
         if isinstance(c, Unknown):
             analysis.clpa_errors.add(a)
@@ -107,32 +75,20 @@ def test_sequence(segments, analysis=None, model='dolgo', **keywords):
     return segments, lingpy_analysis, ['%s' % x for x in clpa_analysis], analysis
 
 
-def segmentize(string, clean=lambda s: s, **kw):
-    """
-    Write a detailed transcription-report for a CLDF dataset in LexiBank.
-    """
-    try:
-        return test_sequence(clean(string), segmentized=False, **kw)[0]
-    except InvalidString:
-        pass
-
-
-def test_sequences(dataset,
-                   lid_getter,
-                   model='dolgo'):
+def test_sequences(dataset, model='dolgo'):
     """
     Write a detailed transcription-report for a CLDF dataset in LexiBank.
     """
     analyses, bad_words, invalid_words = {}, [], []
 
     for i, row in enumerate(dataset['FormTable']):
-        analysis = analyses.setdefault(lid_getter(row), TranscriptionAnalysis())
+        analysis = analyses.setdefault(row['Language_ID'], TranscriptionAnalysis())
         try:
             segments, _lpa, _clpa, _analysis = test_sequence(
                 row['Segments'], analysis=analysis, model=model)
-            if '?' in _lpa or '\ufffd' in _clpa:
+            if REPLACEMENT_MARKER in _lpa or REPLACEMENT_MARKER in _clpa:
                 bad_words.append(row)
-        except InvalidString:
+        except ValueError:
             invalid_words.append(row)
 
     return analyses, bad_words, invalid_words
@@ -153,16 +109,16 @@ def _cldf2lexstat(
         dataset,
         segments='segments',
         transcription='value',
-        row='parameter_name',
-        col='language_name'):
+        row='parameter_id',
+        col='language_id'):
     """Read LexStat object from cldf dataset."""
     D = _cldf2wld(dataset)
-    return lp.LexStat(D, segments=segments, transcription=transcription, row=row, col=col)
+    return lingpy.LexStat(D, segments=segments, transcription=transcription, row=row, col=col)
 
 
 def _cldf2wordlist(dataset, row='parameter_id', col='language_id'):
     """Read worldist object from cldf dataset."""
-    return lp.Wordlist(_cldf2wld(dataset), row=row, col=col)
+    return lingpy.Wordlist(_cldf2wld(dataset), row=row, col=col)
 
 
 def iter_cognates(dataset, column='Segments', method='turchin', threshold=0.5, **kw):
@@ -171,11 +127,11 @@ def iter_cognates(dataset, column='Segments', method='turchin', threshold=0.5, *
     """
     if method == 'turchin':
         for row in dataset.objects['FormTable']:
-            sounds = ''.join(tokens2class(row[column], 'dolgo'))
+            sounds = ''.join(lingpy.tokens2class(row[column], 'dolgo'))
             if sounds.startswith('V'):
                 sounds = 'H' + sounds
             sounds = '-'.join([s for s in sounds if s != 'V'][:2])
-            cogid = slug(row.get('Parameter_name') or row['Parameter_ID']) + '-' + sounds
+            cogid = slug(row['Parameter_ID']) + '-' + sounds
             if '0' not in sounds:
                 yield dict(
                     Form_ID=row['ID'],
@@ -200,7 +156,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
     """
     Function computes automatic alignments and writes them to file.
     """
-    if not isinstance(dataset, lp.basic.parser.QLCParser):
+    if not isinstance(dataset, lingpy.basic.parser.QLCParser):
         wordlist = _cldf2wordlist(dataset)
         cognates = {r['Form_ID']: r for r in cognate_sets}
         wordlist.add_entries(
@@ -210,7 +166,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
         for i, k in enumerate(wordlist):
             if not wordlist[k, 'cogid']:
                 wordlist[k][wordlist.header['cogid']] = 'empty-%s' % i
-        alm = lp.Alignments(
+        alm = lingpy.Alignments(
             wordlist,
             ref='cogid',
             row='parameter_id',
@@ -223,11 +179,11 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
                 cognate['Alignment'] = alm[k, 'alignment'].split(' ')
                 cognate['Alignment_Method'] = method
     else:
-        alm = lp.Alignments(dataset, ref='cogid')
+        alm = lingpy.Alignments(dataset, ref='cogid')
         alm.align(method=method)
 
         for cognate in cognate_sets:
-            idx = cognate['Index']
+            idx = cognate['ID']
             if idx is None:
                 idx = int(cognate['Word_ID'].split('-')[-1])
             cognate['Alignment'] = alm[idx, 'alignment'].split(' ')
@@ -236,7 +192,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
 
 def lingpy_subset(path, header, errors=2):
     try:
-        wl = lp.get_wordlist(path, col='language_name', row='parameter_name')
+        wl = lingpy.get_wordlist(path, col='language_name', row='parameter_name')
     except ValueError:
         return []
     data = []
@@ -249,7 +205,7 @@ def lingpy_subset(path, header, errors=2):
         goodlist = []
         for idx, segments in [(idx, wl[idx, 'segments']) for idx in idxs]:
             if wl[idx, 'language_id'] and wl[idx, 'parameter_id']:
-                cv = lp.tokens2class(segments.split(), 'cv')
+                cv = lingpy.tokens2class(segments.split(), 'cv')
                 if '0' in cv:
                     error_count += 1
                 else:

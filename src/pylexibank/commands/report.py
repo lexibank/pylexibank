@@ -1,11 +1,26 @@
-# *-* coding: utf-8 *-*
-"""
-Implements the readme file generator.
-"""
-from __future__ import division, unicode_literals, print_function
+# coding: utf8
+from __future__ import unicode_literals, print_function, division
 from collections import Counter, defaultdict
 
-from pylexibank.util import get_badge, get_variety_id, jsondump
+from clldutils import jsonlib
+from clldutils.markup import Table
+
+from pylexibank.util import textdump, get_badge, jsondump
+
+
+def report(ds, **kw):
+    """Create a README.md file listing the contents of a dataset
+
+    lexibank report [DATASET_ID]
+    """
+    tr = jsonlib.load(ds.dir.joinpath('transcription.json'))
+    textdump(
+        _transcription(tr, **kw),
+        ds.dir.joinpath('TRANSCRIPTION.md'),
+        log=kw.get('log'))
+    res = _readme(ds, tr, **kw)
+    if res:
+        textdump(res, ds.dir.joinpath('README.md'), log=kw.get('log'))
 
 
 def build_status_badge(ds):
@@ -18,7 +33,7 @@ def build_status_badge(ds):
         return ''
 
 
-def report(ds, tr_analysis, log=None, **kw):
+def _readme(ds, tr_analysis, log=None, **kw):
     #
     # FIXME: write only summary into README.md
     # in case of multiple cldf datasets:
@@ -75,11 +90,10 @@ def report(ds, tr_analysis, log=None, **kw):
             totals['concepts'].update([row['Parameter_ID']])
         else:
             missing_param.append(row)
-        lid = get_variety_id(row)
-        totals['languages'].update([lid])
+        totals['languages'].update([row['Language_ID']])
         totals['lexemes'] += 1
-        if lid and row['Parameter_ID']:
-            synonyms[lid].update([row['Parameter_ID']])
+        if row['Language_ID'] and row['Parameter_ID']:
+            synonyms[row['Language_ID']].update([row['Parameter_ID']])
 
     for row in ds.cldf['CognateTable']:
         totals['cognate_sets'].update([row['Cognateset_ID']])
@@ -124,9 +138,9 @@ def report(ds, tr_analysis, log=None, **kw):
         '- **Invalid lexemes:** {0:,}'.format(stats['invalid_words_count']),
         '- **Tokens:** {0:,}'.format(sum(stats['segments'].values())),
         '- **Segments:** {0:,} ({1} LingPy errors, {2} CLPA errors, {3} CLPA modified)'
-        .format(lsegments, llingpyerr, lclpaerr, len(stats['replacements'])),
+            .format(lsegments, llingpyerr, lclpaerr, len(stats['replacements'])),
         '- **Inventory size (avg):** %.2f' % stats['inventory_size'],
-    ]
+        ]
     if log:
         log.info('\n'.join(['Summary for dataset {}'.format(ds.id)] + stats_lines))
     lines.extend(stats_lines)
@@ -134,14 +148,14 @@ def report(ds, tr_analysis, log=None, **kw):
     # improvements section
     if len(missing_lang) or len(missing_source) or len(missing_concept):
         lines.extend(['\n## Possible Improvements:\n', ])
-        
+
         if len(missing_lang):
             lines.append("- Languages missing glottocodes: %d/%d (%.2f%%)" % (
                 len(missing_lang),
                 len(totals['languages']),
                 (len(missing_lang) / len(totals['languages'])) * 100
             ))
-            
+
         if len(missing_source):
             lines.append("- Entries missing sources: %d/%d (%.2f%%)" % (
                 len(missing_source),
@@ -151,11 +165,72 @@ def report(ds, tr_analysis, log=None, **kw):
 
         if len(missing_concept):
             lines.append("- Entries missing concepts: %d/%d (%.2f%%)" % (
-                    len(missing_param),
-                    totals['lexemes'],
-                    (len(missing_param) / totals['lexemes']) * 100
+                len(missing_param),
+                totals['lexemes'],
+                (len(missing_param) / totals['lexemes']) * 100
             ))
         lines.append("\n")
 
     jsondump(totals, ds.dir.joinpath('README.json'))
     return lines + trlines
+
+
+TEMPLATE = """
+# Detailed transcription record
+
+## Segments
+
+{0}
+
+## Unsegmentable lexemes (up to 100 only)
+
+{1}
+
+## Words with invalid segments (up to 100 only)
+
+{2}
+"""
+
+MARKDOWN_TEMPLATE = """
+## Transcription Report
+
+### General Statistics
+
+* Number of Tokens: {tokens}
+* Number of Segments: {segments}
+* Invalid forms: {invalid}
+* Inventory Size: {inventory_size:.2f}
+* [Erroneous tokens](report.md#tokens): {general_errors}
+* Erroneous words: {word_errors}
+* Number of LingPy-Errors: {lingpy_errors}
+* Number of CLPA-Errors: {clpa_errors}
+* Bad words: {words_errors}
+"""
+
+
+def _transcription(analysis, **kw):
+    segments = Table('Segment', 'Occurrence', 'LingPy', 'CLPA')
+    for a, b in sorted(
+            analysis['stats']['segments'].items(), key=lambda x: (-x[1], x[0])):
+        c, d = '✓', '✓'
+        if a in analysis['stats']['clpa_errors']:
+            c = '✓' if a not in analysis['stats']['lingpy_errors'] else '?'
+            d = ', '.join(analysis['stats']['clpa_errors'][a]) \
+                if a not in analysis['stats']['clpa_errors'] else '?'
+
+        # escape pipe for markdown table if necessary
+        a = a.replace('|', '&#124;')
+
+        segments.append([a, b, c, d])
+
+    invalid = Table('ID', 'LANGUAGE', 'CONCEPT', 'FORM')
+    for row in analysis['stats']['invalid_words']:
+        invalid.append(row)
+
+    words = Table('ID', 'LANGUAGE', 'CONCEPT', 'FORM', 'SEGMENTS')
+    for row in analysis['stats']['bad_words']:
+        words.append(row)
+    return TEMPLATE.format(
+        segments.render(verbose=True),
+        invalid.render(verbose=True),
+        words.render(verbose=True))
