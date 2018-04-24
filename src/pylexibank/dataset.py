@@ -318,6 +318,8 @@ class Dataset(object):
 
     def _install(self, **kw):
         self.unmapped.clear()
+        rmtree(self.cldf_dir)
+        self.cldf_dir.mkdir()
 
         if self.metadata.conceptlist:
             self.conceptlist = self.concepticon.conceptlists[self.metadata.conceptlist]
