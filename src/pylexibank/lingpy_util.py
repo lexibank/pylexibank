@@ -183,10 +183,8 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
         alm.align(method=method)
 
         for cognate in cognate_sets:
-            idx = cognate['ID']
-            if idx is None:
-                idx = int(cognate['Word_ID'].split('-')[-1])
-            cognate['Alignment'] = alm[idx, 'alignment'].split(' ')
+            idx = cognate['ID'] or cognate['Form_ID']
+            cognate['Alignment'] = alm[int(idx), 'alignment'].split(' ')
             cognate['Alignment_Method'] = 'SCA-' + method
 
 
