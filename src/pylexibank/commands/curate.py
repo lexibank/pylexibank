@@ -71,9 +71,7 @@ def curate(args):  # pragma: no cover
         try:
             commands[user_input[0]](args)
         except Exception as e:
-            if not args.verbosity:
-                print(colored('{0}: {1}'.format(e.__class__.__name__, e), 'red'))
-            else:
-                traceback.print_exc()
+            traceback.print_exc()
+            print(colored('{0}: {1}'.format(e.__class__.__name__, e), 'red'))
 
     print('see ya!')
