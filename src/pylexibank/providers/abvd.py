@@ -4,7 +4,7 @@ import re
 
 import attr
 from six import text_type
-from clldutils.misc import slug
+from clldutils.misc import slug, nfilter
 from clldutils.path import remove
 from clldutils.text import split_text_with_context
 from pycldf.sources import Source
@@ -32,9 +32,9 @@ class BVD(Dataset):
     SECTION = None
     language_class = BVDLanguage
 
-    def iter_wordlists(self, language_map):
+    def iter_wordlists(self, language_map, log):
         for xml in pb(list(self.raw.glob('*.xml')), desc='xml-to-wl'):
-            wl = Wordlist(self, xml)
+            wl = Wordlist(self, xml, log)
             if not wl.language.glottocode:
                 if wl.language.id in language_map:
                     wl.language.glottocode = language_map[wl.language.id]
@@ -147,21 +147,14 @@ class Entry(XmlElement):
 
     @property
     def cognates(self):
-        res = set()
-        for comp in re.split(',|/', self.cognacy or ''):
-            comp = comp.strip().lower()
-            if comp:
-                doubt = False
-                if comp.endswith('?'):
-                    doubt = True
-                    comp = comp[:-1].strip()
-                res.add(('%s-%s' % (self.word_id, comp), doubt))
-        return res
+        # We split into single cognateset IDs on comma, slash and dot.
+        return nfilter(re.split('[,/.]', self.cognacy or ''))
 
 
 class Wordlist(object):
-    def __init__(self, dataset, path):
+    def __init__(self, dataset, path, log):
         self.dataset = dataset
+        self.log = log
         e = dataset.raw.read_xml(path.name)
         self.section = dataset.SECTION
         records = list(e.findall('./record'))
@@ -219,6 +212,12 @@ class Wordlist(object):
             if entry.name is None or len(entry.name) == 0:  # skip empty entries
                 continue
 
+            if entry.cognacy and (
+                    's' == entry.cognacy.lower() or 'x' in entry.cognacy.lower()):
+                # skip entries marked as incorrect word form due to semantics
+                # (x = probably, s = definitely)
+                continue
+
             if not (citekey and source):
                 src = entry.e.find('source')
                 if src and getattr(src, 'text'):
@@ -239,8 +238,15 @@ class Wordlist(object):
                 Loan=True if entry.loan and len(entry.loan) else False,
                 Local_ID=entry.id,
             ):
-                for cognate_set_id, doubt in entry.cognates:
-                    ds.add_cognate(lexeme=lex, Cognateset_ID=cognate_set_id, Doubt=doubt)
+                for cognate_set_id in entry.cognates:
+                    match = self.dataset.cognate_pattern.match(cognate_set_id)
+                    if not match:
+                        self.log.warn('Invalid cognateset ID: {0}'.format(cognate_set_id))
+                    else:
+                        ds.add_cognate(
+                            lexeme=lex,
+                            Cognateset_ID=match.group('id'),
+                            Doubt=bool(match.group('doubt')))
                 # when an entry is split into multiple forms, we only assign cognate
                 # sets to the first one!
                 break
