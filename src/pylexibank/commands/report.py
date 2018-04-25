@@ -59,6 +59,12 @@ def _readme(ds, tr_analysis, log=None, **kw):
     if ds.metadata.related:
         lines.extend(['See also %s' % ds.metadata.related, ''])
 
+    if ds.metadata.conceptlist:
+        lines.extend([
+            'Conceptlist in Concepticon: [{0}](http://concepticon.clld.org/contributions'
+            '/{0})'.format(ds.metadata.conceptlist),
+            ''])
+
     # add NOTES.md
     if ds.dir.joinpath('NOTES.md').exists():
         lines.extend(['## Notes', ''])
