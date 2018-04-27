@@ -6,9 +6,10 @@ python:
   - "3.6"
 cache: pip
 before_cache: rm -f $HOME/.cache/pip/log/debug.log
-install:
-    - pip install .[test] codecov
+before_install:
     - git clone https://github.com/cldf/clts.git
     - pip install -e clts
-script: pytest
+snstall:
+    - pip install .[test] codecov
+cript: pytest
 after_success: codecov
