@@ -53,6 +53,15 @@ def test_sequence(segments, analysis=None, model='dolgo'):
     """
     analysis = analysis or TranscriptionAnalysis()
 
+    # raise a ValueError in case of empty segments/strings
+    if not segments:
+        raise ValueError('Empty sequence.')
+
+    # test if at least one element in `segments` has information
+    # (helps to catch really badly formed input, such as ['\n']
+    if not [segment for segment in segments if segment.strip()]:
+        raise ValueError('No information in the sequence.')
+
     # build the phonologic and sound class analyses
     bipa_analysis = [BIPA[s] for s in segments]
     if model == 'sca':
