@@ -9,7 +9,7 @@ before_cache: rm -f $HOME/.cache/pip/log/debug.log
 before_install:
     - git clone https://github.com/cldf/clts.git
     - pip install -e clts
-snstall:
+install:
     - pip install .[test] codecov
-cript: pytest
+script: pytest
 after_success: codecov
