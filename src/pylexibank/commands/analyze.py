@@ -37,12 +37,12 @@ def _analyze(dataset):
         invalid_words=sorted(invalid_words[:100], key=lambda x: x['ID']),
         invalid_words_count=len(invalid_words))
     for lid, analysis in ans.items():
-        for attribute in ['segments', 'lingpy_errors', 'clpa_errors', 'replacements']:
+        for attribute in ['segments', 'bipa_errors', 'sclass_errors', 'replacements']:
             getattr(stats, attribute).update(getattr(analysis, attribute))
         stats.general_errors += analysis.general_errors
         stats.inventory_size += len(analysis.segments) / len(ans)
 
-    error_segments = stats.lingpy_errors.union(stats.clpa_errors)
+    error_segments = stats.bipa_errors.union(stats.sclass_errors)
     for i, row in pb(enumerate(stats.bad_words)):
         analyzed_segments = []
         for s in row['Segments']:

@@ -115,8 +115,8 @@ def _readme(ds, tr_analysis, log=None, **kw):
 
     stats = tr_analysis['stats']
     lsegments = len(stats['segments'])
-    llingpyerr = len(stats['lingpy_errors'])
-    lclpaerr = len(stats['clpa_errors'])
+    llingpyerr = len(stats['bipa_errors'])
+    lclpaerr = len(stats['sclass_errors'])
 
     def ratio(prop):
         return sum(v for k, v in totals[prop].items() if k) / float(totals['lexemes'])
@@ -208,8 +208,8 @@ MARKDOWN_TEMPLATE = """
 * Inventory Size: {inventory_size:.2f}
 * [Erroneous tokens](report.md#tokens): {general_errors}
 * Erroneous words: {word_errors}
-* Number of LingPy-Errors: {lingpy_errors}
-* Number of CLPA-Errors: {clpa_errors}
+* Number of LingPy-Errors: {bipa_errors}
+* Number of CLPA-Errors: {sclass_errors}
 * Bad words: {words_errors}
 """
 
@@ -219,10 +219,10 @@ def _transcription(analysis, **kw):
     for a, b in sorted(
             analysis['stats']['segments'].items(), key=lambda x: (-x[1], x[0])):
         c, d = '✓', '✓'
-        if a in analysis['stats']['clpa_errors']:
-            c = '✓' if a not in analysis['stats']['lingpy_errors'] else '?'
-            d = ', '.join(analysis['stats']['clpa_errors'][a]) \
-                if a not in analysis['stats']['clpa_errors'] else '?'
+        if a in analysis['stats']['sclass_errors']:
+            c = '✓' if a not in analysis['stats']['bipa_errors'] else '?'
+            d = ', '.join(analysis['stats']['sclass_errors'][a]) \
+                if a not in analysis['stats']['sclass_errors'] else '?'
 
         # escape pipe for markdown table if necessary
         a = a.replace('|', '&#124;')

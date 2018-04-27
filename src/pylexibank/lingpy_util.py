@@ -36,9 +36,9 @@ class TranscriptionAnalysis(object):
     # map segments to frequency
     segments = attr.ib(default=attr.Factory(Counter))
     # aggregate segments which are invalid for lingpy
-    lingpy_errors = attr.ib(default=attr.Factory(set))
+    bipa_errors = attr.ib(default=attr.Factory(set))
     # aggregate segments which are invalid for clpa
-    clpa_errors = attr.ib(default=attr.Factory(set))
+    sclass_errors = attr.ib(default=attr.Factory(set))
     # map clpa-replaceable segments to their replacements
     replacements = attr.ib(default=defaultdict(set))
     # count number of errors
@@ -79,13 +79,13 @@ def test_sequence(segments, analysis=None, model='dolgo'):
         # add an error if we got an unknown sound, otherwise just append
         # the `replacements` dictionary
         if isinstance(sound_bipa, pyclts.models.UnknownSound):
-            analysis.lingpy_errors.add(segment)
+            analysis.bipa_errors.add(segment)
         else:
             analysis.replacements[sound_bipa.source].add(sound_bipa.__unicode__())
 
         # update sound class errors, if any
         if sound_class == '?':
-            analysis.clpa_errors.add(segment)
+            analysis.sclass_errors.add(segment)
 
     return segments, bipa_analysis, soundclass_analysis, analysis
 
