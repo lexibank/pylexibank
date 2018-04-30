@@ -151,8 +151,14 @@ def _readme(ds, tr_analysis, log=None, **kw):
         log.info('\n'.join(['Summary for dataset {}'.format(ds.id)] + stats_lines))
     lines.extend(stats_lines)
 
+    bookkeeping_languoids = []
+    for lang in ds.cldf['LanguageTable']:
+        gl_lang = ds.glottolog.cached_languoids.get(lang.get('Glottocode'))
+        if gl_lang and gl_lang.category == 'Bookkeeping':
+            bookkeeping_languoids.append(lang)
+
     # improvements section
-    if len(missing_lang) or len(missing_source) or len(missing_concept):
+    if len(missing_lang) or len(missing_source) or len(missing_concept) or bookkeeping_languoids:
         lines.extend(['\n## Possible Improvements:\n', ])
 
         if len(missing_lang):
@@ -161,6 +167,17 @@ def _readme(ds, tr_analysis, log=None, **kw):
                 len(totals['languages']),
                 (len(missing_lang) / len(totals['languages'])) * 100
             ))
+
+        if bookkeeping_languoids:
+            lines.append(
+                "- Languages linked to [bookkeeping languoids in Glottolog]"
+                "(http://glottolog.org/glottolog/glottologinformation"
+                "#bookkeepinglanguoids):")
+            for lang in bookkeeping_languoids:
+                lines.append(
+                    '  - {0} [{1}](http://glottolog.org/resource/languoid/id/{1})'.format(
+                        lang.get('Name', lang.get('ID')), lang['Glottocode']))
+            lines.append('\n')
 
         if len(missing_source):
             lines.append("- Entries missing sources: %d/%d (%.2f%%)" % (

@@ -100,11 +100,11 @@ such as the logging level.""".format(cfgpath.resolve()))
         cfg = INI.from_file(cfgpath)
 
     datasets = []
+    glottolog = Glottolog(cfg['paths']['glottolog'])
     for ep in pkg_resources.iter_entry_points('lexibank.dataset'):
         ds_class = ep.load()
         datasets.append(ds_class(
-            glottolog=Glottolog(cfg['paths']['glottolog']),
-            concepticon=Concepticon(cfg['paths']['concepticon'])))
+            glottolog=glottolog, concepticon=Concepticon(cfg['paths']['concepticon'])))
 
     return cfg, sorted(datasets, key=lambda d: d.id)
 

@@ -98,6 +98,7 @@ def test_sequence(segments, analysis=None, model='dolgo'):
 
     return segments, bipa_analysis, soundclass_analysis, analysis
 
+
 def test_sequences(dataset, model='dolgo'):
     """
     Write a detailed transcription-report for a CLDF dataset in LexiBank.

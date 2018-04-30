@@ -10,11 +10,11 @@ from pylexibank.util import Repos
 class Glottolog(api.Glottolog, Repos):
     @lazyproperty
     def cached_languoids(self):
-        return self.languoids()
+        return {l.id: l for l in self.languoids()}
 
     @lazyproperty
     def languoid_details(self):
-        return {l.id: (l.iso, l.macroareas, l.name) for l in self.cached_languoids}
+        return {lid: (l.iso, l.macroareas, l.name) for lid, l in self.cached_languoids}
 
     @lazyproperty
     def glottocode_by_name(self):

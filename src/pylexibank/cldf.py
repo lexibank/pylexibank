@@ -18,7 +18,8 @@ class Dataset(object):
         self.dataset = dataset
 
         md = self.dataset.cldf_dir / MD_NAME
-        copy(Path(__file__).parent / MD_NAME, md)
+        if not md.exists():
+            copy(Path(__file__).parent / MD_NAME, md)
         self.wl = Wordlist.from_metadata(md)
 
         self.objects = {}
