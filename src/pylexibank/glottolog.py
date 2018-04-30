@@ -14,7 +14,9 @@ class Glottolog(api.Glottolog, Repos):
 
     @lazyproperty
     def languoid_details(self):
-        return {lid: (l.iso, l.macroareas, l.name) for lid, l in self.cached_languoids}
+        return {
+            lid: (l.iso, l.macroareas, l.name) for lid, l in self.cached_languoids.items()
+        }
 
     @lazyproperty
     def glottocode_by_name(self):

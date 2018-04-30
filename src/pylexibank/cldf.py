@@ -120,6 +120,10 @@ class Dataset(object):
         return self._add_object(self.dataset.language_class, **kw)
 
     def add_concept(self, **kw):
+        if kw.get('Concepticon_ID'):
+            kw.setdefault(
+                'Concepticon_Gloss',
+                self.dataset.concepticon.cached_glosses[int(kw['Concepticon_ID'])])
         return self._add_object(self.dataset.concept_class, **kw)
 
     def align_cognates(self,
