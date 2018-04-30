@@ -30,7 +30,7 @@ setup(
         'clldutils',
         'pyglottolog',
         'pyconcepticon',
-        'pyclpa',
+        'pyclts',
         'segments',
         'lingpy',
         'appdirs',

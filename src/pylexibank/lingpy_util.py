@@ -2,15 +2,19 @@
 from __future__ import unicode_literals, print_function
 from collections import defaultdict, Counter
 from copy import deepcopy
+import attr
 
 import lingpy
 from clldutils.misc import slug
-from pyclpa.base import get_clpa, Unknown, Sound
-import attr
+from pyclts import TranscriptionSystem, SoundClasses
+import pyclts.models
 
 from pylexibank.dataset import Cognate
 
-clpa = get_clpa()
+BIPA = TranscriptionSystem('bipa')
+DOLGO = SoundClasses('dolgo')
+SCA = SoundClasses('sca')
+
 REPLACEMENT_MARKER = '\ufffd'
 
 
@@ -32,16 +36,16 @@ class TranscriptionAnalysis(object):
     # map segments to frequency
     segments = attr.ib(default=attr.Factory(Counter))
     # aggregate segments which are invalid for lingpy
-    lingpy_errors = attr.ib(default=attr.Factory(set))
+    bipa_errors = attr.ib(default=attr.Factory(set))
     # aggregate segments which are invalid for clpa
-    clpa_errors = attr.ib(default=attr.Factory(set))
+    sclass_errors = attr.ib(default=attr.Factory(set))
     # map clpa-replaceable segments to their replacements
     replacements = attr.ib(default=defaultdict(set))
     # count number of errors
     general_errors = attr.ib(default=0)
 
 
-def test_sequence(segments, analysis=None, model='dolgo', **keywords):
+def test_sequence(segments, analysis=None, model='dolgo'):
     """
     Test a sequence for compatibility with CLPA and LingPy.
 
@@ -49,31 +53,50 @@ def test_sequence(segments, analysis=None, model='dolgo', **keywords):
     """
     analysis = analysis or TranscriptionAnalysis()
 
-    # clean the string at first, we only take the first item, ignore the rest
-    try:
-        lingpy_analysis = [
-            x if y != '0' else REPLACEMENT_MARKER for x, y in
-            zip(segments, lingpy.tokens2class(segments, model))]
-        clpa_analysis = clpa(segments)
-        for l_, c in zip(lingpy_analysis, clpa_analysis):
-            if l_ == REPLACEMENT_MARKER or isinstance(c, Unknown):
-                analysis.general_errors += 1
-    except (ValueError, IndexError, AttributeError, TypeError, AssertionError):
-        raise ValueError('invalid string')
+    # raise a ValueError in case of empty segments/strings
+    if not segments:
+        raise ValueError('Empty sequence.')
 
-    for a, b, c in zip(segments, lingpy_analysis, clpa_analysis):
-        if a[0] in clpa.accents:
-            a = a[1:]
-        analysis.segments.update([a])
-        if b == REPLACEMENT_MARKER:
-            analysis.lingpy_errors.add(a)
-        if isinstance(c, Unknown):
-            analysis.clpa_errors.add(a)
-        if isinstance(c, Sound) and c.converted:
-            analysis.replacements[c.origin].add(c.clpa.CLPA)
+    # test if at least one element in `segments` has information
+    # (helps to catch really badly formed input, such as ['\n']
+    if not [segment for segment in segments if segment.strip()]:
+        raise ValueError('No information in the sequence.')
 
-    return segments, lingpy_analysis, ['%s' % x for x in clpa_analysis], analysis
+    # build the phonologic and sound class analyses
+    bipa_analysis = [BIPA[s] for s in segments]
+    if model == 'sca':
+        soundclass_analysis = BIPA.translate(' '.join(segments), SCA).split()
+    elif model == 'dolgo':
+        soundclass_analysis = BIPA.translate(' '.join(segments), DOLGO).split()
+    else:
+        raise ValueError("Sound class model '%s' not inexistent or not implemented." % model)
 
+    # compute general errors; this loop must take place outside the
+    # following one because the code for computing single errors (either
+    # in `bipa_analysis` or in `soundclass_analysis`) is unnecessary
+    # complicated
+    for sound_bipa, sound_class in zip(bipa_analysis, soundclass_analysis):
+        if isinstance(sound_bipa, pyclts.models.UnknownSound) or sound_class == '?':
+            analysis.general_errors += 1
+
+    # iterate over the segments and analyses, updating counts of occurrences
+    # and specific errors
+    for segment, sound_bipa, sound_class in zip(segments, bipa_analysis, soundclass_analysis):
+        # update the segment count
+        analysis.segments.update([segment])
+
+        # add an error if we got an unknown sound, otherwise just append
+        # the `replacements` dictionary
+        if isinstance(sound_bipa, pyclts.models.UnknownSound):
+            analysis.bipa_errors.add(segment)
+        else:
+            analysis.replacements[sound_bipa.source].add(sound_bipa.__unicode__())
+
+        # update sound class errors, if any
+        if sound_class == '?':
+            analysis.sclass_errors.add(segment)
+
+    return segments, bipa_analysis, soundclass_analysis, analysis
 
 def test_sequences(dataset, model='dolgo'):
     """
@@ -84,10 +107,16 @@ def test_sequences(dataset, model='dolgo'):
     for i, row in enumerate(dataset['FormTable']):
         analysis = analyses.setdefault(row['Language_ID'], TranscriptionAnalysis())
         try:
-            segments, _lpa, _clpa, _analysis = test_sequence(
+            segments, _bipa, _sc, _analysis = test_sequence(
                 row['Segments'], analysis=analysis, model=model)
-            if REPLACEMENT_MARKER in _lpa or REPLACEMENT_MARKER in _clpa:
+
+            # update the list of `bad_words` if necessary; we precompute a
+            # list of data types in `_bipa` just to make the conditional
+            # checking easier
+            _bipa_types = [type(s) for s in _bipa]
+            if pyclts.models.UnknownSound in _bipa_types or '?' in _sc:
                 bad_words.append(row)
+
         except ValueError:
             invalid_words.append(row)
 

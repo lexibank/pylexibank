@@ -115,8 +115,8 @@ def _readme(ds, tr_analysis, log=None, **kw):
 
     stats = tr_analysis['stats']
     lsegments = len(stats['segments'])
-    llingpyerr = len(stats['lingpy_errors'])
-    lclpaerr = len(stats['clpa_errors'])
+    lbipapyerr = len(stats['bipa_errors'])
+    lsclasserr = len(stats['sclass_errors'])
 
     def ratio(prop):
         return sum(v for k, v in totals[prop].items() if k) / float(totals['lexemes'])
@@ -129,8 +129,8 @@ def _readme(ds, tr_analysis, log=None, **kw):
     ]
     if lsegments:
         badges.extend([
-            get_badge((lsegments - llingpyerr) / lsegments, 'LingPy'),
-            get_badge((lsegments - lclpaerr) / lsegments, 'CLPA'),
+            get_badge((lsegments - lbipapyerr) / lsegments, 'BIPA'),
+            get_badge((lsegments - lsclasserr) / lsegments, 'CLTS SoundClass'),
         ])
     lines.extend(['## Statistics', '\n', '\n'.join(badges), ''])
     stats_lines = [
@@ -143,8 +143,8 @@ def _readme(ds, tr_analysis, log=None, **kw):
             sum(1 for k, v in totals['cognate_sets'].items() if v > 1)),
         '- **Invalid lexemes:** {0:,}'.format(stats['invalid_words_count']),
         '- **Tokens:** {0:,}'.format(sum(stats['segments'].values())),
-        '- **Segments:** {0:,} ({1} LingPy errors, {2} CLPA errors, {3} CLPA modified)'
-            .format(lsegments, llingpyerr, lclpaerr, len(stats['replacements'])),
+        '- **Segments:** {0:,} ({1} BIPA errors, {2} CTLS sound class errors, {3} CLTS modified)'
+            .format(lsegments, lbipapyerr, lsclasserr, len(stats['replacements'])),
         '- **Inventory size (avg):** %.2f' % stats['inventory_size'],
         ]
     if log:
@@ -208,21 +208,21 @@ MARKDOWN_TEMPLATE = """
 * Inventory Size: {inventory_size:.2f}
 * [Erroneous tokens](report.md#tokens): {general_errors}
 * Erroneous words: {word_errors}
-* Number of LingPy-Errors: {lingpy_errors}
-* Number of CLPA-Errors: {clpa_errors}
+* Number of BIPA-Errors: {bipa_errors}
+* Number of CLTS-SoundClass-Errors: {sclass_errors}
 * Bad words: {words_errors}
 """
 
 
 def _transcription(analysis, **kw):
-    segments = Table('Segment', 'Occurrence', 'LingPy', 'CLPA')
+    segments = Table('Segment', 'Occurrence', 'BIPA', 'CLTS SoundClass')
     for a, b in sorted(
             analysis['stats']['segments'].items(), key=lambda x: (-x[1], x[0])):
         c, d = '✓', '✓'
-        if a in analysis['stats']['clpa_errors']:
-            c = '✓' if a not in analysis['stats']['lingpy_errors'] else '?'
-            d = ', '.join(analysis['stats']['clpa_errors'][a]) \
-                if a not in analysis['stats']['clpa_errors'] else '?'
+        if a in analysis['stats']['sclass_errors']:
+            c = '✓' if a not in analysis['stats']['bipa_errors'] else '?'
+            d = ', '.join(analysis['stats']['sclass_errors'][a]) \
+                if a not in analysis['stats']['sclass_errors'] else '?'
 
         # escape pipe for markdown table if necessary
         a = a.replace('|', '&#124;')
