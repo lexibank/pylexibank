@@ -2,10 +2,9 @@
 from __future__ import unicode_literals, print_function, division
 from collections import Counter, defaultdict
 
-from clldutils import jsonlib
 from clldutils.markup import Table
 
-from pylexibank.util import textdump, get_badge, jsondump
+from pylexibank.util import textdump, get_badge
 
 
 def report(ds, **kw):
@@ -13,7 +12,7 @@ def report(ds, **kw):
 
     lexibank report [DATASET_ID]
     """
-    tr = jsonlib.load(ds.dir.joinpath('transcription.json'))
+    tr = ds.read_json().get('transcription', {})
     textdump(
         _transcription(tr, **kw),
         ds.dir.joinpath('TRANSCRIPTION.md'),
@@ -151,6 +150,11 @@ def _readme(ds, tr_analysis, log=None, **kw):
         log.info('\n'.join(['Summary for dataset {}'.format(ds.id)] + stats_lines))
     lines.extend(stats_lines)
 
+    totals['languages'] = len(totals['languages'])
+    totals['concepts'] = len(totals['concepts'])
+    totals['cognate_sets'] = bool(1 for k, v in totals['cognate_sets'].items() if v > 1)
+    totals['sources'] = totals['sources'].get('y', 0)
+
     bookkeeping_languoids = []
     for lang in ds.cldf['LanguageTable']:
         gl_lang = ds.glottolog.cached_languoids.get(lang.get('Glottocode'))
@@ -194,7 +198,6 @@ def _readme(ds, tr_analysis, log=None, **kw):
             ))
         lines.append("\n")
 
-    jsondump(totals, ds.dir.joinpath('README.json'))
     return lines + trlines
 
 

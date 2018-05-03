@@ -6,7 +6,6 @@ from lingpy import rc
 
 from pylexibank.lingpy_util import test_sequences, TranscriptionAnalysis
 from pylexibank.util import pb
-from pylexibank.util import jsondump
 
 
 def analyze(ds, **kw):
@@ -15,7 +14,7 @@ def analyze(ds, **kw):
 
     lexibank analyze DATASET_ID
     """
-    jsondump(_analyze(ds), ds.dir / 'transcription.json', log=kw.get('log'))
+    ds.write_json(dict(transcription=_analyze(ds)))
 
 
 @attr.s

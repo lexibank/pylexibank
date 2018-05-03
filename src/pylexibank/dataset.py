@@ -20,7 +20,7 @@ from lingpy.settings import rc
 from segments.tokenizer import Tokenizer
 
 import pylexibank
-from pylexibank.util import DataDir
+from pylexibank.util import DataDir, jsondump
 from pylexibank import cldf
 
 NOOP = -1
@@ -186,6 +186,7 @@ class Dataset(object):
     def __init__(self, concepticon=None, glottolog=None):
         self.unmapped = Unmapped()
         self.dir = DataDir(self.dir)
+        self._json = self.dir.joinpath('lexibank.json')
         self.raw = DataDir(self.dir / 'raw')
         self.raw.mkdir(exist_ok=True)
         self.cldf_dir = self.dir / 'cldf'
@@ -202,6 +203,12 @@ class Dataset(object):
     def _iter_etc(self, what):
         path = self.dir / 'etc' / what
         return reader(path, dicts=True) if path.exists() else []
+
+    def read_json(self):
+        return jsonlib.load(self._json) if self._json.exists() else {}
+
+    def write_json(self, obj):
+        jsondump(obj, self._json)
 
     @lazyproperty
     def github_repo(self):  # pragma: no cover

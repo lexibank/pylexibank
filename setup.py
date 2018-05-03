@@ -26,7 +26,7 @@ setup(
     install_requires=[
         'six',
         'attrs',
-        'pycldf>=1.3.0',
+        'pycldf>=1.4.1',
         'clldutils',
         'pyglottolog',
         'pyconcepticon',
