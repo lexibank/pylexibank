@@ -63,7 +63,11 @@ def test_sequence(segments, analysis=None, model='dolgo'):
         raise ValueError('No information in the sequence.')
 
     # build the phonologic and sound class analyses
-    bipa_analysis = [BIPA[s] for s in segments]
+    try:
+        bipa_analysis = [BIPA[s] for s in segments]
+    except:
+        print(segments)
+        raise
     if model == 'sca':
         soundclass_analysis = BIPA.translate(' '.join(segments), SCA).split()
     elif model == 'dolgo':
@@ -120,6 +124,9 @@ def test_sequences(dataset, model='dolgo'):
 
         except ValueError:
             invalid_words.append(row)
+        except AttributeError:
+            print(row['Value'], row)
+            raise
 
     return analyses, bad_words, invalid_words
 

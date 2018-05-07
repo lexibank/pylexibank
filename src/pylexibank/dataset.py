@@ -3,6 +3,7 @@ from __future__ import unicode_literals, print_function, division
 import logging
 from datetime import datetime
 import re
+import pkg_resources
 
 import attr
 import six
@@ -389,3 +390,12 @@ class Unmapped(object):
                 print(','.join([a.name.upper() for a in attr.fields(cls)]))
                 for row in sorted(map(attr.astuple, objs)):
                     print(','.join(map(self.quote, row)))
+
+
+def iter_datasets(glottolog=None, concepticon=None, verbose=False):
+    for ep in pkg_resources.iter_entry_points('lexibank.dataset'):
+        try:
+            yield ep.load()(glottolog=glottolog, concepticon=concepticon)
+        except ImportError as e:
+            if verbose:
+                print('Importing {0} failed: {1}'.format(ep.name, e))

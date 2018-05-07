@@ -27,6 +27,7 @@ from clldutils.clilib import ArgumentParserWithLogging
 from clldutils.path import Path
 
 import pylexibank
+from pylexibank.dataset import iter_datasets
 from pylexibank.glottolog import Glottolog
 from pylexibank.concepticon import Concepticon
 import pylexibank.commands
@@ -99,13 +100,12 @@ such as the logging level.""".format(cfgpath.resolve()))
     else:
         cfg = INI.from_file(cfgpath)
 
-    datasets = []
     glottolog = Glottolog(cfg['paths']['glottolog'])
     concepticon = Concepticon(cfg['paths']['concepticon'])
-    for ep in pkg_resources.iter_entry_points('lexibank.dataset'):
-        ds_class = ep.load()
-        datasets.append(ds_class(glottolog=glottolog, concepticon=concepticon))
-    return cfg, sorted(datasets, key=lambda d: d.id)
+    datasets = sorted(
+        iter_datasets(glottolog=glottolog, concepticon=concepticon, verbose=True),
+        key=lambda d: d.id)
+    return cfg, datasets
 
 
 def main():  # pragma: no cover

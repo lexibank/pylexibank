@@ -168,8 +168,8 @@ def _readme(ds, tr_analysis, log=None, **kw):
         if len(missing_lang):
             lines.append("- Languages missing glottocodes: %d/%d (%.2f%%)" % (
                 len(missing_lang),
-                len(totals['languages']),
-                (len(missing_lang) / len(totals['languages'])) * 100
+                totals['languages'],
+                (len(missing_lang) / totals['languages']) * 100
             ))
 
         if bookkeeping_languoids:
