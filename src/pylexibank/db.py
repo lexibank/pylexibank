@@ -255,20 +255,20 @@ CREATE TABLE SourceTable (
     FOREIGN KEY(dataset_ID) REFERENCES dataset(ID)
 )""".format('\n    '.join('`{0}` TEXT,'.format(f) for f in BIBTEX_FIELDS)))
 
-    def fetchone(self, sql, conn=None, verbose=False):
-        return self._fetch(sql, 'fetchone', conn, verbose=verbose)
+    def fetchone(self, sql, params=None, conn=None, verbose=False):
+        return self._fetch(sql, 'fetchone', params, conn, verbose=verbose)
 
-    def fetchall(self, sql, conn=None, verbose=False):
-        return self._fetch(sql, 'fetchall', conn, verbose=verbose)
+    def fetchall(self, sql, params=None, conn=None, verbose=False):
+        return self._fetch(sql, 'fetchall', params, conn, verbose=verbose)
 
-    def _fetch(self, sql, method, conn, verbose=False):
+    def _fetch(self, sql, method, params, conn, verbose=False):
         sql = self.sql.get(sql, sql)
 
         def _do(conn, sql, method):
             cu = conn.cursor()
             if verbose:
                 print(sql)
-            cu.execute(sql)
+            cu.execute(sql, params or ())
             return getattr(cu, method)()
 
         if not conn:
@@ -279,8 +279,12 @@ CREATE TABLE SourceTable (
 
     @property
     def tables(self):
-        return [r[0] for r in self.fetchall(
-            "SELECT name FROM sqlite_master WHERE type='table'")]
+        res = {r[0]: {} for r in self.fetchall(
+            "SELECT name FROM sqlite_master WHERE type='table'")}
+        for t in res:
+            res[t] = {r[1]: r[2] for r in self.fetchall(
+                "PRAGMA table_info({0})".format(t))}
+        return res
 
     def unload(self, dataset_id):
         dataset_id = getattr(dataset_id, 'id', dataset_id)
@@ -320,8 +324,7 @@ CREATE TABLE SourceTable (
         for t in tables:
             if self._create_table_if_not_exists(t):
                 continue
-            db_cols = {r[1]: r[2] for r in self.fetchall(
-                "PRAGMA table_info({0})".format(t.name))}
+            db_cols = self.tables[t.name]
             for col in t.columns:
                 if col.name not in db_cols:
                     with self.connection() as conn:
@@ -336,6 +339,8 @@ CREATE TABLE SourceTable (
 
         for t in ref_tables.values():
             self._create_table_if_not_exists(t)
+
+        self.update_schema()
 
         # then load the data:
         with self.connection() as db:
@@ -389,6 +394,7 @@ CREATE TABLE SourceTable (
                                 v = col.convert(v)
                             keys.append("`{0}`".format(k))
                             values.append(v)
+                    keys, values = self.update_row(t.name, keys, values)
                     rows.append(tuple(values))
                 insert(db, t.name, keys, *rows)
 
@@ -403,16 +409,35 @@ CREATE TABLE SourceTable (
                 insert(db, tname, ['dataset_ID', oid_col, 'Source_ID', 'Context'], *rows)
             db.commit()
 
+    def update_schema(self):
+        for tname, cname, type_ in [
+            ('ParameterTable', 'Ontological_Category', 'TEXT'),
+            ('ParameterTable', 'Semantic_Field', 'TEXT'),
+            ('LanguageTable', 'Latitude', 'REAL'),
+            ('LanguageTable', 'Longitude', 'REAL'),
+        ]:
+            if cname not in self.tables[tname]:
+                with self.connection() as conn:
+                    conn.execute("ALTER TABLE {0} ADD COLUMN `{1}` {2}".format(
+                        tname, cname, type_))
+
+    def update_row(self, table, keys, values):
+        return keys, values
+
     def load_concepticon_data(self, concepticon):
         conceptsets = []
         for csid in self.fetchall("SELECT distinct concepticon_id FROM parametertable"):
             cs = concepticon.conceptsets.get(csid[0])
             if cs:
-                conceptsets.append((cs.gloss, cs.id))
+                conceptsets.append((
+                    cs.gloss, cs.ontological_category, cs.semanticfield, cs.id))
 
         with self.connection() as db:
             db.executemany(
-                "UPDATE parametertable SET concepticon_gloss = ? WHERE concepticon_id = ?",
+                """\
+UPDATE parametertable 
+SET concepticon_gloss = ?, ontological_category = ?, semantic_field = ?
+WHERE concepticon_id = ?""",
                 conceptsets)
             db.commit()
 
@@ -425,13 +450,15 @@ CREATE TABLE SourceTable (
                 langs.append((
                     lang.lineage[0][0] if lang.lineage else lang.name,
                     lang.macroareas[0].value if lang.macroareas else None,
+                    lang.latitude,
+                    lang.longitude,
                     lang.id))
 
         with self.connection() as db:
-            db.executemany(
-                "UPDATE languagetable "
-                "SET family = ?, macroarea = ? "
-                "WHERE glottocode = ?",
+            db.executemany("""\
+UPDATE languagetable
+SET family = ?, macroarea = ?, latitude = ?, longitude = ?
+WHERE glottocode = ?""",
                 langs)
             db.commit()
 
