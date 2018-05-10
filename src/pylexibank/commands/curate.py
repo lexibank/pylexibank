@@ -60,6 +60,8 @@ def curate(args):  # pragma: no cover
             ).split()
         except EOFError:
             break
+        except KeyboardInterrupt:
+            break
 
         if len(user_input) == 0:
             continue  # ignore empty commands
