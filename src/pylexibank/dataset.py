@@ -9,7 +9,7 @@ import attr
 import six
 import git
 from clldutils.dsv import reader
-from clldutils.text import split_text_with_context, strip_brackets
+from clldutils.text import split_text_with_context
 from clldutils.misc import lazyproperty
 from clldutils.loglib import Logging
 from clldutils.path import remove, rmtree, write_text
@@ -272,7 +272,6 @@ class Dataset(object):
         :param form:
         :return: None to skip the form, or the cleaned form as string.
         """
-        form = strip_brackets(form)
         if form not in ['?']:
             return form
 
