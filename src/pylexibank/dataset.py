@@ -277,6 +277,8 @@ class Dataset(object):
             return form
 
     def split_forms(self, item, value):
+        if value in self.lexemes:
+            self.log.debug('overriding via lexemes.csv: %r -> %r' % (value, self.lexemes[value]))
         value = self.lexemes.get(value, value)
         return [self.clean_form(item, form)
                 for form in split_text_with_context(value, separators='/,;')]
