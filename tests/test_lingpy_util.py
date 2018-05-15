@@ -25,6 +25,7 @@ def test_wordlist2cognates(repos, mocker):
         concept_class=dataset.Concept,
         split_forms=lambda _, s: [s],
         dir=dsdir,
+        tr_analyses={},
         cldf_dir=dsdir.joinpath('cldf')))
     ds.add_lexemes(
         Value='form',
@@ -36,15 +37,3 @@ def test_wordlist2cognates(repos, mocker):
     wl = Wordlist(lingpy_util._cldf2wld(ds), row='concept', col='language_id')
     res = list(lingpy_util.wordlist2cognates(wl, 'src'))
     assert isinstance(res[0], dict)
-
-
-def test_test_sequence():
-    with pytest.raises(ValueError):
-        lingpy_util.test_sequence('')
-
-    with pytest.raises(ValueError):
-        lingpy_util.test_sequence('\n')
-
-    segments, la, clpa, analysis = lingpy_util.test_sequence(['a', '^', 'b'])
-    assert segments == ['a', '^', 'b']
-    assert analysis.general_errors == 1

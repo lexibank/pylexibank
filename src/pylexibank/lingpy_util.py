@@ -1,21 +1,11 @@
 # coding=utf-8
 from __future__ import unicode_literals, print_function
-from collections import defaultdict, Counter
 from copy import deepcopy
-import attr
 
 import lingpy
 from clldutils.misc import slug
-from pyclts import TranscriptionSystem, SoundClasses
-import pyclts.models
 
 from pylexibank.dataset import Cognate
-
-BIPA = TranscriptionSystem('bipa')
-DOLGO = SoundClasses('dolgo')
-SCA = SoundClasses('sca')
-
-REPLACEMENT_MARKER = '\ufffd'
 
 
 def wordlist2cognates(wordlist, source, expert='expert', ref='cogid'):
@@ -29,106 +19,6 @@ def wordlist2cognates(wordlist, source, expert='expert', ref='cogid'):
                 slug(wordlist[k, 'concept']), wordlist[k, ref]),
             Cognate_Detection_Method=expert,
             Source=source)
-
-
-@attr.s
-class TranscriptionAnalysis(object):
-    # map segments to frequency
-    segments = attr.ib(default=attr.Factory(Counter))
-    # aggregate segments which are invalid for lingpy
-    bipa_errors = attr.ib(default=attr.Factory(set))
-    # aggregate segments which are invalid for clpa
-    sclass_errors = attr.ib(default=attr.Factory(set))
-    # map clpa-replaceable segments to their replacements
-    replacements = attr.ib(default=defaultdict(set))
-    # count number of errors
-    general_errors = attr.ib(default=0)
-
-
-def test_sequence(segments, analysis=None, model='dolgo'):
-    """
-    Test a sequence for compatibility with CLPA and LingPy.
-
-    :param analysis: Pass a `TranscriptionAnalysis` instance for cumulative reporting.
-    """
-    analysis = analysis or TranscriptionAnalysis()
-
-    # raise a ValueError in case of empty segments/strings
-    if not segments:
-        raise ValueError('Empty sequence.')
-
-    # test if at least one element in `segments` has information
-    # (helps to catch really badly formed input, such as ['\n']
-    if not [segment for segment in segments if segment.strip()]:
-        raise ValueError('No information in the sequence.')
-
-    # build the phonologic and sound class analyses
-    try:
-        bipa_analysis = [BIPA[s] for s in segments]
-    except:
-        print(segments)
-        raise
-    if model == 'sca':
-        soundclass_analysis = BIPA.translate(' '.join(segments), SCA).split()
-    elif model == 'dolgo':
-        soundclass_analysis = BIPA.translate(' '.join(segments), DOLGO).split()
-    else:
-        raise ValueError("Sound class model '%s' not inexistent or not implemented." % model)
-
-    # compute general errors; this loop must take place outside the
-    # following one because the code for computing single errors (either
-    # in `bipa_analysis` or in `soundclass_analysis`) is unnecessary
-    # complicated
-    for sound_bipa, sound_class in zip(bipa_analysis, soundclass_analysis):
-        if isinstance(sound_bipa, pyclts.models.UnknownSound) or sound_class == '?':
-            analysis.general_errors += 1
-
-    # iterate over the segments and analyses, updating counts of occurrences
-    # and specific errors
-    for segment, sound_bipa, sound_class in zip(segments, bipa_analysis, soundclass_analysis):
-        # update the segment count
-        analysis.segments.update([segment])
-
-        # add an error if we got an unknown sound, otherwise just append
-        # the `replacements` dictionary
-        if isinstance(sound_bipa, pyclts.models.UnknownSound):
-            analysis.bipa_errors.add(segment)
-        else:
-            analysis.replacements[sound_bipa.source].add(sound_bipa.__unicode__())
-
-        # update sound class errors, if any
-        if sound_class == '?':
-            analysis.sclass_errors.add(segment)
-
-    return segments, bipa_analysis, soundclass_analysis, analysis
-
-
-def test_sequences(dataset, model='dolgo'):
-    """
-    Write a detailed transcription-report for a CLDF dataset in LexiBank.
-    """
-    analyses, bad_words, invalid_words = {}, [], []
-
-    for i, row in enumerate(dataset['FormTable']):
-        analysis = analyses.setdefault(row['Language_ID'], TranscriptionAnalysis())
-        try:
-            segments, _bipa, _sc, _analysis = test_sequence(
-                row['Segments'], analysis=analysis, model=model)
-
-            # update the list of `bad_words` if necessary; we precompute a
-            # list of data types in `_bipa` just to make the conditional
-            # checking easier
-            _bipa_types = [type(s) for s in _bipa]
-            if pyclts.models.UnknownSound in _bipa_types or '?' in _sc:
-                bad_words.append(row)
-
-        except ValueError:
-            invalid_words.append(row)
-        except AttributeError:
-            print(row['Value'], row)
-            raise
-
-    return analyses, bad_words, invalid_words
 
 
 def _cldf2wld(dataset):

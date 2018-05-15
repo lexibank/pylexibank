@@ -36,10 +36,7 @@ def test_BaseDataset(mocker, repos):
     assert ds.sources
 
 
-def test_Dataset(dataset):
-    with dataset.debug():
-        pass
-    with Logging(dataset.log, logging.CRITICAL):
-        dataset.cmd_download()
-        dataset.cmd_install()
+def test_Dataset(dataset, capsys):
+    dataset.cmd_download()
+    dataset.cmd_install()
     assert dataset.tokenizer

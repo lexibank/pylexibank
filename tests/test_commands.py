@@ -24,8 +24,6 @@ def test_db(dataset):
 
 
 def test_workflow(repos, mocker, capsys, dataset, tmppath):
-    from pylexibank.commands.analyze import analyze
-    from pylexibank.commands.report import report
     from pylexibank.commands.misc import ls, bib
 
     def _args(*args):
@@ -46,12 +44,7 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath):
     ls(_args('test_dataset', 'license'))
     out, err = capsys.readouterr()
 
-    analyze(dataset, **vars(_args('test_dataset')))
-    out, err = capsys.readouterr()
-
     assert not dataset.stats
-    report(dataset, **vars(_args('test_dataset')))
-    out, err = capsys.readouterr()
 
     bib(_args())
     assert repos.joinpath('lexibank.bib').exists()
