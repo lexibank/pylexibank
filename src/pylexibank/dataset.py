@@ -462,23 +462,17 @@ class Dataset(object):
         }
 
         missing_source = []
-        missing_lang = [L['NAME'] for L in self.languages if not L['GLOTTOCODE']]
-        missing_param = []
-        missing_concept = [c for c in self.concepts if not c['CONCEPTICON_ID']]
+        missing_lang = []
 
         for row in self.cldf['FormTable']:
             if row['Source']:
                 totals['sources'].update(['y'])
             else:
                 missing_source.append(row)
-            if row['Parameter_ID']:
-                totals['concepts'].update([row['Parameter_ID']])
-            else:
-                missing_param.append(row)
+            totals['concepts'].update([row['Parameter_ID']])
             totals['languages'].update([row['Language_ID']])
             totals['lexemes'] += 1
-            if row['Language_ID'] and row['Parameter_ID']:
-                synonyms[row['Language_ID']].update([row['Parameter_ID']])
+            synonyms[row['Language_ID']].update([row['Parameter_ID']])
 
         for row in self.cldf['CognateTable']:
             totals['cognate_sets'].update([row['Cognateset_ID']])
@@ -542,7 +536,7 @@ class Dataset(object):
                 bookkeeping_languoids.append(lang)
 
         # improvements section
-        if len(missing_lang) or len(missing_source) or len(missing_concept) or bookkeeping_languoids:
+        if len(missing_lang) or len(missing_source) or bookkeeping_languoids:
             lines.extend(['\n## Possible Improvements:\n', ])
 
             if len(missing_lang):
@@ -570,12 +564,6 @@ class Dataset(object):
                 (len(missing_source) / totals['lexemes']) * 100
             ))
 
-        if len(missing_concept):
-            lines.append("- Entries missing concepts: %d/%d (%.2f%%)" % (
-                len(missing_param),
-                totals['lexemes'],
-                (len(missing_param) / totals['lexemes']) * 100
-            ))
         return lines
 
 
