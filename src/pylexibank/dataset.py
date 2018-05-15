@@ -536,10 +536,10 @@ class Dataset(object):
                 bookkeeping_languoids.append(lang)
 
         # improvements section
-        if len(missing_lang) or len(missing_source) or bookkeeping_languoids:
+        if missing_lang or missing_source or bookkeeping_languoids:
             lines.extend(['\n## Possible Improvements:\n', ])
 
-            if len(missing_lang):
+            if missing_lang:
                 lines.append("- Languages missing glottocodes: %d/%d (%.2f%%)" % (
                     len(missing_lang),
                     totals['languages'],
@@ -557,7 +557,7 @@ class Dataset(object):
                         lang.get('Name', lang.get('ID')), lang['Glottocode']))
             lines.append('\n')
 
-        if len(missing_source):
+        if missing_source:
             lines.append("- Entries missing sources: %d/%d (%.2f%%)" % (
                 len(missing_source),
                 totals['lexemes'],
