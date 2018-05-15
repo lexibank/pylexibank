@@ -1,6 +1,7 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function, division
 
+from time import time
 import traceback
 
 from prompt_toolkit import prompt
@@ -8,7 +9,8 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer, Completion
 from termcolor import colored
-
+from appdirs import user_data_dir
+from clldutils.path import Path
 from clldutils.clilib import command
 
 from pylexibank.commands.util import with_dataset, _load, _unload
@@ -50,11 +52,15 @@ def curate(args):  # pragma: no cover
                     yield Completion(c, start_position=-len(word_before_cursor))
 
     user_input = []
+    appdir = Path(user_data_dir('lexibank'))
+    if not appdir.exists():
+        appdir.mkdir(parents=True)
+
     while not user_input or user_input[0] != 'quit':
         try:
             user_input = prompt(
                 u'lexibank-curator> ',
-                history=FileHistory('history.txt'),
+                history=FileHistory(str(appdir / 'history.txt')),
                 auto_suggest=AutoSuggestFromHistory(),
                 completer=TheCompleter(),
             ).split()
@@ -71,7 +77,9 @@ def curate(args):  # pragma: no cover
 
         args.args = user_input[1:]
         try:
+            s = time()
             commands[user_input[0]](args)
+            print('[{0:.3f}]'.format(time() - s))
         except Exception as e:
             traceback.print_exc()
             print(colored('{0}: {1}'.format(e.__class__.__name__, e), 'red'))
