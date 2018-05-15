@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 import re
 import pkg_resources
+from collections import Counter, defaultdict
 
 import attr
 import six
@@ -17,12 +18,12 @@ from clldutils import licenses
 from clldutils import jsonlib
 from pyglottolog.languoids import Glottocode
 
-from lingpy.settings import rc
 from segments.tokenizer import Tokenizer
 
 import pylexibank
-from pylexibank.util import DataDir, jsondump
+from pylexibank.util import DataDir, jsondump, textdump, get_badge
 from pylexibank import cldf
+from pylexibank import transcription
 
 NOOP = -1
 
@@ -200,6 +201,9 @@ class Dataset(object):
             self.git_repo = git.Repo(str(self.dir))  # pragma: no cover
         except git.InvalidGitRepositoryError:
             self.git_repo = None
+        self.tr_analyses = {}
+        self.tr_bad_words = []
+        self.tr_invalid_words = []
 
     def _iter_etc(self, what):
         path = self.dir / 'etc' / what
@@ -247,9 +251,6 @@ class Dataset(object):
         for item in self._iter_etc('lexemes.csv'):
             res[item['LEXEME']] = item['REPLACEMENT']
         return res
-
-    def debug(self):
-        return Logging(self.log)
 
     # ---------------------------------------------------------------
     # workflow actions whih should be overwritten by derived classes:
@@ -326,17 +327,62 @@ class Dataset(object):
             'Raw data downloaded {0}'.format(datetime.utcnow().isoformat()))
 
     def _install(self, **kw):
+        self.log = kw.get('log', self.log)
         self.unmapped.clear()
         rmtree(self.cldf_dir)
         self.cldf_dir.mkdir()
+        self.tr_analyses = {}
+        self.tr_bad_words = []
+        self.tr_invalid_words = []
 
         if self.metadata.conceptlist:
             self.conceptlist = self.concepticon.conceptlists[self.metadata.conceptlist]
-        rc(schema=self.metadata.lingpy_schema or 'ipa')
-        if self.cmd_install(**kw) != NOOP:
-            if kw.get('verbose'):
-                self.unmapped.pprint()
-            self.cldf.validate(kw['log'])
+        if self.cmd_install(**kw) == NOOP:
+            return
+
+        if kw.get('verbose'):
+            self.unmapped.pprint()
+        self.cldf.validate(kw['log'])
+
+        stats = transcription.Stats(
+            bad_words=sorted(self.tr_bad_words[:100], key=lambda x: x['ID']),
+            bad_words_count=len(self.tr_bad_words),
+            invalid_words=sorted(self.tr_invalid_words[:100], key=lambda x: x['ID']),
+            invalid_words_count=len(self.tr_invalid_words))
+        for lid, analysis in self.tr_analyses.items():
+            for attribute in ['segments', 'bipa_errors', 'sclass_errors', 'replacements']:
+                getattr(stats, attribute).update(getattr(analysis, attribute))
+            stats.general_errors += analysis.general_errors
+            stats.inventory_size += len(analysis.segments) / len(self.tr_analyses)
+
+        error_segments = stats.bipa_errors.union(stats.sclass_errors)
+        for i, row in enumerate(stats.bad_words):
+            analyzed_segments = []
+            for s in row['Segments']:
+                analyzed_segments.append('<s> %s </s>' % s if s in error_segments else s)
+            stats.bad_words[i] = [
+                row['ID'],
+                row['Language_ID'],
+                row['Parameter_ID'],
+                row['Form'],
+                ' '.join(analyzed_segments)]
+
+        for i, row in enumerate(stats.invalid_words):
+            stats.invalid_words[i] = [
+                row['ID'],
+                row['Language_ID'],
+                row['Parameter_ID'],
+                row['Form']]
+        # Aggregate transcription analysis results ...
+        tr = dict(
+            by_language={k: attr.asdict(v) for k, v in self.tr_analyses.items()},
+            stats=attr.asdict(stats))
+        # ... and write a report:
+        for text, fname in [
+            (transcription.report(tr), 'TRANSCRIPTION.md'),
+            (self.report(tr, log=kw.get('log')), 'README.md'),
+        ]:
+            textdump(text, self.dir / fname, log=kw.get('log'))
 
     def _clean(self, **kw):
         self.log.debug('removing CLDF directory %s' % self.cldf_dir)
@@ -360,6 +406,194 @@ class Dataset(object):
             c[cid].add(vid)
             vars[vid].add(cid)
             glangs[row['Language_ID']].add(cid)
+
+    def build_status_badge(self):
+        if not self.dir.joinpath('.travis.yml').exists():
+            return ''
+        try:
+            return "[![Build Status](https://travis-ci.org/{0}.svg?branch=master)]" \
+                   "(https://travis-ci.org/{0})".format(self.github_repo)
+        except:
+            return ''
+
+    def report(self, tr_analysis, log=None):
+        #
+        # FIXME: write only summary into README.md
+        # in case of multiple cldf datasets:
+        # - separate lexemes.md and transcriptions.md
+        #
+        if not list(self.cldf_dir.glob('*.csv')):
+            return
+        lines = [
+            '# %s\n' % self.metadata.title,
+            'Cite the source dataset as\n',
+            '> %s\n' % self.metadata.citation,
+        ]
+
+        if self.metadata.license:
+            lines.extend([
+                'This dataset is licensed under a %s license' % self.metadata.license, ''])
+
+        if self.metadata.url:
+            lines.extend(['Available online at %s' % self.metadata.url, ''])
+
+        if self.metadata.related:
+            lines.extend(['See also %s' % self.metadata.related, ''])
+
+        if self.metadata.conceptlist:
+            lines.extend([
+                'Conceptlist in Concepticon: [{0}](http://concepticon.clld.org/contributions'
+                '/{0})'.format(self.metadata.conceptlist),
+                ''])
+
+        # add NOTES.md
+        if self.dir.joinpath('NOTES.md').exists():
+            lines.extend(['## Notes', ''])
+            lines.extend(self.dir.joinpath('NOTES.md').read_text().split("\n"))
+            lines.extend(['', ''])  # some blank lines
+
+        synonyms = defaultdict(Counter)
+        totals = {
+            'languages': Counter(),
+            'concepts': Counter(),
+            'sources': Counter(),
+            'cognate_sets': Counter(),
+            'lexemes': 0,
+        }
+
+        missing_source = []
+        missing_lang = [L['NAME'] for L in self.languages if not L['GLOTTOCODE']]
+        missing_param = []
+        missing_concept = [c for c in self.concepts if not c['CONCEPTICON_ID']]
+
+        for row in self.cldf['FormTable']:
+            if row['Source']:
+                totals['sources'].update(['y'])
+            else:
+                missing_source.append(row)
+            if row['Parameter_ID']:
+                totals['concepts'].update([row['Parameter_ID']])
+            else:
+                missing_param.append(row)
+            totals['languages'].update([row['Language_ID']])
+            totals['lexemes'] += 1
+            if row['Language_ID'] and row['Parameter_ID']:
+                synonyms[row['Language_ID']].update([row['Parameter_ID']])
+
+        for row in self.cldf['CognateTable']:
+            totals['cognate_sets'].update([row['Cognateset_ID']])
+
+        sindex = sum(
+            [sum(list(counts.values())) / float(len(counts)) for counts in synonyms.values()])
+        langs = set(synonyms.keys())
+        if langs:
+            sindex /= float(len(langs))
+        else:
+            sindex = 0
+        totals['SI'] = sindex
+
+        stats = tr_analysis['stats']
+        lsegments = len(stats['segments'])
+        lbipapyerr = len(stats['bipa_errors'])
+        lsclasserr = len(stats['sclass_errors'])
+
+        def ratio(prop):
+            return sum(v for k, v in totals[prop].items() if k) / float(totals['lexemes'])
+
+        badges = [
+            self.build_status_badge(),
+            get_badge(ratio('languages'), 'Glottolog'),
+            get_badge(ratio('concepts'), 'Concepticon'),
+            get_badge(ratio('sources'), 'Source'),
+        ]
+        if lsegments:
+            badges.extend([
+                get_badge((lsegments - lbipapyerr) / lsegments, 'BIPA'),
+                get_badge((lsegments - lsclasserr) / lsegments, 'CLTS SoundClass'),
+            ])
+        lines.extend(['## Statistics', '\n', '\n'.join(badges), ''])
+        stats_lines = [
+            '- **Varieties:** {0:,}'.format(len(totals['languages'])),
+            '- **Concepts:** {0:,}'.format(len(totals['concepts'])),
+            '- **Lexemes:** {0:,}'.format(totals['lexemes']),
+            '- **Synonymy:** %.2f' % (totals['SI']),
+            '- **Cognacy:** {0:,} cognates in {1:,} cognate sets'.format(
+                sum(v for k, v in totals['cognate_sets'].items() if v > 1),
+                sum(1 for k, v in totals['cognate_sets'].items() if v > 1)),
+            '- **Invalid lexemes:** {0:,}'.format(stats['invalid_words_count']),
+            '- **Tokens:** {0:,}'.format(sum(stats['segments'].values())),
+            '- **Segments:** {0:,} ({1} BIPA errors, {2} CTLS sound class errors, {3} CLTS modified)'
+                .format(lsegments, lbipapyerr, lsclasserr, len(stats['replacements'])),
+            '- **Inventory size (avg):** %.2f' % stats['inventory_size'],
+            ]
+        if log:
+            log.info('\n'.join(['Summary for dataset {}'.format(self.id)] + stats_lines))
+        lines.extend(stats_lines)
+
+        totals['languages'] = len(totals['languages'])
+        totals['concepts'] = len(totals['concepts'])
+        totals['cognate_sets'] = bool(1 for k, v in totals['cognate_sets'].items() if v > 1)
+        totals['sources'] = totals['sources'].get('y', 0)
+
+        bookkeeping_languoids = []
+        for lang in self.cldf['LanguageTable']:
+            gl_lang = self.glottolog.cached_languoids.get(lang.get('Glottocode'))
+            if gl_lang and gl_lang.category == 'Bookkeeping':
+                bookkeeping_languoids.append(lang)
+
+        # improvements section
+        if len(missing_lang) or len(missing_source) or len(missing_concept) or bookkeeping_languoids:
+            lines.extend(['\n## Possible Improvements:\n', ])
+
+            if len(missing_lang):
+                lines.append("- Languages missing glottocodes: %d/%d (%.2f%%)" % (
+                    len(missing_lang),
+                    totals['languages'],
+                    (len(missing_lang) / totals['languages']) * 100
+                ))
+
+            if bookkeeping_languoids:
+                lines.append(
+                    "- Languages linked to [bookkeeping languoids in Glottolog]"
+                    "(http://glottolog.org/glottolog/glottologinformation"
+                    "#bookkeepinglanguoids):")
+            for lang in bookkeeping_languoids:
+                lines.append(
+                    '  - {0} [{1}](http://glottolog.org/resource/languoid/id/{1})'.format(
+                        lang.get('Name', lang.get('ID')), lang['Glottocode']))
+            lines.append('\n')
+
+        if len(missing_source):
+            lines.append("- Entries missing sources: %d/%d (%.2f%%)" % (
+                len(missing_source),
+                totals['lexemes'],
+                (len(missing_source) / totals['lexemes']) * 100
+            ))
+
+        if len(missing_concept):
+            lines.append("- Entries missing concepts: %d/%d (%.2f%%)" % (
+                len(missing_param),
+                totals['lexemes'],
+                (len(missing_param) / totals['lexemes']) * 100
+            ))
+        return lines
+
+
+MARKDOWN_TEMPLATE = """
+## Transcription Report
+
+### General Statistics
+
+* Number of Tokens: {tokens}
+* Number of Segments: {segments}
+* Invalid forms: {invalid}
+* Inventory Size: {inventory_size:.2f}
+* [Erroneous tokens](report.md#tokens): {general_errors}
+* Erroneous words: {word_errors}
+* Number of BIPA-Errors: {bipa_errors}
+* Number of CLTS-SoundClass-Errors: {sclass_errors}
+* Bad words: {words_errors}
+"""
 
 
 class Unmapped(object):

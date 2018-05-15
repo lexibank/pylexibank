@@ -14,19 +14,15 @@ from clldutils.path import Path
 from clldutils.clilib import command
 
 from pylexibank.commands.util import with_dataset, _load, _unload
-from pylexibank.commands.analyze import analyze
-from pylexibank.commands.report import report
 from pylexibank.dataset import Dataset
 
 
 commands = {
     'quit': lambda args: None,
     'download': lambda args: with_dataset(args, Dataset._download),
-    'convert': lambda args: with_dataset(args, Dataset._install),
-    'analyze': lambda args: with_dataset(args, analyze),
-    'report': lambda args: with_dataset(args, report),
-    'load': lambda args: with_dataset(args, _load),
-    'unload': lambda args: with_dataset(args, _unload),
+    'makecldf': lambda args: with_dataset(args, Dataset._install),
+    'dbload': lambda args: with_dataset(args, _load),
+    'dbunload': lambda args: with_dataset(args, _unload),
     'orthography': lambda args: None,
     'help': lambda args: print("Available Commands: %s" % ", ".join(sorted(commands))),
 }

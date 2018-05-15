@@ -6,6 +6,9 @@ import attr
 from csvw.metadata import Column
 from clldutils.path import copy, Path
 from pycldf.dataset import Wordlist
+import pyclts.models
+
+from pylexibank.transcription import Analysis, analyze
 
 MD_NAME = 'cldf-metadata.json'
 ID_PATTERN = re.compile('[A-Za-z0-9_\-]+$')
@@ -89,6 +92,25 @@ class Dataset(object):
                     kw_.setdefault('Segments', self.tokenize(kw_, form) or [])
                     kw_.update(ID=self.lexeme_id(), Form=form)
                     lexemes.append(self._add_object(self.dataset.lexeme_class, **kw_))
+
+                    if kw_['Segments']:
+                        analysis = self.dataset.tr_analyses.setdefault(
+                            kw_['Language_ID'], Analysis())
+                        try:
+                            _, _bipa, _sc, _analysis = analyze(kw_['Segments'], analysis)
+
+                            # update the list of `bad_words` if necessary; we precompute a
+                            # list of data types in `_bipa` just to make the conditional
+                            # checking easier
+                            _bipa_types = [type(s) for s in _bipa]
+                            if pyclts.models.UnknownSound in _bipa_types or '?' in _sc:
+                                self.dataset.tr_bad_words.append(kw_)
+
+                        except ValueError:
+                            self.dataset.tr_invalid_words.append(kw_)
+                        except AttributeError:
+                            print(kw_['Form'], kw_)
+                            raise
 
         return lexemes
 
