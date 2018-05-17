@@ -209,10 +209,10 @@ class Dataset(object):
         path = self.dir / 'etc' / what
         return reader(path, dicts=True) if path.exists() else []
 
-    def read_json(self):
+    def read_json(self):  # pragma: no cover
         return jsonlib.load(self._json) if self._json.exists() else {}
 
-    def write_json(self, obj):
+    def write_json(self, obj):  # pragma: no cover
         jsondump(obj, self._json)
 
     @lazyproperty
@@ -277,7 +277,7 @@ class Dataset(object):
             return form
 
     def split_forms(self, item, value):
-        if value in self.lexemes:
+        if value in self.lexemes:  # pragma: no cover
             self.log.debug('overriding via lexemes.csv: %r -> %r' % (value, self.lexemes[value]))
         value = self.lexemes.get(value, value)
         return [self.clean_form(item, form)
