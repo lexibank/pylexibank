@@ -181,7 +181,7 @@ def ls(args):
                 "SELECT count(distinct glottocode) FROM languagetable")[0]))
         elif col == 'concepts':
             totals.append(float(db.fetchone(
-                "SELECT count(distinct conceptset) FROM parametertable")[0]))
+                "SELECT count(distinct concepticon_id) FROM parametertable")[0]))
         elif col == 'families':
             totals.append(float(db.fetchone(
                 "SELECT count(distinct family) FROM languagetable")[0]))
