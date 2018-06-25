@@ -70,7 +70,10 @@ def curate(args):  # pragma: no cover
         if user_input[0] not in commands:
             print(colored('Invalid command!', 'red'))
             continue
-
+        if len(user_input) > 1 and user_input[1] not in datasets:
+            print(colored('Invalid dataset!', 'red'))
+            continue
+            
         args.args = user_input[1:]
         try:
             s = time()
