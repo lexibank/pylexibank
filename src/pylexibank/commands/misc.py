@@ -6,6 +6,7 @@ from subprocess import check_call
 from six import PY2
 from termcolor import colored
 from segments.tokenizer import Tokenizer
+from appdirs import user_config_dir
 from clldutils import licenses
 from clldutils.path import Path
 from clldutils.dsv import UnicodeWriter, reader
@@ -366,3 +367,14 @@ def coverage(args):  # pragma: no cover
             key=lambda i: -i[1])[:200]:
         t.append([n, concepticon.conceptsets['%s' % n].gloss, m])
     print(t.render(tablefmt='simple', condensed=False))
+
+
+@command()
+def configdir_location(_):
+    """
+    Print the directory that is being used for storing configuration files.
+
+    lexibank configdir_location
+    """
+    cfg_dir = Path(user_config_dir(pylexibank.__name__))
+    print(cfg_dir)
