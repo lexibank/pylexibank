@@ -105,6 +105,11 @@ such as the logging level.""".format(cfgpath.resolve()))
     datasets = sorted(
         iter_datasets(glottolog=glottolog, concepticon=concepticon, verbose=True),
         key=lambda d: d.id)
+
+    # Print the configuration directory for reference:
+    print("Configuration directory location:")
+    print(Path(user_config_dir(pylexibank.__name__)))
+
     return cfg, datasets
 
 

@@ -367,14 +367,3 @@ def coverage(args):  # pragma: no cover
             key=lambda i: -i[1])[:200]:
         t.append([n, concepticon.conceptsets['%s' % n].gloss, m])
     print(t.render(tablefmt='simple', condensed=False))
-
-
-@command()
-def configdir_location(_):
-    """
-    Print the directory that is being used for storing configuration files.
-
-    lexibank configdir_location
-    """
-    cfg_dir = Path(user_config_dir(pylexibank.__name__))
-    print(cfg_dir)
