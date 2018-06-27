@@ -222,68 +222,6 @@ def clean(args):
     with_dataset(args, Dataset._clean)
 
 
-# -------------------------------------------------------------------
-@command()
-def wordlength(args):
-    import unicodedata
-
-    concepts = Concepticon(args.cfg['paths']['concepticon']).conceptsets
-    header = ['language_id', 'language_name', 'parameter_id', 'form', 'segments']
-    languoids = {l.id: l for l in Glottolog(args.cfg['paths']['glottolog']).languoids()}
-    languoids.update({
-        'jiar1239': languoids['jiar1240'],
-        'yiry1247': languoids['jirj1239'],
-        'guug1239': languoids['gugu1255'],
-        'miya1256': languoids['waka1283'],
-    })
-    ml = set()
-
-    with UnicodeWriter('wordlength.csv') as writer, \
-            UnicodeWriter('wordlength_all.csv') as writer_all:
-        writer.writerow('Concepticon_ID Gloss Semanticfield Category Glottocode Variety Family Form Length'.split())
-        writer_all.writerow('Concepticon_ID Gloss Semanticfield Category Glottocode Variety Family Form Length'.split())
-        for ds in args.datasets:
-            for mdp in ds._iter_cldf():
-                csvp = mdp.parent.joinpath(mdp.name.split('-metadata')[0])
-                for row in reader(csvp, dicts=True):
-                    lang = languoids.get(row['Language_ID'])
-                    if lang and row['Parameter_ID'] in concepts:
-                        concept = concepts[row['Parameter_ID']]
-                        form = unicodedata.normalize('NFC', row['Form'])
-                        writer_all.writerow([
-                            concept.id,
-                            concept.gloss,
-                            concept.semanticfield,
-                            concept.ontological_category,
-                            lang.id,
-                            row['Language_name'],
-                            languoids[lang.lineage[0][1]].name if lang.lineage else '',
-                            ' '.join(form),
-                            '{0}'.format(len(form)),
-                        ])
-                    if row['Language_ID'] and not lang:
-                        ml.add(row['Language_ID'])
-                for row in lingpy_subset(csvp, header):
-                    lid, lname, pid, form, segments, length = row
-                    lang = languoids.get(lid)
-                    if not lang:
-                        continue
-                    concept = concepts[pid]
-                    lang = languoids[lid]
-                    writer.writerow([
-                        concept.id,
-                        concept.gloss,
-                        concept.semanticfield,
-                        concept.ontological_category,
-                        lang.id,
-                        lname,
-                        languoids[lang.lineage[0][1]].name if lang.lineage else '',
-                        segments,
-                        length,
-                    ])
-    print(ml)
-
-
 #  - need set of all concepts per variety.
 #  - loop over concept lists
 #  - if concept ids is subset of variety, count that language.
