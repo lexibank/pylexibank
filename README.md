@@ -24,10 +24,10 @@ Now you may install `pylexibank` via pip or in development mode following the in
 in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Some functionality in `pylexibank` (in particular the `makecldf` sub-command), require access
-to [Glottolog](http://glottolog.org) or [Concepticon](http://concepticon.pylexibank.org) data.
+to [Glottolog](http://glottolog.org) or [Concepticon](http://concepticon.clld.org) data.
 Since the data of both these applications is curated in git repositories as well, the easiest
-way to achieve this is by cloning [pylexibank/glottolog](https://github.com/pylexibank/glottolog) and
-[pylexibank/concepticon-data](https://github.com/pylexibank/concepticon). But you could also download
+way to achieve this is by cloning [clld/glottolog](https://github.com/clld/glottolog) and
+[clld/concepticon-data](https://github.com/clld/concepticon-data). But you could also download
 (and unpack) a released version of these repositories.
 
 
