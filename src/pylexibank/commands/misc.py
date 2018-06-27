@@ -6,6 +6,7 @@ from subprocess import check_call
 from six import PY2
 from termcolor import colored
 from segments.tokenizer import Tokenizer
+from appdirs import user_config_dir
 from clldutils import licenses
 from clldutils.path import Path
 from clldutils.dsv import UnicodeWriter, reader

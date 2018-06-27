@@ -105,6 +105,11 @@ such as the logging level.""".format(cfgpath.resolve()))
     datasets = sorted(
         iter_datasets(glottolog=glottolog, concepticon=concepticon, verbose=True),
         key=lambda d: d.id)
+
+    # Print the configuration directory for reference:
+    print("Using configuration file at:")
+    print(str(cfgpath) + '\n')
+
     return cfg, datasets
 
 
