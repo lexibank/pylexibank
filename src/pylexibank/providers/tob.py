@@ -25,10 +25,10 @@ class TOB(Dataset):
     def cmd_download(self, **kw):
         # download source
         self.raw.write('sources.bib', getEvoBibAsBibtex('Starostin2011', **kw))
-        
+
         # download data
         all_records = []
-        for i in pb(list(range(1, 20 * self.pages+1, 20))):
+        for i in pb(list(range(1, 20 * self.pages + 1, 20))):
             with self.raw.temp_download(
                     self._url(i), 'file-{0}'.format(i), log=self.log) as fname:
                 soup = BeautifulSoup(fname.open(encoding='utf8').read(), 'html.parser')
@@ -64,7 +64,7 @@ class TOB(Dataset):
                     Language_ID=lid,
                     Parameter_ID=cid,
                     Value=form,
-                    Cognacy=concept+'-'+cogid
+                    Cognacy=concept + '-' + cogid
                 ):
                     ds.add_cognate(
                         lexeme=row,

@@ -17,7 +17,6 @@ import os
 import argparse
 import readline
 import glob
-import pkg_resources
 
 from termcolor import colored
 from appdirs import user_config_dir

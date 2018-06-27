@@ -435,7 +435,7 @@ CREATE TABLE SourceTable (
         with self.connection() as db:
             db.executemany(
                 """\
-UPDATE parametertable 
+UPDATE parametertable
 SET concepticon_gloss = ?, ontological_category = ?, semantic_field = ?
 WHERE concepticon_id = ?""",
                 conceptsets)
@@ -455,7 +455,8 @@ WHERE concepticon_id = ?""",
                     lang.id))
 
         with self.connection() as db:
-            db.executemany("""\
+            db.executemany(
+                """\
 UPDATE languagetable
 SET family = ?, macroarea = ?, latitude = ?, longitude = ?
 WHERE glottocode = ?""",

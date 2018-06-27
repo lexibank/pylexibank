@@ -12,7 +12,6 @@ import git
 from clldutils.dsv import reader
 from clldutils.text import split_text_with_context
 from clldutils.misc import lazyproperty
-from clldutils.loglib import Logging
 from clldutils.path import remove, rmtree, write_text
 from clldutils import licenses
 from clldutils import jsonlib
@@ -413,7 +412,7 @@ class Dataset(object):
         try:
             return "[![Build Status](https://travis-ci.org/{0}.svg?branch=master)]" \
                    "(https://travis-ci.org/{0})".format(self.github_repo)
-        except:
+        except:  # noqa
             return ''
 
     def report(self, tr_analysis, log=None):
@@ -517,9 +516,9 @@ class Dataset(object):
             '- **Invalid lexemes:** {0:,}'.format(stats['invalid_words_count']),
             '- **Tokens:** {0:,}'.format(sum(stats['segments'].values())),
             '- **Segments:** {0:,} ({1} BIPA errors, {2} CTLS sound class errors, {3} CLTS modified)'
-                .format(lsegments, lbipapyerr, lsclasserr, len(stats['replacements'])),
+            .format(lsegments, lbipapyerr, lsclasserr, len(stats['replacements'])),
             '- **Inventory size (avg):** %.2f' % stats['inventory_size'],
-            ]
+        ]
         if log:
             log.info('\n'.join(['Summary for dataset {}'.format(self.id)] + stats_lines))
         lines.extend(stats_lines)

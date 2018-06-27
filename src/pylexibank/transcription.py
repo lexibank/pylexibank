@@ -64,7 +64,7 @@ def analyze(segments, analysis, lookup=dict(bipa={}, dolgo={})):
             if sc is None:
                 sc = lookup['dolgo'].setdefault(s, BIPA.translate(s, DOLGO))
             sc_analysis.append(sc)
-    except:
+    except:  # noqa
         print(segments)
         raise
 
@@ -116,7 +116,7 @@ TEMPLATE = """
 def report(analysis):
     segments = Table('Segment', 'Occurrence', 'BIPA', 'CLTS SoundClass')
     for a, b in sorted(
-        analysis['stats']['segments'].items(), key=lambda x: (-x[1], x[0])):
+            analysis['stats']['segments'].items(), key=lambda x: (-x[1], x[0])):
         c, d = '✓', '✓'
         if a in analysis['stats']['sclass_errors']:
             c = '✓' if a not in analysis['stats']['bipa_errors'] else '?'

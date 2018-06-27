@@ -1,3 +1,3 @@
 # coding: utf8
-from . import misc
-from . import curate
+from . import misc  # noqa
+from . import curate  # noqa
