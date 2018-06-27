@@ -107,8 +107,8 @@ such as the logging level.""".format(cfgpath.resolve()))
         key=lambda d: d.id)
 
     # Print the configuration directory for reference:
-    print("Configuration directory location:")
-    print(Path(user_config_dir(pylexibank.__name__)))
+    print("Using configuration file at:")
+    print(str(cfgpath) + '\n')
 
     return cfg, datasets
 
