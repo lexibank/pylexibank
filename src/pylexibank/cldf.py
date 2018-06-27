@@ -108,7 +108,7 @@ class Dataset(object):
 
                         except ValueError:
                             self.dataset.tr_invalid_words.append(kw_)
-                        except AttributeError:
+                        except (KeyError, AttributeError):
                             print(kw_['Form'], kw_)
                             raise
 
