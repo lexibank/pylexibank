@@ -26,6 +26,12 @@ from pylexibank import cldf
 from pylexibank import transcription
 
 NOOP = -1
+# When datasets are installed (and cloned) by pip, they end up in directories named after the
+# python package they provide, thus including the `lexibank-` prefix. This is in contrast to
+# datasets cloned without specifying a target directory, where only the repository name is used.
+# To provide some sort of consistency (which can still be screwed when a dataset is cloned to an
+# arbitrary directory), we strip this prefix off, when computing a datasets' ID.
+PKG_PREFIX = 'lexibank-'
 
 
 def non_empty(_, attribute, value):
@@ -173,7 +179,10 @@ class Dataset(object):
 
     @lazyproperty
     def id(self):
-        return self.dir.name
+        res = self.dir.name
+        if res.startswith(PKG_PREFIX):
+            res = res[len(PKG_PREFIX):]
+        return res
 
     @lazyproperty
     def metadata(self):

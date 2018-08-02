@@ -123,12 +123,12 @@ def orthography(args):  # pragma: no cover
 
 @command()
 def load(args):
-    with_dataset(args, _load)
+    with_dataset(args, _load, default_to_all=True)
 
 
 @command()
 def unload(args):
-    with_dataset(args, _unload)
+    with_dataset(args, _unload, default_to_all=True)
 
 
 @command()
