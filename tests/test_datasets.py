@@ -34,6 +34,9 @@ def test_BaseDataset(mocker, repos):
     assert ds.cmd_install() == NOOP
     assert ds.tokenizer(None, 'a') == ['b']
     assert ds.sources
+    assert ds.concepts
+    assert ds.languages
+    assert ds.stats
 
 
 def test_Dataset(dataset, capsys):
