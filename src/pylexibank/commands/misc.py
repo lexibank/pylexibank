@@ -61,6 +61,8 @@ def new_dataset(args):
     jsonlib.dump(md, outdir / 'metadata.json', indent=4)
     for path in Path(pylexibank.__file__).parent.joinpath('dataset_template').iterdir():
         if path.is_file():
+            if path.suffix in ['.pyc']:
+                continue  # pragma: no cover
             target = path.name
             content = read_text(path)
             if '+' in path.name:
