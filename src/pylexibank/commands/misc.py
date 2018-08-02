@@ -2,27 +2,79 @@
 from __future__ import unicode_literals, print_function, division
 from collections import defaultdict, Counter, OrderedDict
 from subprocess import check_call
+import re
+import shutil
 
 from six import PY2
 from termcolor import colored
 from segments.tokenizer import Tokenizer
-from appdirs import user_config_dir
 from clldutils import licenses
-from clldutils.path import Path
-from clldutils.dsv import UnicodeWriter, reader
+from clldutils.path import Path, read_text, write_text
+from clldutils.dsv import UnicodeWriter
 from clldutils.markup import Table
-from clldutils.clilib import command, confirm
+from clldutils.clilib import command, confirm, ParserError
 from clldutils.text import truncate_with_ellipsis
-from pyglottolog.api import Glottolog
+from clldutils import jsonlib
 from pybtex.database import parse_file, BibliographyData
-from pyconcepticon.api import Concepticon
 
 import pylexibank
 from pylexibank.commands.util import with_dataset, get_dataset, _load, _unload
 from pylexibank.util import log_dump, git_hash
 from pylexibank.dataset import Dataset
-from pylexibank.lingpy_util import lingpy_subset
 from pylexibank.db import Database
+
+
+
+@command('new-dataset')
+def new_dataset(args):
+    """
+    lexibank new-dataset OUTDIR [ID]
+    """
+    if not args.args:
+        raise ParserError('you must specify an existing directory')
+    outdir = Path(args.args.pop(0))
+    if not outdir.exists():
+        raise ParserError('you must specify an existing directory')
+
+    id_pattern = re.compile('[a-z_0-9]+$')
+    md = {}
+    if args.args:
+        md['id'] = args.args.pop(0)
+    else:
+        md['id'] = input('Dataset ID: ')
+
+    while not id_pattern.match(md['id']):
+        print('dataset id must only consist of lowercase ascii letters, digits and _ (underscore)!')
+        md['id'] = input('Dataset ID: ')
+
+    outdir = outdir / md['id']
+    if outdir.exists():
+        raise ValueError('the dataset directory already exists!')
+    outdir.mkdir()
+
+    for key in ['title', 'url', 'license', 'conceptlist', 'citation']:
+        md[key] = input('Dataset {0}: '.format(key))
+
+    # check license!
+    # check conceptlist!
+
+    jsonlib.dump(md, outdir / 'metadata.json', indent=4)
+    for path in Path(pylexibank.__file__).parent.joinpath('dataset_template').iterdir():
+        if path.is_file():
+            target = path.name
+            content = read_text(path)
+            if '+' in path.name:
+                target = re.sub(
+                    '\+([a-z]+)\+',
+                    lambda m: '{' + m.groups()[0] + '}',
+                    path.name
+                ).format(**md)
+            if target.endswith('_tmpl'):
+                target = target[:-5]
+                content = content.format(**md)
+            write_text(outdir / target, content)
+        else:
+            shutil.copytree(str(path), str(outdir / path.name))
 
 
 @command()
