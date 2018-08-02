@@ -119,6 +119,6 @@ def main():  # pragma: no cover
     parser.add_argument('--datasets', help=argparse.SUPPRESS, default=datasets)
     parser.add_argument(
         '--db',
-        help=argparse.SUPPRESS,
+        help='path to SQLite db file',
         default=os.path.join(os.getcwd(), 'lexibank.sqlite'))
     sys.exit(parser.main())
