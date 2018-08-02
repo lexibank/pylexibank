@@ -329,8 +329,9 @@ class Dataset(object):
     def _install(self, **kw):
         self.log = kw.get('log', self.log)
         self.unmapped.clear()
-        rmtree(self.cldf_dir)
-        self.cldf_dir.mkdir()
+        for p in self.cldf_dir.iterdir():
+            if p.name not in ['README.md', '.gitattributes']:
+                p.unlink()
         self.tr_analyses = {}
         self.tr_bad_words = []
         self.tr_invalid_words = []
@@ -339,6 +340,11 @@ class Dataset(object):
             self.conceptlist = self.concepticon.conceptlists[self.metadata.conceptlist]
         if self.cmd_install(**kw) == NOOP:
             return
+
+        gitattributes = self.cldf_dir / '.gitattributes'
+        if not gitattributes.exists():
+            with gitattributes.open('wt') as fp:
+                fp.write('*.csv text eol=crlf')
 
         if kw.get('verbose'):
             self.unmapped.pprint()
