@@ -567,6 +567,11 @@ class Dataset(object):
         return lines
 
 
+class NonSplittingDataset(Dataset):
+    def split_forms(self, item, value):
+        return [self.clean_form(item, self.lexemes.get(value, value))]
+
+
 MARKDOWN_TEMPLATE = """
 ## Transcription Report
 
