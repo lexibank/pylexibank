@@ -34,7 +34,7 @@ def test_BaseDataset(mocker, repos):
     assert ds.cmd_install() == NOOP
     assert ds.tokenizer(None, 'a') == ['b']
     assert ds.sources
-    assert ds.concepts
+    assert not ds.concepts  # no concepts stored
     assert ds.languages
     assert ds.stats
 
