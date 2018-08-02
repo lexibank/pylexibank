@@ -36,7 +36,6 @@ def test_BaseDataset(mocker, repos):
     assert ds.sources
     assert not ds.concepts  # no concepts stored
     assert ds.languages
-    assert ds.stats
 
 
 def test_Dataset(dataset, capsys):
