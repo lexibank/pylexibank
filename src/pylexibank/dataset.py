@@ -5,6 +5,7 @@ from datetime import datetime
 import re
 import pkg_resources
 from collections import Counter, defaultdict
+import unicodedata
 
 import attr
 import six
@@ -17,7 +18,7 @@ from clldutils import licenses
 from clldutils import jsonlib
 from pyglottolog.languoids import Glottocode
 
-from segments.tokenizer import Tokenizer
+from segments import Tokenizer, Profile
 
 import pylexibank
 from pylexibank.util import DataDir, jsondump, textdump, get_badge
@@ -303,12 +304,12 @@ class Dataset(object):
         """
         profile = self.dir / 'etc' / 'orthography.tsv'
         if profile.exists():
-            obj = Tokenizer(profile=str(profile))
+            tokenizer = Tokenizer(profile=Profile.from_file(str(profile), form='NFC'))
 
             def _tokenizer(item, string, **kw):
                 kw.setdefault("column", "IPA")
                 kw.setdefault("separator", " _ ")
-                return obj(string, **kw).split()
+                return tokenizer(unicodedata.normalize('NFC', string), **kw).split()
             return _tokenizer
 
     # ---------------------------------------------------------------
