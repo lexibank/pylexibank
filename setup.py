@@ -27,7 +27,7 @@ setup(
         'six',
         'attrs',
         'pycldf>=1.5.1',
-        'clldutils',
+        'clldutils>=2.3.0',
         'pyglottolog',
         'pyconcepticon',
         'pyclts',

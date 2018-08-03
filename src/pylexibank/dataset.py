@@ -144,13 +144,18 @@ class Metadata(object):
     related = attr.ib(default=None)
     source = attr.ib(default=None)
 
+    @lazyproperty
+    def known_license(self):
+        if self.license:
+            return licenses.find(self.license)
+
     @property
     def common_props(self):
-        return {
+        res = {
             "dc:title": self.title,
             "dc:description": self.description,
             "dc:bibliographicCitation": self.citation,
-            "dc:license": licenses.find(self.license) if self.license else None,
+            "dc:license": licenses.find(self.license or ''),
             "dc:identifier": self.url,
             "dc:format": "http://concepticon.clld.org/contributions/{0}".format(
                 self.conceptlist) if self.conceptlist else None,
@@ -159,6 +164,12 @@ class Metadata(object):
             "dc:related": self.related,
             "aboutUrl": self.aboutUrl,
         }
+        if self.known_license:
+            res['dc:license'] = self.known_license.url
+        elif self.license:
+            res['dc:license'] = self.license
+
+        return res
 
 
 class Dataset(object):
@@ -187,6 +198,11 @@ class Dataset(object):
     @lazyproperty
     def metadata(self):
         return Metadata(**jsonlib.load(self.dir / 'metadata.json'))
+
+    @lazyproperty
+    def license(self):
+        lic = None
+
 
     @property
     def stats(self):
@@ -349,6 +365,11 @@ class Dataset(object):
             self.conceptlist = self.concepticon.conceptlists[self.metadata.conceptlist]
         if self.cmd_install(**kw) == NOOP:
             return
+
+        if self.metadata.known_license:
+            legalcode = self.metadata.known_license.legalcode
+            if legalcode:
+                write_text(self.dir / 'LICENSE', legalcode)
 
         gitattributes = self.cldf_dir / '.gitattributes'
         if not gitattributes.exists():
