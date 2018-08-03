@@ -661,5 +661,4 @@ def iter_datasets(glottolog=None, concepticon=None, verbose=False):
         try:
             yield ep.load()(glottolog=glottolog, concepticon=concepticon)
         except ImportError as e:
-            if verbose:
-                print('Importing {0} failed: {1}'.format(ep.name, e))
+            print('Importing {0} failed: {1}'.format(ep.name, e))
