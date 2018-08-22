@@ -172,7 +172,7 @@ class Dataset(object):
 
     @lazyproperty
     def id(self):
-        return self.dir.name
+        return self.__module__.replace('lexibank_', '')
 
     @lazyproperty
     def metadata(self):
