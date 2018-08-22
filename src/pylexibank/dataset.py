@@ -5,6 +5,7 @@ from datetime import datetime
 import re
 import pkg_resources
 from collections import Counter, defaultdict
+import unicodedata
 
 import attr
 import six
@@ -17,7 +18,7 @@ from clldutils import licenses
 from clldutils import jsonlib
 from pyglottolog.languoids import Glottocode
 
-from segments.tokenizer import Tokenizer
+from segments import Tokenizer, Profile
 
 import pylexibank
 from pylexibank.util import DataDir, jsondump, textdump, get_badge
@@ -25,6 +26,12 @@ from pylexibank import cldf
 from pylexibank import transcription
 
 NOOP = -1
+# When datasets are installed (and cloned) by pip, they end up in directories named after the
+# python package they provide, thus including the `lexibank-` prefix. This is in contrast to
+# datasets cloned without specifying a target directory, where only the repository name is used.
+# To provide some sort of consistency (which can still be screwed when a dataset is cloned to an
+# arbitrary directory), we strip this prefix off, when computing a datasets' ID.
+PKG_PREFIX = 'lexibank-'
 
 
 def non_empty(_, attribute, value):
@@ -137,13 +144,18 @@ class Metadata(object):
     related = attr.ib(default=None)
     source = attr.ib(default=None)
 
+    @lazyproperty
+    def known_license(self):
+        if self.license:
+            return licenses.find(self.license)
+
     @property
     def common_props(self):
-        return {
+        res = {
             "dc:title": self.title,
             "dc:description": self.description,
             "dc:bibliographicCitation": self.citation,
-            "dc:license": licenses.find(self.license) if self.license else None,
+            "dc:license": licenses.find(self.license or ''),
             "dc:identifier": self.url,
             "dc:format": "http://concepticon.clld.org/contributions/{0}".format(
                 self.conceptlist) if self.conceptlist else None,
@@ -152,6 +164,12 @@ class Metadata(object):
             "dc:related": self.related,
             "aboutUrl": self.aboutUrl,
         }
+        if self.known_license:
+            res['dc:license'] = self.known_license.url
+        elif self.license:
+            res['dc:license'] = self.license
+
+        return res
 
 
 class Dataset(object):
@@ -172,11 +190,19 @@ class Dataset(object):
 
     @lazyproperty
     def id(self):
-        return self.__module__.replace('lexibank_', '')
+        res = self.__module__
+        if res.startswith(PKG_PREFIX):
+            res = res[len(PKG_PREFIX):]
+        return res
 
     @lazyproperty
     def metadata(self):
         return Metadata(**jsonlib.load(self.dir / 'metadata.json'))
+
+    @lazyproperty
+    def license(self):
+        lic = None
+
 
     @property
     def stats(self):
@@ -303,12 +329,12 @@ class Dataset(object):
         """
         profile = self.dir / 'etc' / 'orthography.tsv'
         if profile.exists():
-            obj = Tokenizer(profile=str(profile))
+            tokenizer = Tokenizer(profile=Profile.from_file(str(profile), form='NFC'))
 
             def _tokenizer(item, string, **kw):
                 kw.setdefault("column", "IPA")
                 kw.setdefault("separator", " _ ")
-                return obj(string, **kw).split()
+                return tokenizer(unicodedata.normalize('NFC', string), **kw).split()
             return _tokenizer
 
     # ---------------------------------------------------------------
@@ -328,8 +354,9 @@ class Dataset(object):
     def _install(self, **kw):
         self.log = kw.get('log', self.log)
         self.unmapped.clear()
-        rmtree(self.cldf_dir)
-        self.cldf_dir.mkdir()
+        for p in self.cldf_dir.iterdir():
+            if p.name not in ['README.md', '.gitattributes']:
+                p.unlink()
         self.tr_analyses = {}
         self.tr_bad_words = []
         self.tr_invalid_words = []
@@ -338,6 +365,16 @@ class Dataset(object):
             self.conceptlist = self.concepticon.conceptlists[self.metadata.conceptlist]
         if self.cmd_install(**kw) == NOOP:
             return
+
+        if self.metadata.known_license:
+            legalcode = self.metadata.known_license.legalcode
+            if legalcode:
+                write_text(self.dir / 'LICENSE', legalcode)
+
+        gitattributes = self.cldf_dir / '.gitattributes'
+        if not gitattributes.exists():
+            with gitattributes.open('wt') as fp:
+                fp.write('*.csv text eol=crlf')
 
         if kw.get('verbose'):
             self.unmapped.pprint()
@@ -566,6 +603,11 @@ class Dataset(object):
         return lines
 
 
+class NonSplittingDataset(Dataset):
+    def split_forms(self, item, value):
+        return [self.clean_form(item, self.lexemes.get(value, value))]
+
+
 MARKDOWN_TEMPLATE = """
 ## Transcription Report
 
@@ -619,5 +661,4 @@ def iter_datasets(glottolog=None, concepticon=None, verbose=False):
         try:
             yield ep.load()(glottolog=glottolog, concepticon=concepticon)
         except ImportError as e:
-            if verbose:
-                print('Importing {0} failed: {1}'.format(ep.name, e))
+            print('Importing {0} failed: {1}'.format(ep.name, e))

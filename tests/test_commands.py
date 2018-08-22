@@ -8,11 +8,11 @@ def test_with_dataset(mocker, capsys, dataset):
     def func(*args, **kw):
         print('hello!')
 
-    with_dataset(mocker.Mock(datasets=[dataset], args=['test_dataset']), func)
+    log = mocker.Mock()
+    with_dataset(mocker.Mock(datasets=[dataset], args=['test_dataset'], log=log), func)
     out, err = capsys.readouterr()
-    assert 'processing' in out
     assert 'hello!' in out
-    assert 'done' in out
+    assert log.info.called
 
 
 def test_db(dataset):

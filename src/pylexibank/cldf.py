@@ -1,6 +1,7 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function, division
 import re
+from collections import OrderedDict
 
 import attr
 from csvw.metadata import Column
@@ -164,11 +165,11 @@ class Dataset(object):
     def write(self, **kw):
         self.wl.properties.update(self.dataset.metadata.common_props)
         self.wl.properties['rdf:ID'] = self.dataset.id
-        self.wl.tablegroup.notes.append({
-            'dc:title': 'environment',
-            'properties': {
-                'concepticon_version': self.dataset.concepticon.version,
-                'glottolog_version': self.dataset.glottolog.version,
-            }
-        })
+        self.wl.tablegroup.notes.append(OrderedDict([
+            ('dc:title', 'environment'),
+            ('properties', OrderedDict([
+                ('glottolog_version', self.dataset.glottolog.version),
+                ('concepticon_version', self.dataset.concepticon.version),
+            ]))
+        ]))
         self.wl.write(**kw)

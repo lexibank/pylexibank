@@ -16,15 +16,13 @@ def get_dataset(args, name=None):
     raise ParserError('invalid dataset spec')  # pragma: no cover
 
 
-def with_dataset(args, func):
+def with_dataset(args, func, default_to_all=False):
     for dataset in args.datasets:
-        if dataset.id in args.args:
+        if (dataset.id in args.args) or (default_to_all and not args.args):
             s = time()
-            if args.verbosity:
-                print('processing %s ...' % dataset.id)
+            args.log.info('processing %s ...' % dataset.id)
             func(get_dataset(args, dataset.id), **vars(args))
-            if args.verbosity:
-                print('... done %s [%.1f secs]' % (dataset.id, time() - s))
+            args.log.info('... done %s [%.1f secs]' % (dataset.id, time() - s))
 
 
 def _load(ds, **kw):
