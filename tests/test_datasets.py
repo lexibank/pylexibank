@@ -28,6 +28,7 @@ def test_Unmapped(capsys):
 def test_BaseDataset(mocker, repos):
     class TestDataset(Dataset):
         dir = repos / 'datasets' / 'test_dataset'
+        id = 'abc'
 
     ds = TestDataset(glottolog=mocker.Mock(), concepticon=mocker.Mock())
     assert ds.cmd_download() == NOOP

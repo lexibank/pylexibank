@@ -9,6 +9,7 @@ from pylexibank.dataset import Dataset
 
 class Test(Dataset):
     dir = Path(__file__).parent
+    id = 'test_dataset'
 
     @lazyproperty
     def tokenizer(self):

@@ -26,12 +26,6 @@ from pylexibank import cldf
 from pylexibank import transcription
 
 NOOP = -1
-# When datasets are installed (and cloned) by pip, they end up in directories named after the
-# python package they provide, thus including the `lexibank-` prefix. This is in contrast to
-# datasets cloned without specifying a target directory, where only the repository name is used.
-# To provide some sort of consistency (which can still be screwed when a dataset is cloned to an
-# arbitrary directory), we strip this prefix off, when computing a datasets' ID.
-PKG_PREFIX = 'lexibank-'
 
 
 def non_empty(_, attribute, value):
@@ -182,18 +176,12 @@ class Dataset(object):
     - concepticon concept-list ID as attribute `conceptlist`
     """
     dir = None  # Derived classes must provide an existing directory here!
+    id = None  # Derived classes must provide a unique ID here!
     lexeme_class = Lexeme
     cognate_class = Cognate
     language_class = Language
     concept_class = Concept
     log = logging.getLogger(pylexibank.__name__)
-
-    @lazyproperty
-    def id(self):
-        res = self.__module__
-        if res.startswith(PKG_PREFIX):
-            res = res[len(PKG_PREFIX):]
-        return res
 
     @lazyproperty
     def metadata(self):
@@ -211,6 +199,8 @@ class Dataset(object):
         return {}
 
     def __init__(self, concepticon=None, glottolog=None):
+        if self.__class__ != Dataset:
+            assert self.dir and self.id
         self.unmapped = Unmapped()
         self.dir = DataDir(self.dir)
         self._json = self.dir.joinpath('lexibank.json')
