@@ -234,10 +234,10 @@ class Dataset(object):
     def github_repo(self):  # pragma: no cover
         try:
             match = re.search(
-                'github\.com/(?P<org>[^/]+)/%s\.git' % re.escape(self.id),
+                'github\.com/(?P<org>[^/]+)/(?P<repo>[^.]+)\.git',
                 self.git_repo.remotes.origin.url)
             if match:
-                return match.group('org') + '/' + self.id
+                return match.group('org') + '/' + match.group('repo')
         except AttributeError:
             pass
 

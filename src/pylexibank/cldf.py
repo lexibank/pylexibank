@@ -165,6 +165,9 @@ class Dataset(object):
     def write(self, **kw):
         self.wl.properties.update(self.dataset.metadata.common_props)
         self.wl.properties['rdf:ID'] = self.dataset.id
+        self.wl.properties['rdf:type'] = 'http://www.w3.org/ns/dcat#Distribution'
+        if self.dataset.github_repo:
+            self.wl.properties['dcat:accessURL'] = 'https://github.com/{0}'.format(self.dataset.github_repo)
         self.wl.tablegroup.notes.append(OrderedDict([
             ('dc:title', 'environment'),
             ('properties', OrderedDict([
