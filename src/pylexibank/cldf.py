@@ -8,6 +8,7 @@ from csvw.metadata import Column
 from clldutils.path import copy, Path
 from pycldf.dataset import Wordlist
 import pyclts.models
+from pyconcepticon.api import Concept
 
 from pylexibank.transcription import Analysis, analyze
 
@@ -56,9 +57,15 @@ class Dataset(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         for table in ['FormTable', 'CognateTable', 'LanguageTable', 'ParameterTable']:
             self.objects.setdefault(table, [])
+        # We only add concepts and languages that are referenced by forms!
+        for fk, table in [('Parameter_ID', 'ParameterTable'), ('Language_ID', 'LanguageTable')]:
+            refs = set(obj[fk] for obj in self.objects['FormTable'])
+            self.objects[table] = [obj for obj in self.objects[table] if obj['ID'] in refs]
         self.write(**self.objects)
 
     def add_sources(self, *args):
+        if not args and self.dataset.raw.joinpath('sources.bib').exists():
+            args = self.dataset.raw.read_bib()
         self.wl.sources.add(*args)
 
     def lexeme_id(self):
@@ -106,7 +113,6 @@ class Dataset(object):
                             _bipa_types = [type(s) for s in _bipa]
                             if pyclts.models.UnknownSound in _bipa_types or '?' in _sc:
                                 self.dataset.tr_bad_words.append(kw_)
-
                         except ValueError:
                             self.dataset.tr_invalid_words.append(kw_)
                         except (KeyError, AttributeError):
@@ -142,12 +148,71 @@ class Dataset(object):
     def add_language(self, **kw):
         return self._add_object(self.dataset.language_class, **kw)
 
+    def add_languages(self, id_factory=lambda d: d['ID']):
+        """
+        Add languages as specified in a dataset's etc/languages.csv
+
+        :param id_factory: A callable taking a dict describing a language as argument and returning\
+        a value to be used as ID for the language.
+        :return: The set of language IDs which have been added.
+        """
+        ids = set()
+        for kw in self.dataset.languages:
+            if (not kw.get('Glottocode')) and kw.get('ISO639P3code'):
+                kw['Glottocode'] = self.dataset.glottolog.glottocode_by_iso.get(kw['ISO639P3code'])
+            kw['ID'] = id_factory(kw)
+            ids.add(kw['ID'])
+            self.add_language(**kw)
+        return ids
+
     def add_concept(self, **kw):
         if kw.get('Concepticon_ID'):
             kw.setdefault(
                 'Concepticon_Gloss',
                 self.dataset.concepticon.cached_glosses[int(kw['Concepticon_ID'])])
         return self._add_object(self.dataset.concept_class, **kw)
+
+    def add_concepts(self, id_factory=lambda d: d.number):
+        """
+        Add concepts as specified in a dataset's associated Concepticon concept list or in
+        etc/concepts.csv
+
+        :param id_factory: A callable taking a pyconcepticon.api.Concept object as argument and \
+        returning a value to be used as ID for the concept.
+        :return: The set of concept IDs which have been added.
+        """
+        ids, concepts = set(), []
+        if self.dataset.conceptlist:
+            concepts = self.dataset.conceptlist.concepts.values()
+        else:
+            fields = Concept.public_fields()
+            for i, concept in enumerate(self.dataset.concepts, start=1):
+                kw, attrs = {}, {}
+                for k, v in concept.items():
+                    if k.lower() in fields:
+                        kw[k.lower()] = v
+                    else:
+                        attrs[k] = v
+
+                if not kw.get('id'):
+                    kw['id'] = str(i)
+                if not kw.get('number'):
+                    kw['number'] = str(i)
+                concepts.append(Concept(attributes=attrs, **kw))
+
+        fieldnames = {f.lower(): f for f in self.dataset.concept_class.fieldnames()}
+        for c in concepts:
+            attrs = dict(
+                ID=id_factory(c),
+                Name= c.label,
+                Concepticon_ID=c.concepticon_id,
+                Concepticon_Gloss=c.concepticon_gloss)
+            for fl, f in fieldnames.items():
+                if fl in c.attributes:
+                    attrs[f] = c.attributes[fl]
+            ids.add(attrs['ID'])
+            self.add_concept(**attrs)
+        return ids
 
     def align_cognates(self,
                        alm=None,
