@@ -33,7 +33,7 @@ class BVD(Dataset):
     language_class = BVDLanguage
 
     def iter_wordlists(self, language_map, log):
-        for xml in pb(list(self.raw.glob('*.xml')), desc='xml-to-wl'):
+        for xml in pb(sorted(self.raw.glob('*.xml'), key=lambda p: int(p.stem)), desc='xml-to-wl'):
             wl = Wordlist(self, xml, log)
             if not wl.language.glottocode:
                 if wl.language.id in language_map:
