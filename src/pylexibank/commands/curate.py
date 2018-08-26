@@ -84,7 +84,7 @@ def curate(args):  # pragma: no cover
         if len(user_input) > 1 and user_input[1] not in datasets:
             print(colored('Invalid dataset!', 'red'))
             continue
-            
+
         args.args = user_input[1:]
         try:
             s = time()

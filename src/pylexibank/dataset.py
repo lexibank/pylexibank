@@ -187,11 +187,6 @@ class Dataset(object):
     def metadata(self):
         return Metadata(**jsonlib.load(self.dir / 'metadata.json'))
 
-    @lazyproperty
-    def license(self):
-        lic = None
-
-
     @property
     def stats(self):
         if self.dir.joinpath('README.json').exists():
@@ -547,7 +542,8 @@ class Dataset(object):
                 sum(1 for k, v in totals['cognate_sets'].items() if v > 1)),
             '- **Invalid lexemes:** {0:,}'.format(stats['invalid_words_count']),
             '- **Tokens:** {0:,}'.format(sum(stats['segments'].values())),
-            '- **Segments:** {0:,} ({1} BIPA errors, {2} CTLS sound class errors, {3} CLTS modified)'
+            '- **Segments:** {0:,} ({1} BIPA errors, {2} CTLS sound class errors, '
+            '{3} CLTS modified)'
             .format(lsegments, lbipapyerr, lsclasserr, len(stats['replacements'])),
             '- **Inventory size (avg):** %.2f' % stats['inventory_size'],
         ]

@@ -184,7 +184,8 @@ class Wordlist(object):
 
     def to_cldf(self, ds, concept_map, citekey=None, source=None, concept_key=None):
         if concept_key is None:
-            concept_key = lambda entry: entry.word_id
+            def concept_key(entry):
+                return entry.word_id
 
         ref = None
         if citekey and source:

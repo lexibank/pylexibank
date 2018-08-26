@@ -204,7 +204,7 @@ class Dataset(object):
         for c in concepts:
             attrs = dict(
                 ID=id_factory(c),
-                Name= c.label,
+                Name=c.label,
                 Concepticon_ID=c.concepticon_id,
                 Concepticon_Gloss=c.concepticon_gloss)
             for fl, f in fieldnames.items():
@@ -232,7 +232,8 @@ class Dataset(object):
         self.wl.properties['rdf:ID'] = self.dataset.id
         self.wl.properties['rdf:type'] = 'http://www.w3.org/ns/dcat#Distribution'
         if self.dataset.github_repo:
-            self.wl.properties['dcat:accessURL'] = 'https://github.com/{0}'.format(self.dataset.github_repo)
+            self.wl.properties['dcat:accessURL'] = 'https://github.com/{0}'.format(
+                self.dataset.github_repo)
         self.wl.tablegroup.notes.append(OrderedDict([
             ('dc:title', 'environment'),
             ('properties', OrderedDict([
