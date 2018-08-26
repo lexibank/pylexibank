@@ -26,12 +26,6 @@ from pylexibank import cldf
 from pylexibank import transcription
 
 NOOP = -1
-# When datasets are installed (and cloned) by pip, they end up in directories named after the
-# python package they provide, thus including the `lexibank-` prefix. This is in contrast to
-# datasets cloned without specifying a target directory, where only the repository name is used.
-# To provide some sort of consistency (which can still be screwed when a dataset is cloned to an
-# arbitrary directory), we strip this prefix off, when computing a datasets' ID.
-PKG_PREFIX = 'lexibank-'
 
 
 def non_empty(_, attribute, value):
@@ -182,18 +176,12 @@ class Dataset(object):
     - concepticon concept-list ID as attribute `conceptlist`
     """
     dir = None  # Derived classes must provide an existing directory here!
+    id = None  # Derived classes must provide a unique ID here!
     lexeme_class = Lexeme
     cognate_class = Cognate
     language_class = Language
     concept_class = Concept
     log = logging.getLogger(pylexibank.__name__)
-
-    @lazyproperty
-    def id(self):
-        res = self.__module__
-        if res.startswith(PKG_PREFIX):
-            res = res[len(PKG_PREFIX):]
-        return res
 
     @lazyproperty
     def metadata(self):
@@ -211,6 +199,9 @@ class Dataset(object):
         return {}
 
     def __init__(self, concepticon=None, glottolog=None):
+        if self.__class__ != Dataset:
+            if not (self.dir and self.id):
+                raise ValueError
         self.unmapped = Unmapped()
         self.dir = DataDir(self.dir)
         self._json = self.dir.joinpath('lexibank.json')
@@ -231,8 +222,12 @@ class Dataset(object):
         self.tr_invalid_words = []
 
     def _iter_etc(self, what):
-        path = self.dir / 'etc' / what
-        return reader(path, dicts=True) if path.exists() else []
+        delimiter = '\t'
+        path = self.dir / 'etc' / (what + '.tsv')
+        if not path.exists():
+            delimiter = ','
+            path = path.parent / (what + '.csv')
+        return reader(path, dicts=True, delimiter=delimiter) if path.exists() else []
 
     def read_json(self):  # pragma: no cover
         return jsonlib.load(self._json) if self._json.exists() else {}
@@ -244,36 +239,36 @@ class Dataset(object):
     def github_repo(self):  # pragma: no cover
         try:
             match = re.search(
-                'github\.com/(?P<org>[^/]+)/%s\.git' % re.escape(self.id),
+                'github\.com/(?P<org>[^/]+)/(?P<repo>[^.]+)\.git',
                 self.git_repo.remotes.origin.url)
             if match:
-                return match.group('org') + '/' + self.id
+                return match.group('org') + '/' + match.group('repo')
         except AttributeError:
             pass
 
     @lazyproperty
     def sources(self):
-        return list(self._iter_etc('sources.csv'))
+        return list(self._iter_etc('sources'))
 
     @lazyproperty
     def concepts(self):
-        return list(self._iter_etc('concepts.csv'))
+        return list(self._iter_etc('concepts'))
 
     @lazyproperty
     def languages(self):
         res = []
-        for item in self._iter_etc('languages.csv'):
+        for item in self._iter_etc('languages'):
             if item.get('GLOTTOCODE', None) and not \
                     Glottocode.pattern.match(item['GLOTTOCODE']):  # pragma: no cover
                 raise ValueError(
-                    "Wrong glottocode for item {0}".format(item['GLOTTOCODE']))
+                    "Invalid glottocode {0}".format(item['GLOTTOCODE']))
             res.append(item)
         return res
 
     @lazyproperty
     def lexemes(self):
         res = {}
-        for item in self._iter_etc('lexemes.csv'):
+        for item in self._iter_etc('lexemes'):
             res[item['LEXEME']] = item['REPLACEMENT']
         return res
 

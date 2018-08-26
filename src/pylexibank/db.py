@@ -120,9 +120,9 @@ class TableSpec(object):
         clauses.append('`dataset_ID` TEXT NOT NULL')
         if self.primary_key:
             clauses.append('PRIMARY KEY(`dataset_ID`, `{0}`)'.format(self.primary_key))
-        clauses.append('FOREIGN KEY(`dataset_ID`) REFERENCES dataset(`ID`)')
+        clauses.append('FOREIGN KEY(`dataset_ID`) REFERENCES dataset(`ID`) ON DELETE CASCADE')
         for fk, ref, refcols in self.foreign_keys:
-            clauses.append('FOREIGN KEY({0}) REFERENCES {1}({2})'.format(
+            clauses.append('FOREIGN KEY({0}) REFERENCES {1}({2}) ON DELETE CASCADE'.format(
                 quoted(*fk), ref, quoted(*refcols)))
         return "CREATE TABLE {0} (\n    {1}\n)".format(self.name, ',\n    '.join(clauses))
 

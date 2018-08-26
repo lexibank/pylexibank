@@ -28,13 +28,14 @@ def test_Unmapped(capsys):
 def test_BaseDataset(mocker, repos):
     class TestDataset(Dataset):
         dir = repos / 'datasets' / 'test_dataset'
+        id = 'abc'
 
     ds = TestDataset(glottolog=mocker.Mock(), concepticon=mocker.Mock())
     assert ds.cmd_download() == NOOP
     assert ds.cmd_install() == NOOP
     assert ds.tokenizer(None, 'a') == ['b']
     assert ds.sources
-    assert not ds.concepts  # no concepts stored
+    assert ds.concepts
     assert ds.languages
 
 

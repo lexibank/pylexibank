@@ -3,12 +3,20 @@ from __future__ import unicode_literals, print_function, division
 
 from clldutils.path import Path
 from clldutils.misc import lazyproperty
+import attr
 
-from pylexibank.dataset import Dataset
+from pylexibank.dataset import Dataset, Concept
+
+
+@attr.s
+class TestConcept(Concept):
+    Chinese = attr.ib(default=None)
 
 
 class Test(Dataset):
     dir = Path(__file__).parent
+    id = 'test_dataset'
+    concept_class = TestConcept
 
     @lazyproperty
     def tokenizer(self):
@@ -23,8 +31,10 @@ class Test(Dataset):
         self.raw.read_bib()
         with self.cldf as ds:
             ds.add_sources('@book{abc,\ntitle={The Title}\n}')
+            ds.add_languages()
             ds.add_language(ID='lang1', Glottocode='abcd1234')
             ds.add_language(ID='lang2')
+            ds.add_concepts()
             ds.add_concept(ID='param1', Concepticon_ID=1)
             ds.add_concept(ID='param2')
             for l in ds.add_lexemes(
