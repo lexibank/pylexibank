@@ -1,7 +1,7 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function, division
 import re
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 import attr
 from csvw.metadata import Column
@@ -18,8 +18,8 @@ ID_PATTERN = re.compile('[A-Za-z0-9_\-]+$')
 
 class Dataset(object):
     def __init__(self, dataset):
-        self._count = 0
-        self._cognate_count = 0
+        self._count = defaultdict(int)
+        self._cognate_count = defaultdict(int)
         self.dataset = dataset
 
         md = self.dataset.cldf_dir / MD_NAME
@@ -68,13 +68,16 @@ class Dataset(object):
             args = self.dataset.raw.read_bib()
         self.wl.sources.add(*args)
 
-    def lexeme_id(self):
-        self._count += 1
-        return '{0}'.format(self._count)
+    def lexeme_id(self, kw):
+        self._count[(kw['Language_ID'], kw['Parameter_ID'])] += 1
+        return '{0}-{1}-{2}'.format(
+            kw['Language_ID'],
+            kw['Parameter_ID'],
+            self._count[(kw['Language_ID'], kw['Parameter_ID'])])
 
-    def cognate_id(self):
-        self._cognate_count += 1
-        return self._cognate_count
+    def cognate_id(self, kw):
+        self._cognate_count[kw['Form_ID']] += 1
+        return '{0}-{1}'.format(kw['Form_ID'], self._cognate_count[kw['Form_ID']])
 
     def tokenize(self, item, string):
         if self.dataset.tokenizer:
@@ -98,7 +101,7 @@ class Dataset(object):
                 form = _form.strip()
                 if form:
                     kw_.setdefault('Segments', self.tokenize(kw_, form) or [])
-                    kw_.update(ID=self.lexeme_id(), Form=form)
+                    kw_.update(ID=self.lexeme_id(kw), Form=form)
                     lexemes.append(self._add_object(self.dataset.lexeme_class, **kw_))
 
                     if kw_['Segments']:
@@ -142,7 +145,7 @@ class Dataset(object):
         if lexeme:
             kw.setdefault('Form_ID', lexeme['ID'])
             kw.setdefault('Form', lexeme['Form'])
-        kw.setdefault('ID', self.cognate_id())
+        kw.setdefault('ID', self.cognate_id(kw))
         return self._add_object(self.dataset.cognate_class, **kw)
 
     def add_language(self, **kw):
