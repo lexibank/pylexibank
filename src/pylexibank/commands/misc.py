@@ -24,7 +24,6 @@ from pylexibank.dataset import Dataset
 from pylexibank.db import Database
 
 
-
 @command('new-dataset')
 def new_dataset(args):
     """
@@ -306,7 +305,7 @@ def coverage(args):  # pragma: no cover
             concepts = set(
                 int(cc.concepticon_id) for cc in cl.concepts.values() if cc.concepticon_id
             )
-        except:
+        except:  # noqa: E722
             continue
         for varid, meanings in varieties.items():
             # compute relative size of intersection instead!

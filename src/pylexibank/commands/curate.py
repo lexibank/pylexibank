@@ -17,6 +17,11 @@ from pylexibank.commands.util import with_dataset, _load, _unload
 from pylexibank.dataset import Dataset
 
 
+def _aligned(pairs):
+    maxlabel = max(len(p[0]) for p in pairs)
+    return '\n'.join('  {0} {1}'.format(p[0].ljust(maxlabel), p[1] or '') for p in pairs)
+
+
 commands = {
     'quit': lambda args: None,
     'download': lambda args: with_dataset(args, Dataset._download),
@@ -24,8 +29,14 @@ commands = {
     'dbload': lambda args: with_dataset(args, _load),
     'dbunload': lambda args: with_dataset(args, _unload),
     'orthography': lambda args: None,
-    'help': lambda args: print("Available Commands: %s" % ", ".join(sorted(commands))),
+    'help': lambda args: print("Available Commands: \n%s" % _aligned(
+        [(k, getattr(v, '__doc__', '')) for k, v in sorted(commands.items())])),
 }
+commands['quit'].__doc__ = ': exits lexibank curator'
+commands['download'].__doc__ = "<dataset> : run <dataset>'s download method"
+commands['makecldf'].__doc__ = "<dataset> : create CLDF for <dataset>"
+commands['dbload'].__doc__ = "<dataset> : load an installed dataset into the SQLite DB"
+commands['dbunload'].__doc__ = "<dataset> : drop an installed dataset from the SQLite DB"
 
 
 def fuzzyfinder(infix, choices):  # pragma: no cover
@@ -73,7 +84,7 @@ def curate(args):  # pragma: no cover
         if len(user_input) > 1 and user_input[1] not in datasets:
             print(colored('Invalid dataset!', 'red'))
             continue
-            
+
         args.args = user_input[1:]
         try:
             s = time()
