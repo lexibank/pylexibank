@@ -194,9 +194,8 @@ class Dataset(object):
         return {}
 
     def __init__(self, concepticon=None, glottolog=None):
-        if self.__class__ != Dataset:
-            if not (self.dir and self.id):
-                raise ValueError
+        if not isinstance(self, Dataset) and not (self.dir and self.id):
+            raise ValueError("Unable to resolve class")
         self.unmapped = Unmapped()
         self.dir = DataDir(self.dir)
         self._json = self.dir.joinpath('lexibank.json')
