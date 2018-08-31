@@ -25,7 +25,7 @@ setup(
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*',
     install_requires=[
         'six',
-        'attrs',
+        'attrs>=0.18.1',
         'pycldf>=1.5.1',
         'clldutils>=2.4.1',
         'pyglottolog',
