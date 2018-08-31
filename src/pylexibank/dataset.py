@@ -89,7 +89,7 @@ class Lexeme(FieldnamesMixin):
     Source = attr.ib(
         default=attr.Factory(list),
         validator=attr.validators.instance_of(list),
-        convert=lambda v: [v] if isinstance(v, six.string_types) else v)
+        converter=lambda v: [v] if isinstance(v, six.string_types) else v)
     Comment = attr.ib(default=None)
     Cognacy = attr.ib(default=None)
     Loan = attr.ib(
@@ -108,14 +108,16 @@ class Cognate(FieldnamesMixin):
     Form = attr.ib(default=None)
     Cognateset_ID = attr.ib(default=None)
     Doubt = attr.ib(
-        default=False, convert=lambda v: v if isinstance(v, bool) else eval(v))
+        default=False,
+        converter=lambda v: v if isinstance(v, bool) else eval(v))
     Cognate_Detection_Method = attr.ib(default='expert')
     Source = attr.ib(
         default=attr.Factory(list),
         validator=attr.validators.instance_of(list),
-        convert=lambda v: [v] if isinstance(v, six.string_types) else v)
+        converter=lambda v: [v] if isinstance(v, six.string_types) else v)
     Alignment = attr.ib(
-        default=None, convert=lambda v: ' '.join(v) if isinstance(v, list) else v)
+        default=None,
+        converter=lambda v: ' '.join(v) if isinstance(v, list) else v)
     Alignment_Method = attr.ib(default=None)
     Alignment_Source = attr.ib(default=None)
 
