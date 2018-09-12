@@ -57,11 +57,12 @@ class TOB(Dataset):
             c.number: c.concepticon_id for c in self.conceptlist.concepts.values()}
 
         with self.cldf as ds:
+            ds.add_concepts()
             for cid, concept, lid, gc, form, cogid in pb(self.raw.read_csv('output.csv')):
-                ds.add_language(ID=lid, Name=lid, Glottocode=gc)
+                ds.add_language(ID=lid.replace(' ', '_'), Name=lid, Glottocode=gc)
                 ds.add_concept(ID=cid, Name=concept, Concepticon_ID=concepticon[cid])
                 for row in ds.add_lexemes(
-                    Language_ID=lid,
+                    Language_ID=lid.replace(' ', '_'),
                     Parameter_ID=cid,
                     Value=form,
                     Cognacy=concept + '-' + cogid

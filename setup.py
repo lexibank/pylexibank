@@ -29,7 +29,7 @@ setup(
         'pycldf>=1.5.1',
         'clldutils>=2.4.1',
         'pyglottolog',
-        'pyconcepticon',
+        'pyconcepticon>=1.4.1',
         'pyclts>=0.2',
         'segments>=2.0.1',
         'lingpy',
