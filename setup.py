@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pylexibank',
-    version='0.11.1.dev0',
+    version='0.12.1.dev0',
     author='Robert Forkel',
     author_email='forkel@shh.mpg.de',
     description='Python library implementing the lexibank workbench',
@@ -29,7 +29,7 @@ setup(
         'pycldf>=1.5.1',
         'clldutils>=2.4.1',
         'pyglottolog',
-        'pyconcepticon',
+        'pyconcepticon>=1.4.1',
         'pyclts>=0.2',
         'segments>=2.0.1',
         'lingpy',

@@ -10,6 +10,8 @@ from clldutils.dsv import UnicodeWriter
 from pylexibank.dataset import Dataset
 from pylexibank.util import pb, getEvoBibAsBibtex
 
+SOURCE = 'Starostin2011'
+
 
 class TOB(Dataset):
     name = None
@@ -24,7 +26,7 @@ class TOB(Dataset):
 
     def cmd_download(self, **kw):
         # download source
-        self.raw.write('sources.bib', getEvoBibAsBibtex('Starostin2011', **kw))
+        self.raw.write('sources.bib', getEvoBibAsBibtex(SOURCE, **kw))
 
         # download data
         all_records = []
@@ -52,21 +54,19 @@ class TOB(Dataset):
             f.writerows(all_records)
 
     def cmd_install(self, *args, **kw):
-        cognate_source = self.raw.read_bib()[0]
-        concepticon = {
-            c.number: c.concepticon_id for c in self.conceptlist.concepts.values()}
-
         with self.cldf as ds:
+            ds.add_sources()
+            ds.add_concepts(id_factory=lambda c: c.number)
             for cid, concept, lid, gc, form, cogid in pb(self.raw.read_csv('output.csv')):
-                ds.add_language(ID=lid, Name=lid, Glottocode=gc)
-                ds.add_concept(ID=cid, Name=concept, Concepticon_ID=concepticon[cid])
+                ds.add_language(ID=lid.replace(' ', '_'), Name=lid, Glottocode=gc)
                 for row in ds.add_lexemes(
-                    Language_ID=lid,
+                    Language_ID=lid.replace(' ', '_'),
                     Parameter_ID=cid,
                     Value=form,
+                    Source=[SOURCE],
                     Cognacy=concept + '-' + cogid
                 ):
                     ds.add_cognate(
                         lexeme=row,
                         Cognateset_ID=cogid,
-                        Source=[cognate_source.id])
+                        Source=[SOURCE])
