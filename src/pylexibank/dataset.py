@@ -492,13 +492,16 @@ class Dataset(object):
         missing_source = []
         missing_lang = []
 
+        param2concepticon = {r['ID']: r['Concepticon_ID'] for r in self.cldf['ParameterTable']}
+        lang2glottolog = {r['ID']: r['Glottocode'] for r in self.cldf['LanguageTable']}
+
         for row in self.cldf['FormTable']:
             if row['Source']:
                 totals['sources'].update(['y'])
             else:
                 missing_source.append(row)
-            totals['concepts'].update([row['Parameter_ID']])
-            totals['languages'].update([row['Language_ID']])
+            totals['concepts'].update([param2concepticon[row['Parameter_ID']]])
+            totals['languages'].update([lang2glottolog[row['Language_ID']]])
             totals['lexemes'] += 1
             synonyms[row['Language_ID']].update([row['Parameter_ID']])
 
