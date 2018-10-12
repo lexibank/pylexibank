@@ -487,6 +487,8 @@ class Dataset(object):
             'sources': Counter(),
             'cognate_sets': Counter(),
             'lexemes': 0,
+            'lids': Counter(),
+            'cids': Counter(),
         }
 
         missing_source = []
@@ -503,6 +505,8 @@ class Dataset(object):
             totals['concepts'].update([param2concepticon[row['Parameter_ID']]])
             totals['languages'].update([lang2glottolog[row['Language_ID']]])
             totals['lexemes'] += 1
+            totals['lids'].update([row['Language_ID']])
+            totals['cids'].update([row['Parameter_ID']])
             synonyms[row['Language_ID']].update([row['Parameter_ID']])
 
         for row in self.cldf['CognateTable']:
@@ -538,8 +542,8 @@ class Dataset(object):
             ])
         lines.extend(['## Statistics', '\n', '\n'.join(badges), ''])
         stats_lines = [
-            '- **Varieties:** {0:,}'.format(len(totals['languages'])),
-            '- **Concepts:** {0:,}'.format(len(totals['concepts'])),
+            '- **Varieties:** {0:,}'.format(len(totals['lids'])),
+            '- **Concepts:** {0:,}'.format(len(totals['cids'])),
             '- **Lexemes:** {0:,}'.format(totals['lexemes']),
             '- **Synonymy:** %.2f' % (totals['SI']),
             '- **Cognacy:** {0:,} cognates in {1:,} cognate sets'.format(
@@ -556,8 +560,8 @@ class Dataset(object):
             log.info('\n'.join(['Summary for dataset {}'.format(self.id)] + stats_lines))
         lines.extend(stats_lines)
 
-        totals['languages'] = len(totals['languages'])
-        totals['concepts'] = len(totals['concepts'])
+        totals['languages'] = len(totals['lids'])
+        totals['concepts'] = len(totals['cids'])
         totals['cognate_sets'] = bool(1 for k, v in totals['cognate_sets'].items() if v > 1)
         totals['sources'] = totals['sources'].get('y', 0)
 
