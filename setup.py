@@ -40,6 +40,7 @@ setup(
         'tqdm',
         'xlrd',
         'prompt_toolkit~=1.0',
+        'python-nexus',
     ],
     extras_require={
         'dev': ['flake8', 'wheel', 'twine'],
