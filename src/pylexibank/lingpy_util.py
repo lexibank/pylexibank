@@ -103,7 +103,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
         for k in alm:
             if alm[k, 'lid'] in cognates:
                 cognate = cognates[alm[k, 'lid']]
-                cognate['Alignment'] = alm[k, 'alignment'].split(' ')
+                cognate['Alignment'] = alm[k, 'alignment']
                 cognate['Alignment_Method'] = method
     else:
         alm = lingpy.Alignments(dataset, ref='cogid')
@@ -111,7 +111,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
 
         for cognate in cognate_sets:
             idx = cognate['ID'] or cognate['Form_ID']
-            cognate['Alignment'] = alm[int(idx), 'alignment'].split(' ')
+            cognate['Alignment'] = alm[int(idx), 'alignment']
             cognate['Alignment_Method'] = 'SCA-' + method
 
 
