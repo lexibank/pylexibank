@@ -32,7 +32,7 @@ setup(
         'pyconcepticon>=1.4.1',
         'pyclts>=0.2',
         'segments>=2.0.1',
-        'lingpy',
+        'lingpy>=2.6.4',
         'appdirs',
         'requests',
         'termcolor',
