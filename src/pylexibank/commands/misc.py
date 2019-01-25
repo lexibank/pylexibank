@@ -57,7 +57,6 @@ def new_dataset(args):
     # check license!
     # check conceptlist!
 
-    jsonlib.dump(md, outdir / 'metadata.json', indent=4)
     for path in Path(pylexibank.__file__).parent.joinpath('dataset_template').iterdir():
         if path.is_file():
             if path.suffix in ['.pyc']:
@@ -76,6 +75,8 @@ def new_dataset(args):
             write_text(outdir / target, content)
         else:
             shutil.copytree(str(path), str(outdir / path.name))
+    del md['id']
+    jsonlib.dump(md, outdir / 'metadata.json', indent=4)
 
 
 @command()
