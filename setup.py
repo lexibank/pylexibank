@@ -39,7 +39,7 @@ setup(
         'gitpython',
         'tqdm',
         'xlrd',
-        'prompt_toolkit~=1.0',
+        'prompt_toolkit>=1.0',
         'python-nexus',
     ],
     extras_require={
