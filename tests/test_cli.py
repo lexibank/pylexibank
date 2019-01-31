@@ -23,9 +23,6 @@ def test_new_dataset(tmpdir, mocker):
     new_dataset(mocker.Mock(args=[str(tmpdir), 'newid']))
     assert tmpdir.join('newid').check()
 
-    with pytest.raises(ValueError):
-        new_dataset(mocker.Mock(args=[str(tmpdir), 'newid']))
-
     new_dataset(mocker.Mock(args=[str(tmpdir)]))
     assert tmpdir.join('abc').check()
 

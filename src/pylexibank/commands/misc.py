@@ -47,9 +47,8 @@ def new_dataset(args):
         md['id'] = input('Dataset ID: ')
 
     outdir = outdir / md['id']
-    if outdir.exists():
-        raise ValueError('the dataset directory already exists!')
-    outdir.mkdir()
+    if not outdir.exists():
+        outdir.mkdir()
 
     for key in ['title', 'url', 'license', 'conceptlist', 'citation']:
         md[key] = input('Dataset {0}: '.format(key))
@@ -74,7 +73,10 @@ def new_dataset(args):
                 content = content.format(**md)
             write_text(outdir / target, content)
         else:
-            shutil.copytree(str(path), str(outdir / path.name))
+            target = outdir / path.name
+            if target.exists():
+                shutil.rmtree(str(target))
+            shutil.copytree(str(path), str(target))
     del md['id']
     jsonlib.dump(md, outdir / 'metadata.json', indent=4)
 
