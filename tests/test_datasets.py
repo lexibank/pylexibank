@@ -37,6 +37,7 @@ def test_BaseDataset(mocker, repos):
     assert ds.sources
     assert ds.concepts
     assert ds.languages
+    assert len(ds.raw.read_bib('sources_ext.bib')) == 96
 
 
 def test_Dataset(dataset, capsys):

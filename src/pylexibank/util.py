@@ -23,6 +23,7 @@ from clldutils.misc import slug, xmlchars
 from clldutils.badge import Colors, badge
 from clldutils import jsonlib
 from pycldf.sources import Source, Reference
+from pybtex import database
 import pylexibank
 
 requests.packages.urllib3.disable_warnings()
@@ -164,8 +165,8 @@ class DataDir(type(Path())):
         return et.fromstring(xml.encode('utf8'))
 
     def read_bib(self, fname='sources.bib'):
-        is_bibtex = re.compile(r"""@.*?\{.*?^\}$""", re.MULTILINE | re.DOTALL)
-        return [Source.from_bibtex(b) for b in is_bibtex.findall(self.read(fname))]
+        bib = database.parse_string(self.read(fname), bib_format='bibtex')
+        return [Source.from_entry(k, e) for k, e in bib.entries.items()]
 
     def xls2csv(self, fname, outdir=None):
         if isinstance(fname, string_types):
