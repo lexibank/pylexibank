@@ -22,7 +22,7 @@ from termcolor import colored
 from appdirs import user_config_dir
 from six.moves import input
 from clldutils.inifile import INI
-from clldutils.clilib import ArgumentParserWithLogging
+from clldutils.clilib import ArgumentParserWithLogging, ParserError
 from clldutils.path import Path
 
 import pylexibank
@@ -70,13 +70,14 @@ def get_path(src):  # pragma: no cover
         res = False
 
 
-def configure():  # pragma: no cover
+def configure(cfgpath=None):
     """
     Configure lexibank.
 
     :return: a pair (config, logger)
     """
-    cfgpath = Path(user_config_dir(pylexibank.__name__)).joinpath('config.ini')
+    cfgpath = Path(cfgpath) \
+        if cfgpath else Path(user_config_dir(pylexibank.__name__)) / 'config.ini'
     if not cfgpath.exists():
         print("""
 {0}
@@ -99,7 +100,12 @@ such as the logging level.""".format(cfgpath.resolve()))
     else:
         cfg = INI.from_file(cfgpath)
 
-    glottolog = Glottolog(cfg['paths']['glottolog'])
+    try:
+        glottolog = Glottolog(cfg['paths']['glottolog'])
+    except (FileNotFoundError, ValueError):
+        raise ParserError('Misconfigured Glottolog path in {0}'.format(cfgpath))
+    if not Path(cfg['paths']['concepticon']).exists():
+        raise ParserError('Misconfigured Concepticon path in {0}'.format(cfgpath))
     concepticon = Concepticon(cfg['paths']['concepticon'])
     datasets = sorted(
         iter_datasets(glottolog=glottolog, concepticon=concepticon, verbose=True),
