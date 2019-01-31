@@ -116,9 +116,9 @@ class Dataset(object):
                             _bipa_types = [type(s) for s in _bipa]
                             if pyclts.models.UnknownSound in _bipa_types or '?' in _sc:
                                 self.dataset.tr_bad_words.append(kw_)
-                        except ValueError:
+                        except ValueError:  # pragma: no cover
                             self.dataset.tr_invalid_words.append(kw_)
-                        except (KeyError, AttributeError):
+                        except (KeyError, AttributeError):  # pragma: no cover
                             print(kw_['Form'], kw_)
                             raise
 
@@ -195,7 +195,7 @@ class Dataset(object):
                     if k.lower() in fields:
                         kw[k.lower()] = v
                     else:
-                        attrs[k] = v
+                        attrs[k.lower()] = v
 
                 if not kw.get('id'):
                     kw['id'] = str(i)

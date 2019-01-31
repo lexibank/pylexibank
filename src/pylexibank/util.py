@@ -113,12 +113,14 @@ def log_dump(fname, log=None):
 
 
 def jsondump(obj, fname, log=None):
+    fname = Path(fname)
     if fname.exists():
         d = jsonlib.load(fname)
         d.update(obj)
         obj = d
     jsonlib.dump(sorted_obj(obj), fname, indent=4)
     log_dump(fname, log=log)
+    return obj
 
 
 def textdump(text, fname, log=None):

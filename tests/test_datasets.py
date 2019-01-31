@@ -1,11 +1,20 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
-import logging
+import json
 
 import pytest
-from clldutils.loglib import Logging
 
-from pylexibank.dataset import Lexeme, Unmapped, Dataset, NOOP
+from pylexibank.dataset import Lexeme, Unmapped, Dataset, NOOP, Metadata
+
+
+def test_Metadata():
+    md = Metadata(license='CC-BY-1.0')
+    assert md.known_license
+    assert md.common_props
+
+    md = Metadata()
+    assert md.common_props
+
+    md = Metadata(license='CC-BY')
+    assert md.common_props['dc:license'] == 'CC-BY'
 
 
 def test_Item():
@@ -25,6 +34,14 @@ def test_Unmapped(capsys):
     assert 'tc,"the concept",,' in out.split('\n')
 
 
+def test_invalid_dataset():
+    class Test(Dataset):
+        pass
+
+    with pytest.raises(ValueError):
+        Test()
+
+
 def test_BaseDataset(mocker, repos):
     class TestDataset(Dataset):
         dir = repos / 'datasets' / 'test_dataset'
@@ -38,6 +55,10 @@ def test_BaseDataset(mocker, repos):
     assert ds.concepts
     assert ds.languages
     assert len(ds.raw.read_bib('sources_ext.bib')) == 96
+
+    assert not ds.stats
+    ds.dir.write('README.json', json.dumps({'a': 1}))
+    assert ds.stats['a'] == 1
 
 
 def test_Dataset(dataset, capsys):
