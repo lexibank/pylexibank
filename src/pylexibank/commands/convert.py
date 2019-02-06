@@ -6,8 +6,9 @@ from nexus import NexusWriter
 from pylexibank.commands.util import get_dataset
 
 
-@command()
-def nexus(args):
+# FIXME: only register as command, once it is implemented!
+#@command()
+def nexus(args):  # pragma: no cover
     usage = """
     Convert a lexibank dataset to nexus.
 

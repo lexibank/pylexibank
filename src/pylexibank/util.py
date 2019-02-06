@@ -23,6 +23,7 @@ from clldutils.misc import slug, xmlchars
 from clldutils.badge import Colors, badge
 from clldutils import jsonlib
 from pycldf.sources import Source, Reference
+from pybtex import database
 import pylexibank
 
 requests.packages.urllib3.disable_warnings()
@@ -112,12 +113,14 @@ def log_dump(fname, log=None):
 
 
 def jsondump(obj, fname, log=None):
+    fname = Path(fname)
     if fname.exists():
         d = jsonlib.load(fname)
         d.update(obj)
         obj = d
     jsonlib.dump(sorted_obj(obj), fname, indent=4)
     log_dump(fname, log=log)
+    return obj
 
 
 def textdump(text, fname, log=None):
@@ -157,13 +160,15 @@ class DataDir(type(Path())):
     def read_tsv(self, fname, **kw):
         return self.read_csv(fname, delimiter='\t', **kw)
 
-    def read_xml(self, fname):
-        return et.fromstring(
-            '<r>{0}</r>'.format(xmlchars(self.read(fname))).encode('utf8'))
+    def read_xml(self, fname, wrap=True):
+        xml = xmlchars(self.read(fname))
+        if wrap:
+            xml = '<r>{0}</r>'.format(xml)
+        return et.fromstring(xml.encode('utf8'))
 
     def read_bib(self, fname='sources.bib'):
-        is_bibtex = re.compile(r"""@.*?\{.*?^\}$""", re.MULTILINE | re.DOTALL)
-        return [Source.from_bibtex(b) for b in is_bibtex.findall(self.read(fname))]
+        bib = database.parse_string(self.read(fname), bib_format='bibtex')
+        return [Source.from_entry(k, e) for k, e in bib.entries.items()]
 
     def xls2csv(self, fname, outdir=None):
         if isinstance(fname, string_types):
@@ -192,13 +197,16 @@ class DataDir(type(Path())):
             if p and p.exists():
                 remove(p)
 
-    def download(self, url, fname, log=None):
+    def download(self, url, fname, log=None, skip_if_exists=False):
+        p = self.joinpath(fname)
+        if p.exists() and skip_if_exists:
+            return p
         res = get_url(url, log=log, stream=True)
         with open(self.posix(fname), 'wb') as fp:
             for chunk in res.iter_content(chunk_size=1024):
                 if chunk:  # filter out keep-alive new chunks
                     fp.write(chunk)
-        return self.joinpath(fname)
+        return p
 
     def download_and_unpack(self, url, *paths, **kw):
         """

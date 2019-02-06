@@ -17,6 +17,7 @@ class Test(Dataset):
     dir = Path(__file__).parent
     id = 'test_dataset'
     concept_class = TestConcept
+    github_repo = 'x/y'
 
     @lazyproperty
     def tokenizer(self):
@@ -60,5 +61,9 @@ class Test(Dataset):
                 Value='a~b')
             try:
                 list(iter_cognates(ds))
+            except ValueError:
+                pass
+            try:
+                list(iter_cognates(ds, method='sca'))
             except ValueError:
                 pass

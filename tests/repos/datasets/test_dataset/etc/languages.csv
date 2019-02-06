@@ -1,2 +1,3 @@
-ID,Name,Glottocode
-1,abcd,abcd1234
+ID,Name,Glottocode,ISO639P3code
+1,abcd,abcd1234,
+2,cdef,,abc

@@ -7,6 +7,14 @@ from clldutils.path import Path
 from pylexibank import util
 
 
+def test_jsondump(tmpdir):
+    fname = str(tmpdir.join('dump.json'))
+    res = util.jsondump({'a': 2}, fname)
+    assert 'a' in res
+    res = util.jsondump({'b': 3}, fname)
+    assert res['b'] == 3 and res['a'] == 2
+
+
 def test_getEvoBibAsBibtex(mocker):
     bib = '<pre>@book{key,\ntitle={The Title}\n}\n</pre>'
     mocker.patch(

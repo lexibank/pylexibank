@@ -32,10 +32,20 @@ def repos(tmpd):
 
 
 @pytest.fixture(scope='session')
-def dataset(repos, tmpd):
+def glottolog(repos):
+    return Glottolog(repos)
+
+
+@pytest.fixture(scope='session')
+def concepticon(repos):
+    return Concepticon(repos)
+
+
+@pytest.fixture(scope='session')
+def dataset(repos, tmpd, glottolog, concepticon):
     from mock import Mock
 
     mod = import_module(repos / 'datasets' / 'test_dataset')
-    ds = mod.Test(glottolog=Glottolog(repos), concepticon=Concepticon(repos))
+    ds = mod.Test(glottolog=glottolog, concepticon=concepticon)
     ds._install(log=Mock())
     return ds

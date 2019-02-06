@@ -31,6 +31,7 @@ class BVDLanguage(Language):
 class BVD(Dataset):
     SECTION = None
     language_class = BVDLanguage
+    cognate_pattern = re.compile('\s*(?P<id>([A-z]?[0-9]+|[A-Z]))\s*(?P<doubt>\?+)?\s*$')
 
     def iter_wordlists(self, language_map, log):
         for xml in pb(sorted(self.raw.glob('*.xml'), key=lambda p: int(p.stem)), desc='xml-to-wl'):
@@ -38,7 +39,7 @@ class BVD(Dataset):
             if not wl.language.glottocode:
                 if wl.language.id in language_map:
                     wl.language.glottocode = language_map[wl.language.id]
-                else:
+                else:  # pragma: no cover
                     self.unmapped.add_language(
                         ID=wl.language.id,
                         Name=wl.language.name,
@@ -51,7 +52,7 @@ class BVD(Dataset):
         return [self.clean_form(item, form)
                 for form in split_text_with_context(value, separators=',;')]
 
-    def cmd_download(self, **kw):
+    def cmd_download(self, **kw):  # pragma: no cover
         assert self.SECTION in ['austronesian', 'mayan', 'utoaztecan']
         self.log.info('ABVD section set to %s' % self.SECTION)
         for fname in self.raw.iterdir():
@@ -65,7 +66,7 @@ class BVD(Dataset):
                 self.log.warn("No content for %s %d. Ending." % (self.SECTION, lid))
                 break
 
-    def get_data(self, lid):
+    def get_data(self, lid):  # pragma: no cover
         fname = self.raw.download(URL % (self.SECTION, lid), '%s.xml' % lid, log=self.log)
         if fname.stat().st_size == 0:
             remove(fname)
@@ -86,13 +87,13 @@ class XmlElement(object):
             elif len(spec) == 3:
                 attr, nattr, conv = spec
             else:
-                raise ValueError(spec)
+                raise ValueError(spec)  # pragma: no cover
             nattr = nattr or attr
             ee = e.find(attr)
             if ee is not None:
                 text = e.find(attr).text
                 if text and not isinstance(text, text_type):
-                    text = text.decode('utf8')
+                    text = text.decode('utf8')  # pragma: no cover
             else:
                 text = ''
             if text:
@@ -136,14 +137,6 @@ class Entry(XmlElement):
         self.section = section
         self.rowids = []
         XmlElement.__init__(self, e)
-
-    @property
-    def concept_id(self):
-        return '%s-%s' % (self.section, int(self.word_id))
-
-    @property
-    def concept(self):
-        return '%s [%s]' % (self.word, self.section)
 
     @property
     def cognates(self):
@@ -211,17 +204,17 @@ class Wordlist(object):
 
         for entry in self.entries:
             if entry.name is None or len(entry.name) == 0:  # skip empty entries
-                continue
+                continue  # pragma: no cover
 
             if entry.cognacy and (
                     's' == entry.cognacy.lower() or 'x' in entry.cognacy.lower()):
                 # skip entries marked as incorrect word form due to semantics
                 # (x = probably, s = definitely)
-                continue
+                continue  # pragma: no cover
 
             if not (citekey and source):
                 src = entry.e.find('source')
-                if src and getattr(src, 'text'):
+                if (src is not None) and getattr(src, 'text'):
                     ref = slug(text_type(src.text))
                     ds.add_sources(Source('misc', ref, title=src.text))
             cid = concept_map.get(concept_key(entry))
@@ -241,7 +234,7 @@ class Wordlist(object):
             ):
                 for cognate_set_id in entry.cognates:
                     match = self.dataset.cognate_pattern.match(cognate_set_id)
-                    if not match:
+                    if not match:  # pragma: no cover
                         self.log.warn('Invalid cognateset ID: {0}'.format(cognate_set_id))
                     else:
                         ds.add_cognate(

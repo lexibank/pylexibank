@@ -89,10 +89,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
         wordlist.add_entries(
             'cogid',
             'lid',
-            lambda x: cognates[x]['Cognateset_ID'] if x in cognates else '')
-        for i, k in enumerate(wordlist):
-            if not wordlist[k, 'cogid']:
-                wordlist[k][wordlist.header['cogid']] = 'empty-%s' % i
+            lambda x: cognates[x]['Cognateset_ID'] if x in cognates else 0)
         alm = lingpy.Alignments(
             wordlist,
             ref='cogid',
@@ -103,7 +100,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
         for k in alm:
             if alm[k, 'lid'] in cognates:
                 cognate = cognates[alm[k, 'lid']]
-                cognate['Alignment'] = alm[k, 'alignment'].split(' ')
+                cognate['Alignment'] = alm[k, 'alignment']
                 cognate['Alignment_Method'] = method
     else:
         alm = lingpy.Alignments(dataset, ref='cogid')
@@ -111,35 +108,5 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
 
         for cognate in cognate_sets:
             idx = cognate['ID'] or cognate['Form_ID']
-            cognate['Alignment'] = alm[int(idx), 'alignment'].split(' ')
+            cognate['Alignment'] = alm[int(idx), 'alignment']
             cognate['Alignment_Method'] = 'SCA-' + method
-
-
-def lingpy_subset(path, header, errors=2):
-    try:
-        wl = lingpy.get_wordlist(path, col='language_name', row='parameter_name')
-    except ValueError:
-        return []
-    data = []
-
-    if 'segments' not in wl.header:
-        return []
-    for taxon in wl.cols:
-        error_count = 0
-        idxs = wl.get_list(col=taxon, flat=True)
-        goodlist = []
-        for idx, segments in [(idx, wl[idx, 'segments']) for idx in idxs]:
-            if wl[idx, 'language_id'] and wl[idx, 'parameter_id']:
-                cv = lingpy.tokens2class(segments.split(), 'cv')
-                if '0' in cv:
-                    error_count += 1
-                else:
-                    l_ = sum(1 for x in cv if x != 'T')
-                    if l_:
-                        goodlist += [(idx, l_)]
-                if error_count > errors:
-                    goodlist = []
-                    break
-        for idx, l in goodlist:
-            data.append([wl[idx, h] for h in header] + ['{0}'.format(l)])
-    return data
