@@ -1,8 +1,5 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
 import re
 
-from six import text_type
 from bs4 import BeautifulSoup
 import bs4
 from clldutils.dsv import UnicodeWriter
@@ -45,7 +42,7 @@ class TOB(Dataset):
                                 if len(dpoints) >= 3:
                                     lname = dpoints[1].text
                                     glottolog = re.findall(
-                                        'Glottolog: (........)', text_type(dpoints[1]))[0]
+                                        'Glottolog: (........)', str(dpoints[1]))[0]
                                     entry = dpoints[2].text
                                     cogid = list(child.children)[4].text.strip()
                                     all_records.append(

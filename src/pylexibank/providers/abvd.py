@@ -1,9 +1,6 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
 import re
 
 import attr
-from six import text_type
 from clldutils.misc import slug, nfilter
 from clldutils.path import remove
 from clldutils.text import split_text_with_context
@@ -92,7 +89,7 @@ class XmlElement(object):
             ee = e.find(attr)
             if ee is not None:
                 text = e.find(attr).text
-                if text and not isinstance(text, text_type):
+                if text and not isinstance(text, str):
                     text = text.decode('utf8')  # pragma: no cover
             else:
                 text = ''
@@ -215,7 +212,7 @@ class Wordlist(object):
             if not (citekey and source):
                 src = entry.e.find('source')
                 if (src is not None) and getattr(src, 'text'):
-                    ref = slug(text_type(src.text))
+                    ref = slug(str(src.text))
                     ds.add_sources(Source('misc', ref, title=src.text))
             cid = concept_map.get(concept_key(entry))
             if not cid:

@@ -1,6 +1,3 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
-
 from time import time
 import traceback
 
@@ -13,13 +10,9 @@ from appdirs import user_data_dir
 from clldutils.path import Path
 from clldutils.clilib import command
 
+from pylexibank.util import aligned
 from pylexibank.commands.util import with_dataset, _load, _unload
 from pylexibank.dataset import Dataset
-
-
-def _aligned(pairs):
-    maxlabel = max(len(p[0]) for p in pairs)
-    return '\n'.join('  {0} {1}'.format(p[0].ljust(maxlabel), p[1] or '') for p in pairs)
 
 
 commands = {
@@ -29,7 +22,7 @@ commands = {
     'dbload': lambda args: with_dataset(args, _load),
     'dbunload': lambda args: with_dataset(args, _unload),
     'orthography': lambda args: None,
-    'help': lambda args: print("Available Commands: \n%s" % _aligned(
+    'help': lambda args: print("Available Commands: \n%s" % aligned(
         [(k, getattr(v, '__doc__', '')) for k, v in sorted(commands.items())])),
 }
 commands['quit'].__doc__ = ': exits lexibank curator'

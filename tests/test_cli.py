@@ -6,6 +6,7 @@ from clldutils.inifile import INI
 import pytest
 
 from pylexibank import __main__
+from pylexibank.commands import convert
 
 
 @contextlib.contextmanager
