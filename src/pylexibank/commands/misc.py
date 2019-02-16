@@ -1,11 +1,8 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
 from collections import defaultdict, Counter, OrderedDict
 from subprocess import check_call
 import re
 import shutil
 
-from six import PY2
 from termcolor import colored
 from segments.tokenizer import Tokenizer
 from clldutils import licenses
@@ -245,11 +242,8 @@ def ls(args):
         else:
             totals.append('')
     table.append(totals)
-    res = table.render(
-        tablefmt='simple', sortkey=lambda r: r[0], condensed=False, floatfmt=',.0f')
-    if PY2:
-        res = res.encode('utf8')
-    print(res)
+    print(table.render(
+        tablefmt='simple', sortkey=lambda r: r[0], condensed=False, floatfmt=',.0f'))
 
 
 @command()
@@ -258,14 +252,14 @@ def bib(args):
 
     def _harvest(ds, **kw):
         for bib in ds.cldf_dir.glob('*.bib'):
-            bib = parse_file(bib.as_posix())
+            bib = parse_file(str(bib))
             for id_, entry in bib.entries.items():
                 id_ = '{0}:{1}'.format(ds.id, id_)
                 if id_ not in gbib.entries:
                     gbib.add_entry(id_, entry)
 
     with_dataset(args, _harvest)
-    gbib.to_file(Path(args.cfg['paths']['lexibank']).joinpath('lexibank.bib').as_posix())
+    gbib.to_file(str(Path(args.cfg['paths']['lexibank']).joinpath('lexibank.bib')))
 
 
 @command()

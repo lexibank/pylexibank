@@ -1,5 +1,3 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
 import logging
 from datetime import datetime
 import re
@@ -8,7 +6,6 @@ from collections import Counter, defaultdict
 import unicodedata
 
 import attr
-import six
 import git
 from clldutils.dsv import reader
 from clldutils.text import split_text_with_context
@@ -89,7 +86,7 @@ class Lexeme(FieldnamesMixin):
     Source = attr.ib(
         default=attr.Factory(list),
         validator=attr.validators.instance_of(list),
-        converter=lambda v: [v] if isinstance(v, six.string_types) else v)
+        converter=lambda v: [v] if isinstance(v, str) else v)
     Comment = attr.ib(default=None)
     Cognacy = attr.ib(default=None)
     Loan = attr.ib(
@@ -114,10 +111,10 @@ class Cognate(FieldnamesMixin):
     Source = attr.ib(
         default=attr.Factory(list),
         validator=attr.validators.instance_of(list),
-        converter=lambda v: [v] if isinstance(v, six.string_types) else v)
+        converter=lambda v: [v] if isinstance(v, str) else v)
     Alignment = attr.ib(
         default=None,
-        converter=lambda v: ' '.join(v) if isinstance(v, list) else v)
+        converter=lambda v: v if isinstance(v, list) or v is None else v.split())
     Alignment_Method = attr.ib(default=None)
     Alignment_Source = attr.ib(default=None)
 
@@ -422,7 +419,7 @@ class Dataset(object):
                     rmtree(f)
 
     def _not_implemented(self, method):
-        self.log.warn('cmd_{0} not implemented for dataset {1}'.format(method, self.id))
+        self.log.warning('cmd_{0} not implemented for dataset {1}'.format(method, self.id))
 
     def coverage(self, vars, glangs, c):  # pragma: no cover
         for row in self.cldf['FormTable']:

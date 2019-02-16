@@ -1,4 +1,3 @@
-# coding: utf8
 """Functionality to load a set of CLDF datasets into a sqlite db.
 
 Notes:
@@ -6,13 +5,10 @@ Notes:
 - The names of the columns in the database are the names from the CSV files, not the
   preferred labels for the corresponding CLDF properties.
 """
-from __future__ import unicode_literals, print_function, division
 from collections import OrderedDict, defaultdict
 import sqlite3
 from contextlib import closing
 from json import dumps
-
-from six import text_type
 
 import attr
 from csvw.datatypes import DATATYPES
@@ -67,7 +63,7 @@ BIBTEX_FIELDS = [
 
 def insert(db, table, keys, *rows):
     if rows:
-        if isinstance(keys, text_type):
+        if isinstance(keys, str):
             keys = [k.strip() for k in keys.split(',')]
         db.executemany(
             "INSERT INTO {0} ({1}) VALUES ({2})".format(

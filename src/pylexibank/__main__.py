@@ -11,7 +11,6 @@ The basic invocation looks like
     lexibank [OPTIONS] <command> [args]
 
 """
-from __future__ import unicode_literals, division, print_function
 import sys
 import os
 import argparse
@@ -20,7 +19,6 @@ import glob
 
 from termcolor import colored
 from appdirs import user_config_dir
-from six.moves import input
 from clldutils.inifile import INI
 from clldutils.clilib import ArgumentParserWithLogging, ParserError
 from clldutils.path import Path

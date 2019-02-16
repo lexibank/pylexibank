@@ -1,5 +1,3 @@
-# coding=utf8
-from __future__ import unicode_literals
 import logging
 import re
 import zipfile
@@ -12,7 +10,6 @@ import requests.packages.urllib3
 from termcolor import colored
 import xlrd
 from tqdm import tqdm
-from six import string_types
 
 from clldutils.dsv import UnicodeWriter, reader
 from clldutils.path import (
@@ -31,6 +28,11 @@ logging.basicConfig(level=logging.INFO)
 logging.getLogger('requests.packages.urllib3.connectionpool').setLevel(logging.WARN)
 REPOS_PATH = Path(pylexibank.__file__).parent.parent
 YEAR_PATTERN = re.compile('\s+\(?(?P<year>[1-9][0-9]{3}(-[0-9]+)?)(\)|\.)')
+
+
+def aligned(pairs):
+    maxlabel = max(len(p[0]) for p in pairs)
+    return '\n'.join('  {0} {1}'.format(p[0].ljust(maxlabel), p[1] or '') for p in pairs)
 
 
 def git_hash(d):
@@ -171,7 +173,7 @@ class DataDir(type(Path())):
         return [Source.from_entry(k, e) for k, e in bib.entries.items()]
 
     def xls2csv(self, fname, outdir=None):
-        if isinstance(fname, string_types):
+        if isinstance(fname, str):
             fname = self.joinpath(fname)
         res = {}
         outdir = outdir or self

@@ -1,7 +1,6 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
 import re
 from collections import OrderedDict, defaultdict
+from itertools import chain
 
 import attr
 from csvw.metadata import Column
@@ -88,6 +87,8 @@ class Dataset(object):
         :return: list of dicts corresponding to newly created Lexemes
         """
         lexemes = []
+        with_morphemes = '+' in self['FormTable', 'Segments'].separator
+
         for i, form in enumerate(self.dataset.split_forms(kw, kw['Value'])):
             kw_ = kw.copy()
             if form:
@@ -108,7 +109,10 @@ class Dataset(object):
                         analysis = self.dataset.tr_analyses.setdefault(
                             kw_['Language_ID'], Analysis())
                         try:
-                            _, _bipa, _sc, _analysis = analyze(kw_['Segments'], analysis)
+                            segments = kw_['Segments']
+                            if with_morphemes:
+                                segments = list(chain(*[s.split() for s in segments]))
+                            _, _bipa, _sc, _analysis = analyze(segments, analysis)
 
                             # update the list of `bad_words` if necessary; we precompute a
                             # list of data types in `_bipa` just to make the conditional
