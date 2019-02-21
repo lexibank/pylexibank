@@ -7,6 +7,10 @@ from clldutils.path import Path
 from pylexibank import util
 
 
+def test_aligned():
+    assert util.aligned([('a', 'b'), ('xxx', 'yyy')]) == '  a   b\n  xxx yyy'
+
+
 def test_jsondump(tmpdir):
     fname = str(tmpdir.join('dump.json'))
     res = util.jsondump({'a': 2}, fname)

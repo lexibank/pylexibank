@@ -98,6 +98,8 @@ class Dataset(object):
         :return: list of dicts corresponding to newly created Lexemes
         """
         lexemes = []
+
+        # Do we have morpheme segmentation on top of phonemes?
         with_morphemes = '+' in self['FormTable', 'Segments'].separator
 
         for i, form in enumerate(self.dataset.split_forms(kw, kw['Value'])):
