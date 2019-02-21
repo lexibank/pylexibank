@@ -34,7 +34,7 @@
                     },
                     {
                         "name": "Value",
-                        "propertyUrl": "http://linguistics-ontology.org/gold/2010/FormUnit",
+                        "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#value",
                         "required": true,
                         "datatype": "string"
                     },
