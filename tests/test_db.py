@@ -4,7 +4,7 @@ from __future__ import unicode_literals, print_function, division
 import pytest
 from csvw.metadata import Column
 
-from pylexibank.db import Database, ColSpec
+from pylexibank.db import Database, ColSpec, schema
 
 
 def test_ColSpec():
@@ -12,7 +12,22 @@ def test_ColSpec():
     assert col.convert(5) == '5'
 
 
-def test_db(tmpdir, dataset, mocker, capsys):
+def test_schema(cldf_dataset):
+    cldf_dataset['ParameterTable', 'Name'].name = 'thename'
+    assert cldf_dataset['ParameterTable', 'http://cldf.clld.org/v1.0/terms.rdf#name'].header == 'thename'
+    tables, reftables = schema(cldf_dataset)
+    assert len(tables) == 4
+    assert len(reftables) == 2
+    for t in tables:
+        ptschema = t.sql
+        if 'ParameterTable' in ptschema:
+            assert "`Name`" in ptschema
+            break
+    else:
+        assert False
+
+
+def test_db(tmpdir, dataset, dataset_cldf, mocker, capsys):
     db = Database(str(tmpdir.join('lexibank.sqlite')))
     db.load(dataset)
     db.create(exists_ok=True)
@@ -40,3 +55,7 @@ def test_db(tmpdir, dataset, mocker, capsys):
         db.load(dataset)
     cols.pop()
     db.load(dataset)
+    db.load(dataset_cldf, verbose=True)
+    with db.connection() as conn:
+        res = db.fetchall('select `id`, `name` from LanguageTable', conn=conn, verbose=True)
+        assert ('1', 'Lang CLDF') in [(r[0], r[1]) for r in res]

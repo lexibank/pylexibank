@@ -14,6 +14,7 @@ import attr
 from csvw.datatypes import DATATYPES
 from clldutils.path import Path, remove
 from clldutils.misc import nfilter
+from clldutils.jsonlib import load
 
 from pycldf.terms import term_uri
 from pycldf.sources import Sources
@@ -61,14 +62,24 @@ BIBTEX_FIELDS = [
 ]
 
 
-def insert(db, table, keys, *rows):
+PROPERTY_URL_TO_COL = defaultdict(dict)
+for table in load(Path(__file__).parent / 'cldf-metadata.json')['tables']:
+    for col in table['tableSchema']['columns']:
+        if col.get('propertyUrl'):
+            PROPERTY_URL_TO_COL[table['dc:conformsTo'].split('#')[1]][col['propertyUrl']] = \
+                col['name']
+
+
+def insert(db, table, keys, *rows, **kw):
     if rows:
         if isinstance(keys, str):
             keys = [k.strip() for k in keys.split(',')]
-        db.executemany(
-            "INSERT INTO {0} ({1}) VALUES ({2})".format(
-                table, ','.join(keys), ','.join(['?' for _ in keys])),
-            rows)
+        sql = "INSERT INTO {0} ({1}) VALUES ({2})".format(
+            table, ','.join(keys), ','.join(['?' for _ in keys]))
+        if kw.get('verbose'):  # pragma: no cover
+            print(sql)
+            print(rows)
+        db.executemany(sql, rows)
 
 
 def quoted(*names):
@@ -86,6 +97,7 @@ class ColSpec(object):
     primary_key = attr.ib(default=None)
     db_type = attr.ib(default=None)
     convert = attr.ib(default=None)
+    cldf_name = attr.ib(default=None)
 
     def __attrs_post_init__(self):
         if self.csvw_type in TYPE_MAP:
@@ -93,6 +105,8 @@ class ColSpec(object):
         else:
             self.db_type = 'TEXT'
             self.convert = DATATYPES[self.csvw_type].to_string
+        if not self.cldf_name:
+            self.cldf_name = self.name
 
     @property
     def sql(self):
@@ -138,40 +152,69 @@ def schema(ds):
         spec.primary_key = [
             c for c in table.tableSchema.columns if
             c.propertyUrl and c.propertyUrl.uri == term_uri('id')][0].name
+        # Map the column name to the default:
+        if spec.name in PROPERTY_URL_TO_COL:
+            spec.primary_key = PROPERTY_URL_TO_COL[spec.name][term_uri('id')]
         for c in table.tableSchema.columns:
             if c.propertyUrl and c.propertyUrl.uri == term_uri('source'):
                 # A column referencing sources is replaced by an association table.
                 otype = ds.get_tabletype(table).replace('Table', '')
                 ref_tables[ds.get_tabletype(table)] = TableSpec(
-                    '{0}Source'.format(otype),
+                    '{0}Source'.format(otype),  # The name of the association table.
                     [ColSpec(otype + '_ID'), ColSpec('Source_ID'), ColSpec('Context')],
                     [
-                        (
+                        (  # The foreign key to the referencing object:
                             ['dataset_ID', otype + '_ID'],
                             ds.get_tabletype(table),
                             ['dataset_ID', spec.primary_key]),
-                        (
+                        (  # The foreign key to the referenced source:
                             ['dataset_ID', 'Source_ID'],
                             'SourceTable',
                             ['dataset_ID', 'ID']),
                     ],
                     c.name)
             else:
+                cname = c.header
+                if c.propertyUrl and spec.name in PROPERTY_URL_TO_COL:
+                    if c.propertyUrl.uri in PROPERTY_URL_TO_COL[spec.name]:
+                        cname = PROPERTY_URL_TO_COL[spec.name][c.propertyUrl.uri]
                 spec.columns.append(ColSpec(
-                    c.header,
+                    cname,
                     c.datatype.base if c.datatype else c.datatype,
                     c.separator,
-                    c.header == spec.primary_key))
+                    cname == spec.primary_key,
+                    cldf_name=c.header))
         for fk in table.tableSchema.foreignKeys:
             if fk.reference.schemaReference:
                 # We only support Foreign Key references between tables!
                 continue  # pragma: no cover
             ref = table_lookup[fk.reference.resource.string]
-            if ds.get_tabletype(ref):
+            ref_type = ds.get_tabletype(ref)
+            if ref_type:
+                colRefs = sorted(fk.columnReference)
+                if spec.name in PROPERTY_URL_TO_COL:
+                    # Must map foreign keys
+                    colRefs = []
+                    for c in sorted(fk.columnReference):
+                        c = ds[spec.name, c]
+                        if c.propertyUrl and c.propertyUrl.uri in PROPERTY_URL_TO_COL[spec.name]:
+                            colRefs.append(PROPERTY_URL_TO_COL[spec.name][c.propertyUrl.uri])
+                        else:
+                            colRefs.append(c.header)
+                rcolRefs = sorted(fk.reference.columnReference)
+                if ref_type in PROPERTY_URL_TO_COL:
+                    # Must map foreign key targets!
+                    rcolRefs = []
+                    for c in sorted(fk.reference.columnReference):
+                        c = ds[ref_type, c]
+                        if c.propertyUrl and c.propertyUrl.uri in PROPERTY_URL_TO_COL[ref_type]:
+                            rcolRefs.append(PROPERTY_URL_TO_COL[ref_type][c.propertyUrl.uri])
+                        else:
+                            rcolRefs.append(c.header)
                 spec.foreign_keys.append((
-                    tuple(['dataset_ID'] + sorted(fk.columnReference)),
+                    tuple(['dataset_ID'] + colRefs),
                     ds.get_tabletype(table_lookup[fk.reference.resource.string]),
-                    tuple(['dataset_ID'] + sorted(fk.reference.columnReference))))
+                    tuple(['dataset_ID'] + rcolRefs)))
         tables[spec.name] = spec
 
     # must determine the order in which tables must be created!
@@ -301,7 +344,7 @@ CREATE TABLE SourceTable (
             conn.execute(table.sql)
         return True
 
-    def load(self, ds):
+    def load(self, ds, verbose=False):
         """
         Load a CLDF dataset into the database.
 
@@ -373,26 +416,35 @@ CREATE TABLE SourceTable (
             refs = defaultdict(list)
 
             for t in tables:
-                cols = {col.name: col for col in t.columns}
+                # We want to lookup columns by the name used in the CLDF dataset.
+                cols = {col.cldf_name: col for col in t.columns}
+                # But we also want to look up primary keys by the database column name.
+                cols_by_name = {col.name: col for col in t.columns}
+
                 ref_table = ref_tables.get(t.name)
                 rows, keys = [], []
-                for row in dataset[t.name]:
-                    keys, values = ['dataset_ID'], [ds.id]
-                    for k, v in row.items():
-                        if ref_table and k == ref_table.consumes:
-                            refs[ref_table.name].append((row[t.primary_key], v))
-                        else:
-                            col = cols[k]
-                            if isinstance(v, list):
-                                v = (col.separator or ';').join(
-                                    nfilter(col.convert(vv) for vv in v))
+                try:
+                    for row in dataset[t.name]:
+                        keys, values = ['dataset_ID'], [ds.id]
+                        for k, v in row.items():
+                            if ref_table and k == ref_table.consumes:
+                                col = cols_by_name[t.primary_key]
+                                refs[ref_table.name].append((row[col.cldf_name], v))
                             else:
-                                v = col.convert(v)
-                            keys.append("`{0}`".format(k))
-                            values.append(v)
-                    keys, values = self.update_row(t.name, keys, values)
-                    rows.append(tuple(values))
-                insert(db, t.name, keys, *rows)
+                                col = cols[k]
+                                if isinstance(v, list):
+                                    v = (col.separator or ';').join(
+                                        nfilter(col.convert(vv) for vv in v))
+                                else:
+                                    v = col.convert(v)
+                                keys.append("`{0}`".format(col.name))
+                                values.append(v)
+                        keys, values = self.update_row(t.name, keys, values)
+                        rows.append(tuple(values))
+                    insert(db, t.name, keys, *rows, **{'verbose': verbose})
+                except FileNotFoundError:
+                    if t.name != 'CognateTable':  # An empty CognateTable is allowed.
+                        raise  # pragma: no cover
 
             # Now insert the references, i.e. the associations with sources:
             for tname, items in refs.items():
