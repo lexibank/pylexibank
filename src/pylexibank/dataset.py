@@ -320,7 +320,7 @@ class Dataset(object):
         if profile.exists():
             tokenizer = Tokenizer(
                     profile=Profile.from_file(str(profile), form='NFC'),
-                    errors_replace=lambda x: '<{0}>'.format(c)
+                    errors_replace=lambda c: '<{0}>'.format(c)
                     )
 
             def _tokenizer(item, string, **kw):
