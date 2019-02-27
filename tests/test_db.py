@@ -4,12 +4,27 @@ from __future__ import unicode_literals, print_function, division
 import pytest
 from csvw.metadata import Column
 
-from pylexibank.db import Database, ColSpec
+from pylexibank.db import Database, ColSpec, schema
 
 
 def test_ColSpec():
     col = ColSpec(name='c', csvw_type='float')
     assert col.convert(5) == '5'
+
+
+def test_schema(cldf_dataset):
+    cldf_dataset['ParameterTable', 'Name'].name = 'thename'
+    assert cldf_dataset['ParameterTable', 'http://cldf.clld.org/v1.0/terms.rdf#name'].header == 'thename'
+    tables, reftables = schema(cldf_dataset)
+    assert len(tables) == 4
+    assert len(reftables) == 2
+    for t in tables:
+        ptschema = t.sql
+        if 'ParameterTable' in ptschema:
+            assert "`Name`" in ptschema
+            break
+    else:
+        assert False
 
 
 def test_db(tmpdir, dataset, mocker, capsys):
@@ -40,3 +55,15 @@ def test_db(tmpdir, dataset, mocker, capsys):
         db.load(dataset)
     cols.pop()
     db.load(dataset)
+
+
+def test_db_multiple_datasets(tmpdir, dataset, dataset_cldf, capsys):
+    db = Database(str(tmpdir.join('lexibank.sqlite')))
+    db.load(dataset)
+    db.load(dataset_cldf, verbose=True)
+    with db.connection() as conn:
+        res = db.fetchall('select `id`, `name` from LanguageTable', conn=conn)
+        assert len(res) == 3
+        assert ('1', 'Lang CLDF') in [(r[0], r[1]) for r in res]
+        res = db.fetchall('select `id`, `value` from FormTable', conn=conn)
+        assert ('1', 'abc') in [(r[0], r[1]) for r in res]

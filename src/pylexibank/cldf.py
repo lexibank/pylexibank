@@ -12,6 +12,7 @@ from pyconcepticon.api import Concept
 from pylexibank.transcription import Analysis, analyze
 
 MD_NAME = 'cldf-metadata.json'
+ALT_MD_NAME = 'Wordlist-metadata.json'
 ID_PATTERN = re.compile('[A-Za-z0-9_\-]+$')
 
 
@@ -23,8 +24,12 @@ class Dataset(object):
 
         md = self.dataset.cldf_dir / MD_NAME
         if not md.exists():
-            copy(Path(__file__).parent / MD_NAME, md)
+            md = self.dataset.cldf_dir / ALT_MD_NAME
+            if not md.exists():
+                md = self.dataset.cldf_dir / MD_NAME
+                copy(Path(__file__).parent / MD_NAME, md)
         self.wl = Wordlist.from_metadata(md)
+        default_cldf = Wordlist.from_metadata(Path(__file__).parent / 'cldf-metadata.json')
 
         self.objects = {}
         self._obj_index = {}
@@ -39,10 +44,16 @@ class Dataset(object):
 
             cols = set(
                 col.header for col in self.wl[cls.__cldf_table__()].tableSchema.columns)
+            properties = set(
+                col.propertyUrl.uri for col in self.wl[cls.__cldf_table__()].tableSchema.columns if col.propertyUrl)
             for field in cls.fieldnames():
-                if field not in cols:
-                    self.wl[cls.__cldf_table__()].tableSchema.columns.append(
-                        Column(name=field, datatype="string"))
+                try:
+                    col = default_cldf[cls.__cldf_table__(), field]
+                except KeyError:
+                    col = Column(name=field, datatype="string")
+                if (col.propertyUrl and col.propertyUrl.uri not in properties) or \
+                        ((not col.propertyUrl) and (field not in cols)):
+                    self.wl[cls.__cldf_table__()].tableSchema.columns.append(col)
 
     def validate(self, log=None):
         return self.wl.validate(log)
@@ -87,6 +98,8 @@ class Dataset(object):
         :return: list of dicts corresponding to newly created Lexemes
         """
         lexemes = []
+
+        # Do we have morpheme segmentation on top of phonemes?
         with_morphemes = '+' in self['FormTable', 'Segments'].separator
 
         for i, form in enumerate(self.dataset.split_forms(kw, kw['Value'])):

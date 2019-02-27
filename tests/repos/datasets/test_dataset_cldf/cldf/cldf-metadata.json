@@ -11,7 +11,7 @@
             "tableSchema": {
                 "columns": [
                     {
-                        "name": "ID",
+                        "name": "fid",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#id",
                         "required": true,
                         "datatype": "string"
@@ -33,7 +33,7 @@
                         "datatype": "string"
                     },
                     {
-                        "name": "Value",
+                        "name": "Form_in_source",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#value",
                         "required": true,
                         "datatype": "string"
@@ -76,8 +76,8 @@
                     {
                         "columnReference": "Language_ID",
                         "reference": {
-                            "resource": "languages.csv",
-                            "columnReference": "ID"
+                            "resource": "lects.csv",
+                            "columnReference": "lid"
                         }
                     },
                     {
@@ -88,16 +88,16 @@
                         }
                     }
                 ],
-                "primaryKey": "ID"
+                "primaryKey": "fid"
             }
         },
         {
-            "url": "languages.csv",
+            "url": "lects.csv",
             "dc:conformsTo": "http://cldf.clld.org/v1.0/terms.rdf#LanguageTable",
             "tableSchema": {
                 "columns": [
                     {
-                        "name": "ID",
+                        "name": "lid",
                         "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#id",
                         "datatype": "string"
                     },
@@ -131,7 +131,7 @@
                         "datatype": "string"
                     }
                 ],
-                "primaryKey": "ID"
+                "primaryKey": "lid"
             }
         },
         {
@@ -223,7 +223,7 @@
                         "columnReference": "Form_ID",
                         "reference": {
                             "resource": "forms.csv",
-                            "columnReference": "ID"
+                            "columnReference": "fid"
                         }
                     }
                ]

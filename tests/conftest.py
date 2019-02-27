@@ -5,6 +5,7 @@ from tempfile import mkdtemp
 import pytest
 
 from clldutils.path import Path, copytree, copy, rmtree, import_module, write_text
+from pycldf import Dataset
 
 import pylexibank
 from pylexibank.glottolog import Glottolog
@@ -23,6 +24,11 @@ def tmpd():
     rmtree(d)
 
 
+@pytest.fixture
+def cldf_dataset():
+    return Dataset.from_metadata(Path(pylexibank.__file__).parent / 'cldf-metadata.json')
+
+
 @pytest.fixture(scope='session')
 def repos(tmpd):
     repos = tmpd / 'lexibank-data'
@@ -39,6 +45,12 @@ def glottolog(repos):
 @pytest.fixture(scope='session')
 def concepticon(repos):
     return Concepticon(repos)
+
+
+@pytest.fixture(scope='session')
+def dataset_cldf(repos, tmpd, glottolog, concepticon):
+    mod = import_module(repos / 'datasets' / 'test_dataset_cldf')
+    return mod.Test(glottolog=glottolog, concepticon=concepticon)
 
 
 @pytest.fixture(scope='session')
