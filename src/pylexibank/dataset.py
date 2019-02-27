@@ -318,7 +318,10 @@ class Dataset(object):
         """
         profile = self.dir / 'etc' / 'orthography.tsv'
         if profile.exists():
-            tokenizer = Tokenizer(profile=Profile.from_file(str(profile), form='NFC'))
+            tokenizer = Tokenizer(
+                    profile=Profile.from_file(str(profile), form='NFC'),
+                    errors_replace=lambda x: '<{0}>'.format(c)
+                    )
 
             def _tokenizer(item, string, **kw):
                 kw.setdefault("column", "IPA")
