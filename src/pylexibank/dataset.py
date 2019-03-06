@@ -527,6 +527,8 @@ class Dataset(object):
         lsclasserr = len(stats['sclass_errors'])
 
         def ratio(prop):
+            if float(totals['lexemes']) == 0:
+                return 0
             return sum(v for k, v in totals[prop].items() if k) / float(totals['lexemes'])
 
         badges = [
