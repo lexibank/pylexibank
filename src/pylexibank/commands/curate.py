@@ -38,7 +38,7 @@ def fuzzyfinder(infix, choices):  # pragma: no cover
 
 @command()
 def curate(args):  # pragma: no cover
-    datasets = {ds.id: ds for ds in args.datasets}
+    datasets = {ds.id: ds for ds in args.cfg.datasets}
 
     class TheCompleter(Completer):
         def get_completions(self, document, complete_event):

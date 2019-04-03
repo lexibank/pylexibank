@@ -80,13 +80,13 @@ def new_dataset(args):
 
 @command()
 def requirements(args):
-    if args.datasets:
+    if args.cfg.datasets:
         print(
             '-e git+https://github.com/clld/glottolog.git@{0}#egg=pyglottolog'.format(
-                git_hash(args.datasets[0].glottolog.repos)))
+                git_hash(args.cfg.datasets[0].glottolog.repos)))
         print(
             '-e git+https://github.com/clld/concepticon-data.git@{0}#egg=pyconcepticon'.format(
-                git_hash(args.datasets[0].concepticon.repos)))
+                git_hash(args.cfg.datasets[0].concepticon.repos)))
     if pylexibank.__version__.endswith('dev0'):
         print(
             '-e git+https://github.com/lexibank/pylexibank.git@{0}#egg=pylexibank'.format(
@@ -173,7 +173,7 @@ def diff(args):
                 print(colored(path, 'green'))
             print()
     if not args.args:
-        args.args = [ds.id for ds in args.datasets]
+        args.args = [ds.id for ds in args.cfg.datasets]
     with_dataset(args, _diff)
 
 
@@ -221,7 +221,7 @@ def ls(args):
     ]:
         if col in cols:
             cols[col] = {r[0]: r[1] for r in db.fetchall(sql)}
-    for ds in args.datasets:
+    for ds in args.cfg.datasets:
         row = [
             colored(ds.id, 'green' if ds.id in in_db else 'red'),
             truncate_with_ellipsis(ds.metadata.title or '', width=tl),
@@ -244,7 +244,7 @@ def ls(args):
                 row.append('')
 
         table.append(row)
-    totals = ['zztotal', len(args.datasets)]
+    totals = ['zztotal', len(args.cfg.datasets)]
     for i, col in enumerate(cols):
         if col in ['lexemes', 'all_lexemes']:
             totals.append(sum([r[i + 2] for r in table]))

@@ -22,6 +22,7 @@ from appdirs import user_config_dir
 from clldutils.inifile import INI
 from clldutils.clilib import ArgumentParserWithLogging, ParserError
 from clldutils.path import Path
+from clldutils.misc import lazyproperty
 
 import pylexibank
 from pylexibank.dataset import iter_datasets
@@ -68,6 +69,22 @@ def get_path(src):  # pragma: no cover
         res = False
 
 
+class Config(INI):
+    @lazyproperty
+    def concepticon(self):
+        return Concepticon(self['paths']['concepticon'])
+
+    @lazyproperty
+    def glottolog(self):
+        return Glottolog(self['paths']['glottolog'])
+
+    @lazyproperty
+    def datasets(self):
+        return sorted(
+            iter_datasets(glottolog=self.glottolog, concepticon=self.concepticon, verbose=True),
+            key=lambda d: d.id)
+
+
 def configure(cfgpath=None):
     """
     Configure lexibank.
@@ -87,7 +104,7 @@ whenever lexibank is run lateron.
             colored('Welcome to lexibank!', 'blue', attrs=['bold', 'reverse'])))
         if not cfgpath.parent.exists():
             cfgpath.parent.mkdir(parents=True)
-        cfg = INI()
+        cfg = Config()
         cfg['paths'] = {k: get_path(src) for k, src in REPOS}
         cfg.write(cfgpath)
         print("""
@@ -96,31 +113,25 @@ Configuration has been written to:
 You may edit this file to adapt to changes in your system or to reconfigure settings
 such as the logging level.""".format(cfgpath.resolve()))
     else:
-        cfg = INI.from_file(cfgpath)
+        cfg = Config.from_file(cfgpath)
 
     try:
-        glottolog = Glottolog(cfg['paths']['glottolog'])
+        cfg.glottolog
     except (FileNotFoundError, ValueError):
         raise ParserError('Misconfigured Glottolog path in {0}'.format(cfgpath))
     if not Path(cfg['paths']['concepticon']).exists():
         raise ParserError('Misconfigured Concepticon path in {0}'.format(cfgpath))
-    concepticon = Concepticon(cfg['paths']['concepticon'])
-    datasets = sorted(
-        iter_datasets(glottolog=glottolog, concepticon=concepticon, verbose=True),
-        key=lambda d: d.id)
 
     # Print the configuration directory for reference:
     print("Using configuration file at:")
     print(str(cfgpath) + '\n')
-
-    return cfg, datasets
+    return cfg
 
 
 def main():  # pragma: no cover
     cfg, datasets = configure()
     parser = ArgumentParserWithLogging(pylexibank.__name__)
     parser.add_argument('--cfg', help=argparse.SUPPRESS, default=cfg)
-    parser.add_argument('--datasets', help=argparse.SUPPRESS, default=datasets)
     parser.add_argument(
         '--db',
         help='path to SQLite db file',

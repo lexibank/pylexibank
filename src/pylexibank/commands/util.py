@@ -8,14 +8,14 @@ from pylexibank.db import Database
 
 def get_dataset(args, name=None):
     id_ = Path(name or args.args[0]).name
-    for dataset in args.datasets:
+    for dataset in args.cfg.datasets:
         if dataset.id == id_:
             return dataset
     raise ParserError('invalid dataset spec')  # pragma: no cover
 
 
 def with_dataset(args, func, default_to_all=False):
-    for dataset in args.datasets:
+    for dataset in args.cfg.datasets:
         if (dataset.id in args.args) or (default_to_all and not args.args):
             s = time()
             args.log.info('processing %s ...' % dataset.id)

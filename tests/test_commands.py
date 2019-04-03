@@ -8,8 +8,11 @@ def test_with_dataset(mocker, capsys, dataset):
     def func(*args, **kw):
         print('hello!')
 
+    class Config(dict):
+        datasets = [dataset]
+
     log = mocker.Mock()
-    with_dataset(mocker.Mock(datasets=[dataset], args=['test_dataset'], log=log), func)
+    with_dataset(mocker.Mock(cfg=Config(), args=['test_dataset'], log=log), func)
     out, err = capsys.readouterr()
     assert 'hello!' in out
     assert log.info.called
@@ -26,10 +29,12 @@ def test_db(dataset):
 def test_workflow(repos, mocker, capsys, dataset, tmppath):
     from pylexibank.commands.misc import ls, bib
 
+    class Config(dict):
+        datasets = [dataset]
+
     def _args(*args):
         return mocker.Mock(
-            datasets=[dataset],
-            cfg={'paths': {'lexibank': repos.as_posix()}},
+            cfg=Config({'paths': {'lexibank': repos.as_posix()}}),
             log=mocker.Mock(),
             db=tmppath / 'db.sqlite',
             verbose=True,
