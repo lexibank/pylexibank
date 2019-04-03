@@ -129,7 +129,7 @@ such as the logging level.""".format(cfgpath.resolve()))
 
 
 def main():  # pragma: no cover
-    cfg, datasets = configure()
+    cfg = configure()
     parser = ArgumentParserWithLogging(pylexibank.__name__)
     parser.add_argument('--cfg', help=argparse.SUPPRESS, default=cfg)
     parser.add_argument(
