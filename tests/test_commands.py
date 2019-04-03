@@ -1,18 +1,25 @@
 # coding: utf8
 from __future__ import unicode_literals, print_function, division
 
+import pytest
 
-def test_with_dataset(mocker, capsys, dataset):
+
+@pytest.fixture
+def config(dataset):
+    class Config(dict):
+        datasets = [dataset]
+
+    return Config()
+
+
+def test_with_dataset(mocker, capsys, config):
     from pylexibank.commands.util import with_dataset
 
     def func(*args, **kw):
         print('hello!')
 
-    class Config(dict):
-        datasets = [dataset]
-
     log = mocker.Mock()
-    with_dataset(mocker.Mock(cfg=Config(), args=['test_dataset'], log=log), func)
+    with_dataset(mocker.Mock(cfg=config, args=['test_dataset'], log=log), func)
     out, err = capsys.readouterr()
     assert 'hello!' in out
     assert log.info.called
@@ -26,15 +33,20 @@ def test_db(dataset):
     _unload(dataset, db=db)
 
 
-def test_workflow(repos, mocker, capsys, dataset, tmppath):
+def test_orthography(config, mocker):
+    from pylexibank.commands.misc import orthography
+
+    orthography(mocker.Mock(cfg=config, args=['test_dataset']))
+
+
+def test_workflow(repos, mocker, capsys, dataset, tmppath, config):
     from pylexibank.commands.misc import ls, bib
 
-    class Config(dict):
-        datasets = [dataset]
+    config.update({'paths': {'lexibank': repos.as_posix()}})
 
     def _args(*args):
         return mocker.Mock(
-            cfg=Config({'paths': {'lexibank': repos.as_posix()}}),
+            cfg=config,
             log=mocker.Mock(),
             db=tmppath / 'db.sqlite',
             verbose=True,

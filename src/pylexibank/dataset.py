@@ -282,6 +282,13 @@ class Dataset(object):
     # ---------------------------------------------------------------
     # handling of lexemes/forms/words
     # ---------------------------------------------------------------
+    def iter_raw_lexemes(self):
+        """
+        Datasets should overwrite this method, yielding raw lexical items, if seeding
+        an orthography profile via `lexibank orthography`.
+        """
+        yield "abcde"
+
     def clean_form(self, item, form):
         """
         Called when a row is added to a CLDF dataset.

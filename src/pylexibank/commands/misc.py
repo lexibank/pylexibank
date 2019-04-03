@@ -4,7 +4,7 @@ import re
 import shutil
 
 from termcolor import colored
-from segments.tokenizer import Tokenizer
+from segments.util import grapheme_pattern
 from clldutils import licenses
 from clldutils.path import Path, read_text, write_text
 from clldutils.dsv import UnicodeWriter
@@ -109,8 +109,8 @@ def orthography(args):  # pragma: no cover
             return
 
     graphemes = Counter()
-    for line in ds.run('lexemes'):
-        graphemes.update(Tokenizer.grapheme_pattern.findall(line))
+    for line in ds.iter_raw_lexemes():
+        graphemes.update(grapheme_pattern.findall(line))
 
     with UnicodeWriter(out, delimiter='\t') as writer:
         writer.writerow(['graphemes', 'frequency', 'IPA'])
