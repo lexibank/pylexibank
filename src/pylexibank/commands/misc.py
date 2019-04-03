@@ -131,6 +131,24 @@ def unload(args):
 
 
 @command()
+def download(args):
+    """Run a dataset's download command
+
+    lexibank download DATASET_ID
+    """
+    with_dataset(args, Dataset._download)
+
+
+@command()
+def makecldf(args):
+    """Convert a dataset into CLDF
+
+    lexibank makecldf DATASET_ID
+    """
+    with_dataset(args, Dataset._install)
+
+
+@command()
 def db(args):
     db = str(Database(args.db).fname)
     args.log.info('connecting to {0}'.format(colored(db, 'green')))
