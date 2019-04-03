@@ -108,11 +108,6 @@ class Dataset(object):
                 if form != kw_['Value']:
                     self.dataset.log.debug(
                         'iter_forms split: "{0}" -> "{1}"'.format(kw_['Value'], form))
-                _form = self.dataset.clean_form(kw_, form)
-                if _form != form:
-                    self.dataset.log.debug(
-                        'clean_form changed: "{0}" -> "{1}"'.format(form, _form))
-                form = _form.strip()
                 if form:
                     kw_.setdefault('Segments', self.tokenize(kw_, form) or [])
                     kw_.update(ID=self.lexeme_id(kw), Form=form)
