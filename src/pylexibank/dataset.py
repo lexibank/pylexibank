@@ -132,7 +132,9 @@ class Metadata(object):
     license = attr.ib(default=None)
     url = attr.ib(default=None)
     aboutUrl = attr.ib(default=None)
-    conceptlist = attr.ib(default=None)
+    conceptlist = attr.ib(
+        default=[],
+        converter=lambda s: [] if not s else (s if isinstance(s, list) else [s]))
     lingpy_schema = attr.ib(default=None)
     derived_from = attr.ib(default=None)
     related = attr.ib(default=None)
@@ -151,8 +153,9 @@ class Metadata(object):
             "dc:bibliographicCitation": self.citation,
             "dc:license": licenses.find(self.license or ''),
             "dc:identifier": self.url,
-            "dc:format": "http://concepticon.clld.org/contributions/{0}".format(
-                self.conceptlist) if self.conceptlist else None,
+            "dc:format": [
+                "http://concepticon.clld.org/contributions/{0}".format(cl)
+                for cl in self.conceptlist],
             "dc:isVersionOf": "http://lexibank.clld.org/contributions/{0}".format(
                 self.derived_from) if self.derived_from else None,
             "dc:related": self.related,
@@ -366,8 +369,8 @@ class Dataset(object):
         self.tr_bad_words = []
         self.tr_invalid_words = []
 
-        if self.metadata.conceptlist:
-            self.conceptlist = self.concepticon.conceptlists[self.metadata.conceptlist]
+        if len(self.metadata.conceptlist):
+            self.conceptlist = self.concepticon.conceptlists[self.metadata.conceptlist[0]]
         if self.cmd_install(**kw) == NOOP:
             return
 
@@ -482,10 +485,11 @@ class Dataset(object):
             lines.extend(['See also %s' % self.metadata.related, ''])
 
         if self.metadata.conceptlist:
+            lines.append('Conceptlists in Concepticon:')
             lines.extend([
-                'Conceptlist in Concepticon: [{0}](http://concepticon.clld.org/contributions'
-                '/{0})'.format(self.metadata.conceptlist),
-                ''])
+                '- [{0}](http://concepticon.clld.org/contributions/{0})'.format(cl)
+                for cl in self.metadata.conceptlist])
+            lines.append('')
 
         # add NOTES.md
         if self.dir.joinpath('NOTES.md').exists():
