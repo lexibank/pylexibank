@@ -16,6 +16,7 @@ from clldutils import jsonlib
 from pyglottolog.languoids import Glottocode
 
 from segments import Tokenizer, Profile
+from segments.tree import Tree
 
 import pylexibank
 from pylexibank.util import DataDir, jsondump, textdump, get_badge
@@ -327,15 +328,18 @@ class Dataset(object):
         """
         profile = self.dir / 'etc' / 'orthography.tsv'
         if profile.exists():
-            tokenizer = Tokenizer(
-                    profile=Profile.from_file(str(profile), form='NFC'),
-                    errors_replace=lambda c: '<{0}>'.format(c)
-                    )
+            profile = Profile.from_file(str(profile), form='NFC')
+            default_spec = list(next(iter(profile.graphemes.values())).keys())
+            for grapheme in ['^', '$']:
+                if grapheme not in profile.graphemes:
+                    profile.graphemes[grapheme] = {k: None for k in default_spec}
+            profile.tree = Tree(list(profile.graphemes.keys()))
+            tokenizer = Tokenizer(profile=profile, errors_replace=lambda c: '<{0}>'.format(c))
 
             def _tokenizer(item, string, **kw):
                 kw.setdefault("column", "IPA")
                 kw.setdefault("separator", " + ")
-                return tokenizer(unicodedata.normalize('NFC', string), **kw).split()
+                return tokenizer(unicodedata.normalize('NFC', '^' + string + '$'), **kw).split()
             return _tokenizer
 
     # ---------------------------------------------------------------

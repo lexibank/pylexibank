@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from clldutils.path import import_module
 
 from pylexibank.dataset import Lexeme, Unmapped, Dataset, NOOP, Metadata
 
@@ -50,7 +51,6 @@ def test_BaseDataset(mocker, repos):
     ds = TestDataset(glottolog=mocker.Mock(), concepticon=mocker.Mock())
     assert ds.cmd_download() == NOOP
     assert ds.cmd_install() == NOOP
-    assert ds.tokenizer(None, 'a') == ['b']
     assert ds.sources
     assert ds.concepts
     assert ds.languages
@@ -59,6 +59,20 @@ def test_BaseDataset(mocker, repos):
     assert not ds.stats
     ds.dir.write('README.json', json.dumps({'a': 1}))
     assert ds.stats['a'] == 1
+
+
+@pytest.mark.parametrize(
+    'string,tokens',
+    [
+        ('^b$', 'b'),  # context marker is stripped
+        ('aba', 'c b z'),  # "a" is treated differently depending on context
+        ('bab', 'b a b'),  # "a" is treated differently depending on context
+    ]
+)
+def test_tokenizer(repos, string, tokens):
+    mod = import_module(repos / 'datasets' / 'test_dataset_cldf')
+    dataset = mod.Test()
+    assert dataset.tokenizer(None, string) == tokens.split()
 
 
 def test_Dataset(dataset, capsys):

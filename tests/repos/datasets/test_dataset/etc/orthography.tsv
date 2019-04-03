@@ -1,2 +1,5 @@
 Grapheme	IPA
-a	b
+a	a
+b	b
+^a	c
+a$	z
