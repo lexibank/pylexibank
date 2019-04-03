@@ -327,7 +327,7 @@ class Dataset(object):
 
             def _tokenizer(item, string, **kw):
                 kw.setdefault("column", "IPA")
-                kw.setdefault("separator", " _ ")
+                kw.setdefault("separator", " + ")
                 return tokenizer(unicodedata.normalize('NFC', string), **kw).split()
             return _tokenizer
 
