@@ -551,8 +551,8 @@ class Dataset(object):
             '- **Lexemes:** {0:,}'.format(totals['lexemes']),
             '- **Synonymy:** %.2f' % (totals['SI']),
             '- **Cognacy:** {0:,} cognates in {1:,} cognate sets'.format(
-                sum(v for k, v in totals['cognate_sets'].items() if v > 1),
-                sum(1 for k, v in totals['cognate_sets'].items() if v > 1)),
+                sum(v for k, v in totals['cognate_sets'].items()),
+                sum(1 for k, v in totals['cognate_sets'].items())),
             '- **Invalid lexemes:** {0:,}'.format(stats['invalid_words_count']),
             '- **Tokens:** {0:,}'.format(sum(stats['segments'].values())),
             '- **Segments:** {0:,} ({1} BIPA errors, {2} CTLS sound class errors, '
