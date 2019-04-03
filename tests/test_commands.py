@@ -25,12 +25,14 @@ def test_with_dataset(mocker, capsys, config):
     assert log.info.called
 
 
-def test_db(dataset):
+def test_db(dataset, mocker):
     from pylexibank.commands.util import _load, _unload
+    from pylexibank.commands.misc import db
 
-    db = dataset.dir / 'db.sqlite'
-    _load(dataset, db=db)
-    _unload(dataset, db=db)
+    db_ = dataset.dir / 'db.sqlite'
+    _load(dataset, db=db_)
+    _unload(dataset, db=db_)
+    db(mocker.Mock(db=db_))
 
 
 def test_orthography(config, mocker):
@@ -40,7 +42,7 @@ def test_orthography(config, mocker):
 
 
 def test_workflow(repos, mocker, capsys, dataset, tmppath, config):
-    from pylexibank.commands.misc import ls, bib
+    from pylexibank.commands.misc import ls, bib, clean, diff, makecldf, download, requirements
 
     config.update({'paths': {'lexibank': repos.as_posix()}})
 
@@ -52,10 +54,13 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath, config):
             verbose=True,
             args=list(args))
 
-    dataset._download(**vars(_args('test_dataset')))
+    download(_args('test_dataset'))
     out, err = capsys.readouterr()
 
-    dataset._install(**vars(_args('test_dataset')))
+    clean(_args('test_dataset'))
+    diff(_args('test_dataset'))
+
+    makecldf(_args('test_dataset'))
     out, err = capsys.readouterr()
 
     ls(_args('test_dataset', 'license'))
@@ -70,3 +75,7 @@ def test_workflow(repos, mocker, capsys, dataset, tmppath, config):
     dataset.cldf_dir.joinpath('tmp').mkdir()
     dataset._clean()
     assert not dataset.cldf_dir.joinpath('tmp').exists()
+
+    requirements(_args())
+    out, err = capsys.readouterr()
+    assert 'git+https' in out

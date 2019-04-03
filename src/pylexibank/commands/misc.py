@@ -159,7 +159,7 @@ def db(args):
 def diff(args):
     def _diff(ds, **kw):
         repo = ds.git_repo
-        if repo.is_dirty():
+        if repo and repo.is_dirty():
             print('{0} at {1}'.format(
                 colored(ds.id, 'blue', attrs=['bold']),
                 colored(str(ds.dir), 'blue')))
@@ -276,7 +276,7 @@ def bib(args):
                 if id_ not in gbib.entries:
                     gbib.add_entry(id_, entry)
 
-    with_dataset(args, _harvest)
+    with_dataset(args, _harvest, default_to_all=True)
     gbib.to_file(str(Path(args.cfg['paths']['lexibank']).joinpath('lexibank.bib')))
 
 
