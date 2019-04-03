@@ -31,7 +31,7 @@ TYPE_MAP = {
     'string': ('TEXT', identity),
     'integer': ('INTEGER', identity),
     'boolean': ('INTEGER', lambda s: s if s is None else int(s)),
-    'decimal': ('REAL', identity),
+    'decimal': ('REAL', lambda s: s if s is None else float(s)),
 }
 BIBTEX_FIELDS = [
     'address',  # Publisher's address
