@@ -45,7 +45,8 @@ class Dataset(object):
             cols = set(
                 col.header for col in self.wl[cls.__cldf_table__()].tableSchema.columns)
             properties = set(
-                col.propertyUrl.uri for col in self.wl[cls.__cldf_table__()].tableSchema.columns if col.propertyUrl)
+                col.propertyUrl.uri for col in self.wl[cls.__cldf_table__()].tableSchema.columns
+                if col.propertyUrl)
             for field in cls.fieldnames():
                 try:
                     col = default_cldf[cls.__cldf_table__(), field]
@@ -53,7 +54,8 @@ class Dataset(object):
                     # We added Latitude and Longitude to the default metadata later, and want to
                     # make sure, existing datasets are upgraded silently.
                     #
-                    if field in ['Latitude', 'Longitude'] and cls.__cldf_table__() == 'LanguageTable':
+                    if field in ['Latitude', 'Longitude'] \
+                            and cls.__cldf_table__() == 'LanguageTable':
                         properties.add(col.propertyUrl.uri)
                         self.wl[cls.__cldf_table__(), field].propertyUrl = col.propertyUrl
                         self.wl[cls.__cldf_table__(), field].datatype = col.datatype

@@ -170,7 +170,7 @@ class DataDir(type(Path())):
 
     def read_json(self, fname, **kw):
         return jsonlib.load(fname)
-    
+
     def read_bib(self, fname='sources.bib'):
         bib = database.parse_string(self.read(fname), bib_format='bibtex')
         return [Source.from_entry(k, e) for k, e in bib.entries.items()]

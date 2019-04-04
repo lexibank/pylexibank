@@ -199,9 +199,11 @@ class Dataset(object):
     def __init__(self, concepticon=None, glottolog=None):
         if self.__class__ != Dataset:
             if not self.dir:
-                raise ValueError("Dataset.dir needs to specified in subclass for %s!" % self.__class__)
+                raise ValueError(
+                    "Dataset.dir needs to be specified in subclass for %s!" % self.__class__)
             elif not self.id:
-                raise ValueError("Dataset.id needs to specified in subclass for %s!" % self.__class__)
+                raise ValueError(
+                    "Dataset.id needs to be specified in subclass for %s!" % self.__class__)
         self.unmapped = Unmapped()
         self.dir = DataDir(self.dir)
         self._json = self.dir.joinpath('lexibank.json')
