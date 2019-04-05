@@ -578,9 +578,8 @@ class Dataset(object):
             stats_lines.extend([
                 '- **Cognacy:** {0:,} cognates in {1:,} cognate sets ({2:,} singletons)'.format(
                     sum(v for k, v in totals['cognate_sets'].items()),
-                    num_cognates,
-                    len([k for k, v in totals['cognate_sets'].items() if v == 1])),
-            '- **Cognate Diversity:** {:0.2f}'.format(cog_diversity),
+                    num_cognates, len([k for k, v in totals['cognate_sets'].items() if v == 1])),
+                '- **Cognate Diversity:** {:0.2f}'.format(cog_diversity)
             ])
         if stats['segments']:
             stats_lines.extend([
