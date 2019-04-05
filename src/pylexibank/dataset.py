@@ -549,11 +549,12 @@ class Dataset(object):
             if float(totals['lexemes']) == 0:
                 return 0
             return sum(v for k, v in totals[prop].items() if k) / float(totals['lexemes'])
-        
+
         num_cognates = sum(1 for k, v in totals['cognate_sets'].items())
         # see List et al. 2017
         # diff between cognate sets and meanings / diff between words and meanings
-        cog_diversity = (num_cognates - len(totals['cids'])) / (totals['lexemes'] - len(totals['cids']))
+        cog_diversity = (num_cognates - len(totals['cids'])) \
+            / (totals['lexemes'] - len(totals['cids']))
 
         badges = [
             self.build_status_badge(),
