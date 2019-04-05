@@ -549,6 +549,11 @@ class Dataset(object):
             if float(totals['lexemes']) == 0:
                 return 0
             return sum(v for k, v in totals[prop].items() if k) / float(totals['lexemes'])
+        
+        num_cognates = sum(1 for k, v in totals['cognate_sets'].items())
+        # see List et al. 2017
+        # diff between cognate sets and meanings / diff between words and meanings
+        cog_diversity = (num_cognates - len(totals['cids'])) / (totals['lexemes'] - len(totals['cids']))
 
         badges = [
             self.build_status_badge(),
@@ -566,16 +571,18 @@ class Dataset(object):
             '- **Varieties:** {0:,}'.format(len(totals['lids'])),
             '- **Concepts:** {0:,}'.format(len(totals['cids'])),
             '- **Lexemes:** {0:,}'.format(totals['lexemes']),
-            '- **Synonymy:** %.2f' % (totals['SI']),
-            '- **Cognacy:** {0:,} cognates in {1:,} cognate sets'.format(
+            '- **Synonymy:** {:0.2f}'.format(totals['SI']),
+            '- **Cognacy:** {0:,} cognates in {1:,} cognate sets ({2:,} singletons)'.format(
                 sum(v for k, v in totals['cognate_sets'].items()),
-                sum(1 for k, v in totals['cognate_sets'].items())),
+                num_cognates,
+                len([k for k, v in totals['cognate_sets'].items() if v == 1])),
+            '- **Cognate Diversity:** {:0.2f}'.format(cog_diversity),
             '- **Invalid lexemes:** {0:,}'.format(stats['invalid_words_count']),
             '- **Tokens:** {0:,}'.format(sum(stats['segments'].values())),
             '- **Segments:** {0:,} ({1} BIPA errors, {2} CTLS sound class errors, '
             '{3} CLTS modified)'
             .format(lsegments, lbipapyerr, lsclasserr, len(stats['replacements'])),
-            '- **Inventory size (avg):** %.2f' % stats['inventory_size'],
+            '- **Inventory size (avg):** {:0.2f}'.format(stats['inventory_size']),
         ]
         if log:
             log.info('\n'.join(['Summary for dataset {}'.format(self.id)] + stats_lines))
