@@ -553,9 +553,12 @@ class Dataset(object):
         num_cognates = sum(1 for k, v in totals['cognate_sets'].items())
         # see List et al. 2017
         # diff between cognate sets and meanings / diff between words and meanings
-        cog_diversity = (num_cognates - len(totals['cids'])) \
+        try:
+            cog_diversity = (num_cognates - len(totals['cids'])) \
             / (totals['lexemes'] - len(totals['cids']))
-
+        except ZeroDivisionError:
+            cog_diversity = 0.0  # no lexemes.
+        
         badges = [
             self.build_status_badge(),
             get_badge(ratio('languages'), 'Glottolog'),
