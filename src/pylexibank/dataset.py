@@ -508,6 +508,7 @@ class Dataset(object):
             'lexemes': 0,
             'lids': Counter(),
             'cids': Counter(),
+            'sids': Counter(),
         }
 
         missing_source = []
@@ -519,6 +520,7 @@ class Dataset(object):
         for row in self.cldf['FormTable']:
             if row['Source']:
                 totals['sources'].update(['y'])
+                totals['sids'].update(row['Source'])
             else:
                 missing_source.append(row)
             totals['concepts'].update([param2concepticon[row['Parameter_ID']]])
@@ -575,6 +577,7 @@ class Dataset(object):
             '- **Varieties:** {0:,}'.format(len(totals['lids'])),
             '- **Concepts:** {0:,}'.format(len(totals['cids'])),
             '- **Lexemes:** {0:,}'.format(totals['lexemes']),
+            '- **Sources:** {0:,}'.format(len(totals['sids'])),
             '- **Synonymy:** {:0.2f}'.format(totals['SI']),
         ]
         if num_cognates:
@@ -601,14 +604,13 @@ class Dataset(object):
         totals['languages'] = len(totals['lids'])
         totals['concepts'] = len(totals['cids'])
         totals['cognate_sets'] = bool(1 for k, v in totals['cognate_sets'].items() if v > 1)
-        totals['sources'] = totals['sources'].get('y', 0)
-
+        
         bookkeeping_languoids = []
         for lang in self.cldf['LanguageTable']:
             gl_lang = self.glottolog.cached_languoids.get(lang.get('Glottocode'))
             if gl_lang and gl_lang.category == 'Bookkeeping':
                 bookkeeping_languoids.append(lang)
-
+        
         # improvements section
         if missing_lang or missing_source or bookkeeping_languoids:
             lines.extend(['\n## Possible Improvements:\n', ])
