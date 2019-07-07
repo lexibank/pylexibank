@@ -1,8 +1,8 @@
 from collections import Counter
 
-import pytest
 from clldutils.clilib import command  # , confirm, ParserError
 from pylexibank.commands.util import get_dataset
+from pylexibank.commands.misc import test
 from termcolor import colored
 
 
@@ -14,16 +14,7 @@ def check(args):
     print(colored("Validating CLDF...", "green"))
     ds.cldf.validate()
 
-    # tests
-    testfile = ds.dir / "test.py"
-    if testfile.is_file():
-        print(colored("Running tests...", "green"))
-        pytest.main([
-            '--cldf-metadata=%s/cldf-metadata.json' % ds.cldf_dir,
-            testfile
-        ])
-    else:
-        print(colored("No tests found", "red"))
+    test(args)
 
     # Check languages
     print(colored("Checking Languages...", "green"))
