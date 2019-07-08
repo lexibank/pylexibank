@@ -91,13 +91,16 @@ Turning datasets into `pylexibank` enabled python packages has multiple advantag
 GitHub provides a very good platform for collaborative curation of textual data
 such as Lexibank datasets.
 
-- versioning and releasing
+Dataset curators are encouraged to make use of features in addition to the just version control, such as
+- releases
 - README.md, LICENSE, CONTRIBUTORS.md
+
+Note that for datasets curated with `pylexibank`, summary statistics will be written to `README.md` as part of the `makecldf` command.
 
 In addition to the support for collaboratively editing and versioning data, GitHub supports tying into additional services via webhooks. In particular, two of these services are relevant for Lexibank datasets:
 
 - Continuous integration, e.g. via Travis-CI
-- Archiving with Zenodo
+- Archiving with Zenodo. Notes:
   - When datasets are curated on GitHub and hooked up to ZENODO to trigger automatic deposits of releases, the release tag **must** start with a letter (otherwise the deposit will fail).
   - Additional tags can be added to add context - e.g. when a release is triggered by a specific use case (for example the CLICS 2.0 release). This can be done using `git` as follows:
     ```bash
