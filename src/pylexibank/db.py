@@ -498,7 +498,7 @@ WHERE concepticon_id = ?""",
             if lang:
                 langs.append((
                     lang.lineage[0][0] if lang.lineage else lang.name,
-                    lang.macroareas[0].value if lang.macroareas else None,
+                    lang.macroareas[0].name if lang.macroareas else None,
                     lang.latitude,
                     lang.longitude,
                     lang.id))
