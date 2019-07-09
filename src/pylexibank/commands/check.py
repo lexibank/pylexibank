@@ -17,6 +17,7 @@ def check(args):
     test(args)
 
     # Check languages
+    glottocodes = {l.id for l in ds.glottolog.languoids()}
     print(colored("Checking Languages...", "green"))
     for lang in ds.cldf['LanguageTable']:
         if not lang['Glottocode']:
@@ -25,8 +26,7 @@ def check(args):
                 "yellow"
             ))
         else:
-            found = ds.glottolog.languoid(lang['Glottocode'])
-            if not found:
+            if lang['Glottocode'] not in glottocode:
                 print(colored(
                     "ERROR: Language '%s' has an INVALID glottocode '%s'" % (
                     lang['Name'], lang['Glottocode']),
