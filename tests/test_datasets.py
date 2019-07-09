@@ -70,9 +70,13 @@ def test_BaseDataset(mocker, repos):
     ]
 )
 def test_tokenizer(repos, string, tokens):
-    mod = import_module(repos / 'datasets' / 'test_dataset_cldf')
-    dataset = mod.Test()
-    assert dataset.tokenizer(None, string) == tokens.split()
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        mod = import_module(repos / 'datasets' / 'test_dataset_cldf')
+        dataset = mod.Test()
+        assert dataset.tokenizer(None, string) == tokens.split()
 
 
 def test_Dataset(dataset, capsys):
