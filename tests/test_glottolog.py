@@ -16,7 +16,7 @@ def test_languoid_details(glottolog):
 
 
 def test_macroareas(glottolog):
-    assert 'Africa' in [ma.value for ma in glottolog.macroareas_by_glottocode['abcd1234']]
+    assert 'Africa' in [ma.name for ma in glottolog.macroareas_by_glottocode['abcd1234']]
 
 
 def test_name(glottolog):
