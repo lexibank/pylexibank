@@ -291,7 +291,8 @@ class Dataset(object):
         bipa = TranscriptionSystem('bipa')
         problems, visited = set(), set()
         for row in self.cldf_dir.read_csv('forms.csv', dicts=True):
-            tokens = self.tokenizer(None, row['Form'], column='IPA')
+            tokens = self.tokenizer(None, row['Form'], column='IPA') if \
+                    self.tokenizer else row['Segments'].split()
             for tk in set(tokens):
                 if tk in visited:
                     pass
