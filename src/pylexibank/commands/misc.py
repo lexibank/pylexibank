@@ -3,6 +3,7 @@ from subprocess import check_call
 import re
 import shutil
 
+import pytest
 from termcolor import colored
 from segments.util import grapheme_pattern
 from clldutils import licenses
@@ -147,6 +148,10 @@ def makecldf(args):
     """
     with_dataset(args, Dataset._install)
 
+@command()
+def check_profile(args):
+    """Check orthography of a dataset"""
+    with_dataset(args, Dataset._check_profile)
 
 @command()
 def db(args):
@@ -278,6 +283,21 @@ def bib(args):
 
     with_dataset(args, _harvest, default_to_all=True)
     gbib.to_file(str(Path(args.cfg['paths']['lexibank']).joinpath('lexibank.bib')))
+
+
+@command()
+def test(args):
+    ds = get_dataset(args)
+    testfile = ds.dir / "test.py"
+    if testfile.is_file():
+        print(colored("Running tests...", "green"))
+        pytest.main([
+            '--cldf-metadata=%s/cldf-metadata.json' % ds.cldf_dir,
+            testfile
+        ])
+    else:
+        print(colored("No tests found", "red"))
+
 
 
 @command()
