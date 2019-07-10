@@ -27,7 +27,7 @@ setup(
         'attrs>=18.1.0',
         'pycldf>=1.5.3',
         'clldutils>=2.6.3',
-        'pyglottolog>=1.5.0',
+        'pyglottolog>=2.0',
         'pyconcepticon>=2.1.0',
         'pyclts>=1.2.0',
         'segments>=2.0.1',
