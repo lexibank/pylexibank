@@ -723,5 +723,6 @@ def iter_datasets(glottolog=None, concepticon=None, verbose=False):
     for ep in pkg_resources.iter_entry_points('lexibank.dataset'):
         try:
             yield ep.load()(glottolog=glottolog, concepticon=concepticon)
-        except ImportError as e:
+        except Exception as e:
             print('Importing {0} failed: {1}'.format(ep.name, e))
+            raise
