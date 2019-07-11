@@ -23,6 +23,8 @@ from pylexibank.util import DataDir, jsondump, textdump, get_badge
 from pylexibank import cldf
 from pylexibank import transcription
 
+from pyclts import TranscriptionSystem
+
 NOOP = -1
 
 
@@ -284,6 +286,23 @@ class Dataset(object):
     def cmd_install(self, **kw):
         self._not_implemented('install')
         return NOOP
+    
+    def cmd_check_profile(self, **kw):
+        bipa = TranscriptionSystem('bipa')
+        problems, visited = set(), set()
+        for row in self.cldf_dir.read_csv('forms.csv', dicts=True):
+            tokens = self.tokenizer(None, row['Form'], column='IPA') if \
+                    self.tokenizer else row['Segments'].split()
+            for tk in set(tokens):
+                if tk in visited:
+                    pass
+                else:
+                    visited.add(tk)
+                    if bipa[tk].type == 'unknownsound':
+                        problems.add(tk)
+                        print('{0:5}\t{1:20}\t{2}'.format(tk, ' '.join(tokens), row['Form']))
+        print('Found {0} errors in {1} segments.'.format(len(problems),
+            len(visited)))
 
     # ---------------------------------------------------------------
     # handling of lexemes/forms/words
@@ -360,6 +379,10 @@ class Dataset(object):
         write_text(
             self.raw / 'README.md',
             'Raw data downloaded {0}'.format(datetime.utcnow().isoformat()))
+
+    def _check_profile(self, **kw):
+        self.cmd_check_profile(**kw)
+        
 
     def _install(self, **kw):
         self.log = kw.get('log', self.log)
