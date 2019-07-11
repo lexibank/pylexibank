@@ -218,8 +218,8 @@ class Dataset(object):
         self.glottolog = glottolog
         self.concepticon = concepticon
         try:
-            self.git_repo = git.Repo(str(self.dir))  # pragma: no cover
-        except git.InvalidGitRepositoryError:
+            self.git_repo = git.Repo(str(self.dir))
+        except:
             self.git_repo = None
         self.tr_analyses = {}
         self.tr_bad_words = []
@@ -240,10 +240,10 @@ class Dataset(object):
         jsondump(obj, self._json)
 
     @lazyproperty
-    def github_repo(self):  # pragma: no cover
+    def github_repo(self):
         try:
             match = re.search(
-                'github\.com/(?P<org>[^/]+)/(?P<repo>[^.]+)\.git',
+                'github\.com/(?P<org>[^/]+)/(?P<repo>[^.]+)(\.git)?',
                 self.git_repo.remotes.origin.url)
             if match:
                 return match.group('org') + '/' + match.group('repo')
