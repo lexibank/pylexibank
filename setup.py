@@ -30,7 +30,7 @@ setup(
         'pyglottolog>=2.0',
         'pyconcepticon>=2.1.0',
         'pyclts>=1.2.0',
-        'segments>=2.0.1',
+        'segments>=2.0.2',
         'lingpy>=2.6.4',
         'appdirs',
         'requests',
