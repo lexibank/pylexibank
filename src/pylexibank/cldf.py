@@ -10,6 +10,7 @@ import pyclts.models
 from pyconcepticon.api import Concept
 
 from pylexibank.transcription import Analysis, analyze
+from pylexibank.util import pb
 
 MD_NAME = 'cldf-metadata.json'
 ALT_MD_NAME = 'Wordlist-metadata.json'
@@ -103,6 +104,53 @@ class Dataset(object):
         if self.dataset.tokenizer:
             return self.dataset.tokenizer(item, string)
     
+    def add_segments(self, **kw):
+        """
+        :return: dict with the newly created lexeme
+        """
+        kw_ = kw.copy()
+
+        # Do we have morpheme segmentation on top of phonemes?
+        with_morphemes = '+' in self['FormTable', 'Segments'].separator
+
+        language, concept, value, form, segments = [kw_.get(v) for v in [
+            'Language_ID', 'Parameter_ID', 'Value', 'Form', 'Segments']]
+        # check for required kws
+        if language is None or concept is None or value is None \
+                or form is None or segments is None:
+            raise ValueError('language, concept, value, form, ' 
+                    'and segments must be supplied')
+        
+        # point to difference in value and form
+        if  form != value:
+            self.dataset.log.debug(
+                'iter_forms split: "{0}" -> "{1}"'.format(value, form))
+        if segments:
+            kw_.setdefault('Segments', segments)
+            kw_.update(ID=self.lexeme_id(kw), Form=form)
+            lexeme = self._add_object(self.dataset.lexeme_class, **kw_)
+
+            analysis = self.dataset.tr_analyses.setdefault(
+                kw_['Language_ID'], Analysis())
+            try:
+                segments = kw_['Segments']
+                if with_morphemes:
+                    segments = list(chain(*[s.split() for s in segments]))
+                _, _bipa, _sc, _analysis = analyze(segments, analysis)
+
+                # update the list of `bad_words` if necessary; we precompute a
+                # list of data types in `_bipa` just to make the conditional
+                # checking easier
+                _bipa_types = [type(s) for s in _bipa]
+                if pyclts.models.UnknownSound in _bipa_types or '?' in _sc:
+                    self.dataset.tr_bad_words.append(kw_)
+            except ValueError:  # pragma: no cover
+                self.dataset.tr_invalid_words.append(kw_)
+            except (KeyError, AttributeError):  # pragma: no cover
+                print(kw_['Form'], kw_)
+                raise
+        return lexeme
+
     def add_form(self, **kw):
         """
         :return: dict with the newly created form
