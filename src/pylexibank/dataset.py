@@ -162,8 +162,7 @@ class Metadata(object):
             "dc:isVersionOf": "http://lexibank.clld.org/contributions/{0}".format(
                 self.derived_from) if self.derived_from else None,
             "dc:related": self.related,
-            "aboutUrl": self.aboutUrl,
-            "lexibankPatron": self.patron
+            "aboutUrl": self.aboutUrl
         }
         if self.known_license:
             res['dc:license'] = self.known_license.url
