@@ -163,6 +163,7 @@ class Metadata(object):
                 self.derived_from) if self.derived_from else None,
             "dc:related": self.related,
             "aboutUrl": self.aboutUrl,
+            "lexibankPatron": self.patron
         }
         if self.known_license:
             res['dc:license'] = self.known_license.url
