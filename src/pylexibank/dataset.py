@@ -141,6 +141,7 @@ class Metadata(object):
     derived_from = attr.ib(default=None)
     related = attr.ib(default=None)
     source = attr.ib(default=None)
+    patron = attr.ib(default=None)
 
     @lazyproperty
     def known_license(self):
