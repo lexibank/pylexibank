@@ -32,7 +32,14 @@ def test_wordlist2cognates(repos, mocker):
         Concept='meaning',
         Language_ID='1',
         Parameter_ID='p',
-        Segments=['f', 'o'])
+        #Segments=['f', 'o']
+        )
+    ds.add_forms_from_value(
+            Value='form',
+            Concept='meaning',
+            Language_ID='1',
+            Parameter_ID='p'
+            )
     # lid, ipa, concept
     wl = Wordlist(lingpy_util._cldf2wld(ds), row='concept', col='language_id')
     res = list(lingpy_util.wordlist2cognates(wl, 'src'))
