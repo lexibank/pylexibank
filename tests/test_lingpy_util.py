@@ -14,6 +14,10 @@ def test_wordlist2cognates(repos, mocker):
     @attr.s
     class Lexeme(dataset.Lexeme):
         Concept = attr.ib(default=None)
+        Segments = attr.ib(default=[])
+    @attr.s
+    class Lexeme2(dataset.Lexeme):
+        Concept = attr.ib(default=None)
 
     dsdir = repos / 'datasets' / 'test_dataset'
     if not dsdir.joinpath('cldf').exists():
@@ -24,11 +28,12 @@ def test_wordlist2cognates(repos, mocker):
         language_class=dataset.Language,
         concept_class=dataset.Concept,
         split_forms=lambda _, s: [s],
+        tokenize=lambda _, x: [],
         dir=dsdir,
         tr_analyses={},
         cldf_dir=dsdir.joinpath('cldf')))
     ds2 = Dataset(mocker.Mock(
-        lexeme_class=Lexeme,
+        lexeme_class=Lexeme2,
         cognate_class=dataset.Cognate,
         language_class=dataset.Language,
         concept_class=dataset.Concept,
@@ -44,6 +49,17 @@ def test_wordlist2cognates(repos, mocker):
         Form='form',
         Segments=['f', 'o']
         )
+    # needs to be fixed XXX
+    ds2.tokenize = lambda _, x: [x]
+    ds2.add_form(
+        Value='form,form2',
+        Concept='meaning',
+        Language_ID='1',
+        Parameter_ID='p',
+        Form='form',
+            )
+    # needs to be fixed XXX
+    ds.tokenize = lambda _, x: []
     ds.add_forms_from_value(
             Value='form,form2',
             Concept='meaning',
