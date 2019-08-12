@@ -148,7 +148,7 @@ def makecldf(args):
     """
     with_dataset(args, Dataset._install)
 
-@command()
+@command('check-profile')
 def check_profile(args):
     """Check orthography of a dataset"""
     with_dataset(args, Dataset._check_profile)
