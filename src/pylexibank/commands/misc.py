@@ -153,6 +153,11 @@ def check_profile(args):
     """Check orthography of a dataset"""
     with_dataset(args, Dataset._check_profile)
 
+@command('check-morphemes')
+def check_phonotactics(args):
+    """Check the segmented forms of a dataset"""
+    with_dataset(args, Dataset._check_phonotactics)
+
 @command()
 def db(args):
     db = str(Database(args.db).fname)

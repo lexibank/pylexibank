@@ -15,6 +15,8 @@ from clldutils import licenses
 from clldutils import jsonlib
 from pyglottolog.languoids import Glottocode
 
+from tabulate import tabulate
+
 from segments import Tokenizer, Profile
 from segments.tree import Tree
 
@@ -305,6 +307,37 @@ class Dataset(object):
         print('Found {0} errors in {1} segments.'.format(len(problems),
             len(visited)))
 
+    def cmd_check_phonotactics(self, **kw):
+        bipa = TranscriptionSystem('bipa')
+        problems = defaultdict(list)
+        for row in self.cldf_dir.read_csv('forms.csv', dicts=True):
+            tokens = row['Segments'].split()
+            # trailing plusses
+            if tokens[-1] == '+':
+                problems['+$'] += [(row['ID'], row['Form'], row['Segments'])]
+            if tokens[0] == '+':
+                problems['^+'] += [(row['ID'], row['Form'], row['Segments'])]
+            if '+ +' in row['Segments']:
+                problems['++'] += [(row['ID'], row['Form'], row['Segments'])]
+        if not problems:
+            print('Found no errors.')
+            return
+        if '+$' in problems:
+            print('# Segments end in +:')
+            print(tabulate([[i+1, a, b, c] for i, (a, b, c) in
+                enumerate(problems['+$'])], headers=[
+                    'No', 'ID', 'Form', 'Segments'], tablefmt='pipe'))
+        if '^+' in problems:
+            print('# Segments start with +:')
+            print(tabulate([[i+1, a, b, c] for i, (a, b, c) in
+                enumerate(problems['^+'])], headers=[
+                    'No', 'ID', 'Form', 'Segments'], tablefmt='pipe'))
+        if '++' in problems:
+            print('# Segments have consecutive +:')
+            print(tabulate([[i+1, a, b, c] for i, (a, b, c) in
+                enumerate(problems['++'])], headers=[
+                    'No', 'ID', 'Form', 'Segments'], tablefmt='pipe'))
+
     # ---------------------------------------------------------------
     # handling of lexemes/forms/words
     # ---------------------------------------------------------------
@@ -383,6 +416,9 @@ class Dataset(object):
 
     def _check_profile(self, **kw):
         self.cmd_check_profile(**kw)
+
+    def _check_phonotactics(self, **kw):
+        self.cmd_check_phonotactics(**kw)
         
 
     def _install(self, **kw):
