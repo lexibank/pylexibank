@@ -6,9 +6,9 @@ import shutil
 import pytest
 from termcolor import colored
 from segments.util import grapheme_pattern
+from csvw.dsv import UnicodeWriter
 from clldutils import licenses
 from clldutils.path import Path, read_text, write_text
-from clldutils.dsv import UnicodeWriter
 from clldutils.markup import Table
 from clldutils.clilib import command, confirm, ParserError
 from clldutils.text import truncate_with_ellipsis
