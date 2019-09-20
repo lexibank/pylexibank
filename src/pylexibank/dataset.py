@@ -7,7 +7,8 @@ import unicodedata
 
 import attr
 import git
-from clldutils.dsv import reader
+
+from csvw.dsv import reader
 from clldutils.text import split_text_with_context
 from clldutils.misc import lazyproperty
 from clldutils.path import remove, rmtree, write_text
