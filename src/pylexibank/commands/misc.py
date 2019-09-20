@@ -6,9 +6,9 @@ import shutil
 import pytest
 from termcolor import colored
 from segments.util import grapheme_pattern
+from csvw.dsv import UnicodeWriter
 from clldutils import licenses
 from clldutils.path import Path, read_text, write_text
-from clldutils.dsv import UnicodeWriter
 from clldutils.markup import Table
 from clldutils.clilib import command, confirm, ParserError
 from clldutils.text import truncate_with_ellipsis
@@ -148,6 +148,15 @@ def makecldf(args):
     """
     with_dataset(args, Dataset._install)
 
+@command('check-profile')
+def check_profile(args):
+    """Check orthography of a dataset"""
+    with_dataset(args, Dataset._check_profile)
+
+@command('check-morphemes')
+def check_phonotactics(args):
+    """Check the segmented forms of a dataset"""
+    with_dataset(args, Dataset._check_phonotactics)
 
 @command()
 def db(args):

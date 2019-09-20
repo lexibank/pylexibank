@@ -2,6 +2,7 @@ import json
 
 import pytest
 from clldutils.path import import_module
+import git
 
 from pylexibank.dataset import Lexeme, Unmapped, Dataset, NOOP, Metadata
 
@@ -59,6 +60,20 @@ def test_BaseDataset(mocker, repos):
     assert not ds.stats
     ds.dir.write('README.json', json.dumps({'a': 1}))
     assert ds.stats['a'] == 1
+
+    def repo(url):
+        return mocker.Mock(remotes=mocker.Mock(origin=mocker.Mock(url=url)))
+
+    mocker.patch('pylexibank.dataset.git', mocker.Mock(Repo=lambda _: repo('github.com/org/repo')))
+    assert TestDataset().github_repo == 'org/repo'
+
+    mocker.patch('pylexibank.dataset.git', mocker.Mock(Repo=lambda _: repo('example.org/org/repo')))
+    assert TestDataset().github_repo is None
+
+    mocker.patch(
+        'pylexibank.dataset.git',
+        mocker.Mock(Repo=mocker.Mock(side_effect=ValueError())))
+    assert TestDataset().github_repo is None
 
 
 @pytest.mark.parametrize(

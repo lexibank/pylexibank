@@ -2,7 +2,7 @@ import re
 
 from bs4 import BeautifulSoup
 import bs4
-from clldutils.dsv import UnicodeWriter
+from csvw.dsv import UnicodeWriter
 
 from pylexibank.dataset import Dataset
 from pylexibank.util import pb, getEvoBibAsBibtex

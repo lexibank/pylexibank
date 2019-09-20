@@ -93,6 +93,7 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library'):
             ref='cogid',
             row='parameter_id',
             col='language_id',
+            transcription='form',
             segments=column.lower())
         alm.align(method=method)
         for k in alm:

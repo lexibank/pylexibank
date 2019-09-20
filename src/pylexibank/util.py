@@ -11,7 +11,7 @@ from termcolor import colored
 import xlrd
 from tqdm import tqdm
 
-from clldutils.dsv import UnicodeWriter, reader
+from csvw.dsv import UnicodeWriter, reader
 from clldutils.path import (
     Path, as_posix, copy, TemporaryDirectory, git_describe, remove,
     read_text, write_text,

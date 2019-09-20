@@ -7,13 +7,16 @@ import unicodedata
 
 import attr
 import git
-from clldutils.dsv import reader
+
+from csvw.dsv import reader
 from clldutils.text import split_text_with_context
 from clldutils.misc import lazyproperty
 from clldutils.path import remove, rmtree, write_text
 from clldutils import licenses
 from clldutils import jsonlib
 from pyglottolog.languoids import Glottocode
+
+from tabulate import tabulate
 
 from segments import Tokenizer, Profile
 from segments.tree import Tree
@@ -22,6 +25,8 @@ import pylexibank
 from pylexibank.util import DataDir, jsondump, textdump, get_badge
 from pylexibank import cldf
 from pylexibank import transcription
+
+from pyclts import TranscriptionSystem
 
 NOOP = -1
 
@@ -139,6 +144,7 @@ class Metadata(object):
     derived_from = attr.ib(default=None)
     related = attr.ib(default=None)
     source = attr.ib(default=None)
+    patron = attr.ib(default=None)
 
     @lazyproperty
     def known_license(self):
@@ -159,7 +165,7 @@ class Metadata(object):
             "dc:isVersionOf": "http://lexibank.clld.org/contributions/{0}".format(
                 self.derived_from) if self.derived_from else None,
             "dc:related": self.related,
-            "aboutUrl": self.aboutUrl,
+            "aboutUrl": self.aboutUrl
         }
         if self.known_license:
             res['dc:license'] = self.known_license.url
@@ -216,8 +222,8 @@ class Dataset(object):
         self.glottolog = glottolog
         self.concepticon = concepticon
         try:
-            self.git_repo = git.Repo(str(self.dir))  # pragma: no cover
-        except git.InvalidGitRepositoryError:
+            self.git_repo = git.Repo(str(self.dir))
+        except:
             self.git_repo = None
         self.tr_analyses = {}
         self.tr_bad_words = []
@@ -238,10 +244,10 @@ class Dataset(object):
         jsondump(obj, self._json)
 
     @lazyproperty
-    def github_repo(self):  # pragma: no cover
+    def github_repo(self):
         try:
             match = re.search(
-                'github\.com/(?P<org>[^/]+)/(?P<repo>[^.]+)\.git',
+                'github\.com/(?P<org>[^/]+)/(?P<repo>[^.]+)(\.git)?',
                 self.git_repo.remotes.origin.url)
             if match:
                 return match.group('org') + '/' + match.group('repo')
@@ -284,6 +290,54 @@ class Dataset(object):
     def cmd_install(self, **kw):
         self._not_implemented('install')
         return NOOP
+    
+    def cmd_check_profile(self, **kw):
+        bipa = TranscriptionSystem('bipa')
+        problems, visited = set(), set()
+        for row in self.cldf_dir.read_csv('forms.csv', dicts=True):
+            tokens = self.tokenizer(None, row['Form'], column='IPA') if \
+                    self.tokenizer else row['Segments'].split()
+            for tk in set(tokens):
+                if tk in visited:
+                    pass
+                else:
+                    visited.add(tk)
+                    if bipa[tk].type == 'unknownsound':
+                        problems.add(tk)
+                        print('{0:5}\t{1:20}\t{2}'.format(tk, ' '.join(tokens), row['Form']))
+        print('Found {0} errors in {1} segments.'.format(len(problems),
+            len(visited)))
+
+    def cmd_check_phonotactics(self, **kw):
+        bipa = TranscriptionSystem('bipa')
+        problems = defaultdict(list)
+        for row in self.cldf_dir.read_csv('forms.csv', dicts=True):
+            tokens = row['Segments'].split()
+            # trailing plusses
+            if tokens[-1] == '+':
+                problems['+$'] += [(row['ID'], row['Form'], row['Segments'])]
+            if tokens[0] == '+':
+                problems['^+'] += [(row['ID'], row['Form'], row['Segments'])]
+            if '+ +' in row['Segments']:
+                problems['++'] += [(row['ID'], row['Form'], row['Segments'])]
+        if not problems:
+            print('Found no errors.')
+            return
+        if '+$' in problems:
+            print('# Segments end in +:')
+            print(tabulate([[i+1, a, b, c] for i, (a, b, c) in
+                enumerate(problems['+$'])], headers=[
+                    'No', 'ID', 'Form', 'Segments'], tablefmt='pipe'))
+        if '^+' in problems:
+            print('# Segments start with +:')
+            print(tabulate([[i+1, a, b, c] for i, (a, b, c) in
+                enumerate(problems['^+'])], headers=[
+                    'No', 'ID', 'Form', 'Segments'], tablefmt='pipe'))
+        if '++' in problems:
+            print('# Segments have consecutive +:')
+            print(tabulate([[i+1, a, b, c] for i, (a, b, c) in
+                enumerate(problems['++'])], headers=[
+                    'No', 'ID', 'Form', 'Segments'], tablefmt='pipe'))
 
     # ---------------------------------------------------------------
     # handling of lexemes/forms/words
@@ -360,6 +414,13 @@ class Dataset(object):
         write_text(
             self.raw / 'README.md',
             'Raw data downloaded {0}'.format(datetime.utcnow().isoformat()))
+
+    def _check_profile(self, **kw):
+        self.cmd_check_profile(**kw)
+
+    def _check_phonotactics(self, **kw):
+        self.cmd_check_phonotactics(**kw)
+        
 
     def _install(self, **kw):
         self.log = kw.get('log', self.log)
@@ -700,5 +761,6 @@ def iter_datasets(glottolog=None, concepticon=None, verbose=False):
     for ep in pkg_resources.iter_entry_points('lexibank.dataset'):
         try:
             yield ep.load()(glottolog=glottolog, concepticon=concepticon)
-        except ImportError as e:
+        except Exception as e:
             print('Importing {0} failed: {1}'.format(ep.name, e))
+            raise
