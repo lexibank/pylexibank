@@ -26,7 +26,7 @@ def check(args):
                 "yellow"
             ))
         else:
-            if lang['Glottocode'] not in glottocode:
+            if lang['Glottocode'] not in glottocodes:
                 print(colored(
                     "ERROR: Language '%s' has an INVALID glottocode '%s'" % (
                     lang['Name'], lang['Glottocode']),
