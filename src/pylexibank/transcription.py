@@ -85,7 +85,7 @@ def analyze(segments, analysis, lookup=dict(bipa={}, dolgo={})):
         if isinstance(sound_bipa, pyclts.models.UnknownSound):
             analysis.bipa_errors.add(segment)
         else:
-            analysis.replacements[sound_bipa.source].add(sound_bipa.__unicode__())
+            analysis.replacements[sound_bipa.source].add(str(sound_bipa))
 
         # update sound class errors, if any
         if sound_class == '?':
