@@ -4,7 +4,7 @@ from itertools import chain
 
 import attr
 from csvw.metadata import Column
-from clldutils.path import copy, Path
+from clldutils.path import copy, Path, git_describe
 from pycldf.dataset import Wordlist
 import pyclts.models
 from pyconcepticon.api import Concept
@@ -381,6 +381,7 @@ class Dataset(object):
                 ('glottolog_version', self.dataset.glottolog.version),
                 ('concepticon_version', self.dataset.concepticon.version),
                 ('pylexibank_version', __version__),
+                ('repository_version', git_describe(self.dataset.dir))
             ]))
         ]))
         self.wl.write(**kw)
