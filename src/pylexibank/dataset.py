@@ -194,6 +194,7 @@ class Dataset(object):
     brackets = { "(": ")", }
     separators = ";/,"
     missing_data = ('?', '-')
+    strip_inside_brackets = True
 
     @lazyproperty
     def metadata(self):
@@ -360,9 +361,11 @@ class Dataset(object):
         :return: None to skip the form, or the cleaned form as string.
         """
         missing_data = missing_data or self.missing_data
-        brackets = brackets or None
+        brackets = brackets or self.brackets
         if form not in missing_data:
-            return strip_brackets(form, brackets=brackets)
+            if self.strip_inside_brackets:
+                return strip_brackets(form, brackets=brackets)
+            return form
 
     def split_forms(self, item, value, separators=None, brackets=None):
         separators = separators or self.separators
