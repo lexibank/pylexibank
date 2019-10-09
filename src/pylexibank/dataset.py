@@ -362,8 +362,9 @@ class Dataset(object):
         if value in self.lexemes:  # pragma: no cover
             self.log.debug('overriding via lexemes.csv: %r -> %r' % (value, self.lexemes[value]))
         value = self.lexemes.get(value, value)
-        return [self.clean_form(item, form)
+        forms = [self.clean_form(item, form)
                 for form in split_text_with_context(value, separators='/,;')]
+        return [f for f in forms if f]
 
     @lazyproperty
     def tokenizer(self):
