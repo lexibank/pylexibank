@@ -205,9 +205,10 @@ class Dataset(object):
         for i, form in enumerate(split_value(kw, kw['Value'])):
             kw_ = kw.copy()
             kw_['Form'] = form
-            kw_ = self.add_form(with_morphemes=with_morphemes, **kw_)
-            if kw_:
-                lexemes.append(kw_)
+            if kw_['Form']:
+                kw_ = self.add_form(with_morphemes=with_morphemes, **kw_)
+                if kw_:
+                    lexemes.append(kw_)
             
         return lexemes
 
