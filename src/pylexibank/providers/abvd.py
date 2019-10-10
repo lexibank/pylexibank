@@ -219,7 +219,7 @@ class Wordlist(object):
                 self.dataset.unmapped.add_concept(ID=entry.word_id, Name=entry.word)
 
             ds.add_concept(ID=entry.word_id, Name=entry.word, Concepticon_ID=cid)
-            for lex in ds.add_lexemes(
+            lex = ds.add_forms_from_value(
                 Language_ID=self.language.id,
                 Parameter_ID=entry.word_id,
                 Value=entry.name,
@@ -228,7 +228,9 @@ class Wordlist(object):
                 Comment=entry.comment or '',
                 Loan=True if entry.loan and len(entry.loan) else False,
                 Local_ID=entry.id,
-            ):
+            )
+            if lex:
+                lex = lex[0]
                 for cognate_set_id in entry.cognates:
                     match = self.dataset.cognate_pattern.match(cognate_set_id)
                     if not match:  # pragma: no cover
@@ -238,8 +240,5 @@ class Wordlist(object):
                             lexeme=lex,
                             Cognateset_ID=match.group('id'),
                             Doubt=bool(match.group('doubt')))
-                # when an entry is split into multiple forms, we only assign cognate
-                # sets to the first one!
-                break
 
         return ds

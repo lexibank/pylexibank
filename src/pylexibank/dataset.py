@@ -9,7 +9,7 @@ import attr
 import git
 
 from csvw.dsv import reader
-from clldutils.text import split_text_with_context
+from clldutils.text import split_text_with_context, strip_brackets
 from clldutils.misc import lazyproperty
 from clldutils.path import remove, rmtree, write_text
 from clldutils import licenses
@@ -191,6 +191,10 @@ class Dataset(object):
     language_class = Language
     concept_class = Concept
     log = logging.getLogger(pylexibank.__name__)
+    brackets = { "(": ")", }
+    separators = ";/,"
+    missing_data = ('?', '-')
+    strip_inside_brackets = True
 
     @lazyproperty
     def metadata(self):
@@ -349,22 +353,30 @@ class Dataset(object):
         """
         yield "abcde"
 
-    def clean_form(self, item, form):
+    def clean_form(self, item, form, missing_data=None, brackets=None):
         """
         Called when a row is added to a CLDF dataset.
 
         :param form:
         :return: None to skip the form, or the cleaned form as string.
         """
-        if form not in ['?']:
+        missing_data = missing_data or self.missing_data
+        brackets = brackets or self.brackets
+        if form not in missing_data:
+            if self.strip_inside_brackets:
+                return strip_brackets(form, brackets=brackets)
             return form
 
-    def split_forms(self, item, value):
+    def split_forms(self, item, value, separators=None, brackets=None):
+        separators = separators or self.separators
+        brackets = brackets or self.brackets
         if value in self.lexemes:  # pragma: no cover
             self.log.debug('overriding via lexemes.csv: %r -> %r' % (value, self.lexemes[value]))
         value = self.lexemes.get(value, value)
         forms = [self.clean_form(item, form)
-                for form in split_text_with_context(value, separators='/,;')]
+                for form in split_text_with_context(value,
+                    separators=separators, 
+                    brackets=brackets)]
         return [f for f in forms if f]
 
     @lazyproperty
@@ -706,8 +718,19 @@ class Dataset(object):
 
 
 class NonSplittingDataset(Dataset):
-    def split_forms(self, item, value):
-        return [self.clean_form(item, self.lexemes.get(value, value))]
+    
+    def split_forms(self, item, value, separators=None, brackets=None):
+        separators = separators or self.separators
+        brackets = brackets or self.brackets
+        if value in self.lexemes:  # pragma: no cover
+            self.log.debug('overriding via lexemes.csv: %r -> %r' % (value, self.lexemes[value]))
+        value = self.lexemes.get(value, value)
+        forms = [self.clean_form(item, form)
+                for form in split_text_with_context(value,
+                    separators=separators, 
+                    brackets=brackets
+                    )]
+        return [forms[0]]
 
 
 MARKDOWN_TEMPLATE = """
