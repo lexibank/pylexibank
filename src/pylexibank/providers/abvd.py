@@ -232,7 +232,7 @@ class Wordlist(object):
                 for cognate_set_id in entry.cognates:
                     match = self.dataset.cognate_pattern.match(cognate_set_id)
                     if not match:  # pragma: no cover
-                        self.log.warn('Invalid cognateset ID: {0}'.format(cognate_set_id))
+                        self.log.warn('Invalid cognateset ID for entry {0}: {1}'.format(entry.id, cognate_set_id))
                     else:
                         ds.add_cognate(
                             lexeme=lex,

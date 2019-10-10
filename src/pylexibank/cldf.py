@@ -4,13 +4,14 @@ from itertools import chain
 
 import attr
 from csvw.metadata import Column
-from clldutils.path import copy, Path
+from clldutils.path import copy, Path, git_describe
 from pycldf.dataset import Wordlist
 import pyclts.models
 from pyconcepticon.api import Concept
 
 from pylexibank.transcription import Analysis, analyze
 from pylexibank.util import pb
+from pylexibank import __version__
 
 MD_NAME = 'cldf-metadata.json'
 ALT_MD_NAME = 'Wordlist-metadata.json'
@@ -380,6 +381,8 @@ class Dataset(object):
             ('properties', OrderedDict([
                 ('glottolog_version', self.dataset.glottolog.version),
                 ('concepticon_version', self.dataset.concepticon.version),
+                ('pylexibank_version', __version__),
+                ('repository_version', git_describe(self.dataset.dir))
             ]))
         ]))
         self.wl.write(**kw)
