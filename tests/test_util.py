@@ -1,14 +1,7 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
 from collections import Counter
-
-from clldutils.path import Path
+from pathlib import Path
 
 from pylexibank import util
-
-
-def test_aligned():
-    assert util.aligned([('a', 'b'), ('xxx', 'yyy')]) == '  a   b\n  xxx yyy'
 
 
 def test_jsondump(tmpdir):
@@ -46,36 +39,10 @@ class MockRequests(object):
         return MockResponse(self.path)
 
 
-def test_DataDir(repos, tmppath, mocker):
-    dd = util.DataDir(tmppath)
-    dd.write('test.xml', '<a>b</a>')
-    assert dd.read_xml('test.xml').tag == 'r'
-    dd.remove('test.xml')
-    dd.write('test.tsv', 'a\tb\nc\td')
-    assert dd.read_tsv('test.tsv') == [['a', 'b'], ['c', 'd']]
-
-    t = 'äöüß'
-    assert t == dd.read(dd.write('test.txt', t))
-
-    log = mocker.Mock()
-    mocker.patch(
-        'pylexibank.util.requests',
-        MockRequests(repos / 'datasets' / 'test_dataset' / 'test.zip'))
-    dd.download_and_unpack('', 'test.xlsx', log=log)
-    assert log.info.called
-    dd.xls2csv('test.xlsx')
-    assert dd.read_csv('test.Sheet1.csv') == [['a', 'b', 'c']]
-
-
 def test_split_by_year():
     assert util.split_by_year(' 2012. abc') == ('', '2012', 'abc')
     assert util.split_by_year(' (2012) abc') == ('', '2012', 'abc')
     assert util.split_by_year('abc') == (None, None, 'abc')
-
-
-def test_data_path():
-    assert util.data_path('abc', repos=Path('def')).as_posix().startswith('def')
-    assert util.data_path('abc', repos=Path('def')).as_posix().endswith('abc')
 
 
 def test_get_badge():

@@ -2,12 +2,11 @@ import re
 
 import attr
 from clldutils.misc import slug, nfilter
-from clldutils.path import remove
 from clldutils.text import split_text_with_context
 from pycldf.sources import Source
 
 from pylexibank.util import pb
-from pylexibank.dataset import Dataset, Language
+from pylexibank import Dataset, Language
 
 BASE_URL = "https://abvd.shh.mpg.de"
 URL = BASE_URL + "/utils/save/?type=xml&section=%s&language=%d"
@@ -31,7 +30,8 @@ class BVD(Dataset):
     cognate_pattern = re.compile('\s*(?P<id>([A-z]?[0-9]+|[A-Z]))\s*(?P<doubt>\?+)?\s*$')
 
     def iter_wordlists(self, language_map, log):
-        for xml in pb(sorted(self.raw.glob('*.xml'), key=lambda p: int(p.stem)), desc='xml-to-wl'):
+        for xml in pb(
+                sorted(self.raw_dir.glob('*.xml'), key=lambda p: int(p.stem)), desc='xml-to-wl'):
             wl = Wordlist(self, xml, log)
             if not wl.language.glottocode:
                 if wl.language.id in language_map:
@@ -52,8 +52,8 @@ class BVD(Dataset):
     def cmd_download(self, **kw):  # pragma: no cover
         assert self.SECTION in ['austronesian', 'mayan', 'utoaztecan']
         self.log.info('ABVD section set to %s' % self.SECTION)
-        for fname in self.raw.iterdir():
-            remove(fname)
+        for fname in self.raw_dir.iterdir():
+            fname.unlink()
         language_ids = [
             i for i in range(1, 2000)
             if i not in INVALID_LANGUAGE_IDS.get(self.SECTION, [])]
@@ -64,9 +64,9 @@ class BVD(Dataset):
                 break
 
     def get_data(self, lid):  # pragma: no cover
-        fname = self.raw.download(URL % (self.SECTION, lid), '%s.xml' % lid, log=self.log)
+        fname = self.raw_dir.download(URL % (self.SECTION, lid), '%s.xml' % lid, log=self.log)
         if fname.stat().st_size == 0:
-            remove(fname)
+            fname.unlink()
             return False
         return True
 
@@ -145,7 +145,7 @@ class Wordlist(object):
     def __init__(self, dataset, path, log):
         self.dataset = dataset
         self.log = log
-        e = dataset.raw.read_xml(path.name)
+        e = dataset.raw_dir.read_xml(path.name)
         self.section = dataset.SECTION
         records = list(e.findall('./record'))
         self.language = Language(records[0])

@@ -6,25 +6,17 @@ class Dataset(BaseDataset):
     dir = Path(__file__).parent
     id = "{id}"
 
-    def cmd_download(self, **kw):
+    def cmd_download(self, args):
         """
         Download files to the raw/ directory. You can use helpers methods of `self.raw`, e.g.
 
-        >>> self.raw.download(url, fname)
+        >>> self.raw_dir.download(url, fname)
         """
-        pass
 
-    def cmd_install(self, **kw):
+    def cmd_install(self, args):
         """
         Convert the raw data to a CLDF dataset.
 
-        Use the methods of `pylexibank.cldf.Dataset` after instantiating one as context:
-
-        >>> with self.cldf as ds:
-        ...     ds.add_sources(...)
-        ...     ds.add_language(...)
-        ...     ds.add_concept(...)
-        ...     ds.add_lexemes(...)
+        A `pylexibank.cldf.LexibankWriter` instance is available as `args.writer`. Use the methods
+        of this object to add data.
         """
-        with self.cldf as ds:
-            pass

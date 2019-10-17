@@ -1,6 +1,3 @@
-# coding: utf8
-from __future__ import unicode_literals, print_function, division
-
 import pytest
 from csvw.metadata import Column
 
@@ -46,14 +43,18 @@ def test_db(tmpdir, dataset, mocker, capsys):
 
     db.create(force=True)
     db.load(dataset)
-    cols = dataset.cldf.wl['FormTable'].tableSchema.columns
+    cldf_ds = dataset.cldf_reader()
+    cols = cldf_ds['FormTable'].tableSchema.columns
     cols.append(Column(name='custom'))
+    cldf_ds.write_metadata()
     db.load(dataset)
     cols.pop()
     cols.append(Column(name='custom', datatype='integer'))
+    cldf_ds.write_metadata()
     with pytest.raises(ValueError):
         db.load(dataset)
     cols.pop()
+    cldf_ds.write_metadata()
     db.load(dataset)
 
 
