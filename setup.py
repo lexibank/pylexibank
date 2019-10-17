@@ -27,7 +27,7 @@ setup(
     platforms='any',
     python_requires='>=3.5',
     install_requires=[
-        'cldfbench',
+        'cldfbench>=0.3',
         'csvw>=1.5.6',
         'clldutils>=2.8.0',
         'pycldf>=1.7.0',
