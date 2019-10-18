@@ -8,7 +8,7 @@ def _main(cmd, **kw):
 
 
 def test_ls(repos, tmpdir, dataset):
-    _main('lexibank.load --db {3} {0} {1} {2}'.format(
+    _main('lexibank.load --db {3} {0} --glottolog {1} --concepticon {2}'.format(
         str(dataset.dir / 'td.py'),
         str(repos),
         str(repos),
@@ -24,9 +24,9 @@ def test_check_phonotactics(dataset):
 
 
 def test_check_profile(dataset, repos):
-    _main('lexibank.check_profile {0} {1}'.format(str(dataset.dir / 'td.py'), repos))
+    _main('lexibank.check_profile {0} --clts {1}'.format(str(dataset.dir / 'td.py'), repos))
 
 
 def test_init_profile(dataset, repos):
-    _main('lexibank.init_profile {0} {1} -f --context'.format(
+    _main('lexibank.init_profile {0} --clts {1} -f --context'.format(
         str(dataset.dir / 'td.py'), repos))
