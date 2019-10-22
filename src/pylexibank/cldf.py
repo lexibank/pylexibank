@@ -116,7 +116,7 @@ class LexibankWriter(CLDFWriter):
             segments = kw['Segments']
             if with_morphemes:
                 segments = list(chain(*[s.split() for s in segments]))
-            _, _bipa, _sc, _analysis = analyze(segments, analysis)
+            _, _bipa, _sc, _analysis = analyze(self.args.clts.api, segments, analysis)
 
             # update the list of `bad_words` if necessary; we precompute a
             # list of data types in `_bipa` just to make the conditional

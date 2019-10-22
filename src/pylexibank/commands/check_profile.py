@@ -2,7 +2,6 @@
 Check forms against a dataset's orthography profile.
 """
 from cldfbench.cli_util import with_dataset, add_catalog_spec
-from pyclts import TranscriptionSystem
 
 from pylexibank.cli_util import add_dataset_spec
 
@@ -13,7 +12,6 @@ def register(parser):
 
 
 def run(args):
-    args.bipa = TranscriptionSystem('bipa')
     with_dataset(args, check_profile)
 
 
@@ -25,7 +23,7 @@ def check_profile(dataset, args):
         for tk in set(tokens):
             if tk not in visited:
                 visited.add(tk)
-                if args.bipa[tk].type == 'unknownsound':
+                if args.clts.api.bipa[tk].type == 'unknownsound':
                     problems.add(tk)
                     print('{0:5}\t{1:20}\t{2}'.format(tk, ' '.join(tokens), row['Form']))
     print('Found {0} errors in {1} segments.'.format(len(problems), len(visited)))

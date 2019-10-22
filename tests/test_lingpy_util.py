@@ -1,5 +1,6 @@
 import attr
 from lingpy import Wordlist
+import pyclts
 
 from pylexibank import lingpy_util
 from pylexibank import models as pbds
@@ -37,7 +38,7 @@ def test_wordlist2cognates(repos, mocker, dataset):
         )
 
     dataset.lexeme_class = Lexeme2
-    with dataset.cldf_writer(mocker.Mock()) as ds2:
+    with dataset.cldf_writer(mocker.Mock(clts=mocker.Mock(api=pyclts.CLTS(repos)))) as ds2:
         ds2.add_form_with_segments(
             Value='form,form2',
             Concept='meaning',

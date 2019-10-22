@@ -27,7 +27,7 @@ def register(parser):
 
 
 def run(args):
-    bipa = TranscriptionSystem('bipa')
+    bipa = args.clts.api.bipa
     func = profile.simple_profile
     cols = ['Grapheme', 'IPA', 'Frequence', 'Codepoints']
     kw = {'ref': 'form', 'clts': bipa}

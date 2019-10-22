@@ -28,3 +28,4 @@ def get_db(args):
 def add_catalogs(parser):
     cli_util.add_catalog_spec(parser, 'glottolog')
     cli_util.add_catalog_spec(parser, 'concepticon')
+    cli_util.add_catalog_spec(parser, 'clts')

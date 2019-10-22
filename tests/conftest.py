@@ -71,14 +71,12 @@ def dataset_cldf(repos, glottolog, concepticon):
 
 
 @pytest.fixture
-def dataset(repos, glottolog, concepticon):
-    from mock import Mock
-
+def dataset(repos, glottolog, concepticon, mocker):
     with sys_path(repos / 'datasets' / 'test_dataset'):
         if 'td' in sys.modules:
             mod = importlib.reload(sys.modules['td'])
         else:
             mod = importlib.import_module('td')
     ds = mod.Test(glottolog=glottolog, concepticon=concepticon)
-    ds._cmd_makecldf(Namespace(log=Mock(), verbose=True))
+    ds._cmd_makecldf(Namespace(log=mocker.Mock(), clts=mocker.MagicMock(), verbose=True))
     return ds
