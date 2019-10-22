@@ -14,8 +14,8 @@ def build_status_badge(dataset):
 
 def report(dataset, tr_analysis=None, glottolog=None, log=None):
     #
-    # FIXME: write only summary into README.md
-    # in case of multiple cldf datasets:
+    # FIXME: in case of multiple cldf datasets:
+    # - write only summary into README.md
     # - separate lexemes.md and transcriptions.md
     #
     lines = []

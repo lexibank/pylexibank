@@ -74,9 +74,6 @@ def insert(db, table, keys, *rows, **kw):
             keys = [k.strip() for k in keys.split(',')]
         sql = "INSERT INTO {0} ({1}) VALUES ({2})".format(
             table, ','.join(keys), ','.join(['?' for _ in keys]))
-        #if kw.get('verbose'):  # pragma: no cover
-        #    print(sql)
-        #    print(rows)
         db.executemany(sql, rows)
 
 
