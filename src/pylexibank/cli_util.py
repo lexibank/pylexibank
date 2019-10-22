@@ -25,7 +25,8 @@ def get_db(args):
     return db
 
 
-def add_catalogs(parser):
+def add_catalogs(parser, with_clts=False):
     cli_util.add_catalog_spec(parser, 'glottolog')
     cli_util.add_catalog_spec(parser, 'concepticon')
-    cli_util.add_catalog_spec(parser, 'clts')
+    if with_clts:
+        cli_util.add_catalog_spec(parser, 'clts')

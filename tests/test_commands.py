@@ -4,7 +4,7 @@ from cldfbench.__main__ import main
 
 
 def _main(cmd, **kw):
-    main(shlex.split(cmd), **kw)
+    main(['--no-config'] + shlex.split(cmd), **kw)
 
 
 def test_ls(repos, tmpdir, dataset):
