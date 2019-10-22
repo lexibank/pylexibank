@@ -1,0 +1,133 @@
+GRAPHEME	CONTOUR	START	MIDDLE	END	ALIAS	NOTE
+¹¹	flat	from-low		to-low		
+¹²	rising	from-low		to-mid-low		
+¹³	rising	from-low		to-mid		
+¹⁴	rising	from-low		to-mid-high		
+¹⁵	rising	from-low		to-high		
+²¹	falling	from-mid-low		to-low		
+²²	flat	from-mid-low		to-mid-low		
+²³	rising	from-mid-low		to-mid		
+²⁴	rising	from-mid-low		to-mid-high		
+²⁵	rising	from-mid-low		to-high		
+³¹	falling	from-mid		to-low		
+³²	falling	from-mid		to-mid-low		
+³³	flat	from-mid		to-mid		
+³⁴	rising	from-mid		to-mid-high		
+³⁵	rising	from-mid		to-high		
+⁴¹	falling	from-mid-high		to-low		
+⁴²	falling	from-mid-high		to-mid-low		
+⁴³	falling	from-mid-high		to-mid		
+⁴⁴	flat	from-mid-high		to-mid-high		
+⁴⁵	rising	from-mid-high		to-high		
+⁵¹	falling	from-high		to-low		
+⁵²	falling	from-high		to-mid-low		
+⁵³	falling	from-high		to-mid		
+⁵⁴	falling	from-high		to-mid-high		
+⁵⁵	flat	from-high		to-high		
+¹	short	from-low				
+²	short	from-mid-low				
+³	short	from-mid				
+⁴	short	from-mid-high				
+⁵	short	from-high				
+¹¹²	rising	from-low	via-low	to-mid-low		
+¹¹³	rising	from-low	via-low	to-mid		
+¹¹⁴	rising	from-low	via-low	to-mid-high		
+¹¹⁵	rising	from-low	via-low	to-high		
+¹²¹	contour	from-low	via-mid-low	to-low		
+¹²²	rising	from-low	via-mid-low	to-mid-low		
+¹³¹	contour	from-low	via-mid	to-low		
+¹³²	contour	from-low	via-mid	to-mid-low		
+¹³³	rising	from-low	via-mid	to-mid		
+¹⁴¹	contour	from-low	via-mid-high	to-low		
+¹⁴²	contour	from-low	via-mid-high	to-mid-low		
+¹⁴³	contour	from-low	via-mid-high	to-mid		
+¹⁴⁴	rising	from-low	via-mid-high	to-mid-high		
+¹⁵¹	contour	from-low	via-high	to-low		
+¹⁵²	contour	from-low	via-high	to-mid-low		
+¹⁵³	contour	from-low	via-high	to-mid		
+¹⁵⁴	contour	from-low	via-high	to-mid-high		
+¹⁵⁵	rising	from-low	via-high	to-high		
+²¹¹	falling	from-mid-low	via-low	to-low		
+²¹²	contour	from-mid-low	via-low	to-mid-low		
+²¹³	contour	from-mid-low	via-low	to-mid		
+²¹⁴	contour	from-mid-low	via-low	to-mid-high		
+²¹⁵	contour	from-mid-low	via-low	to-high		
+²²¹	falling	from-mid-low	via-mid-low	to-low		
+²²³	rising	from-mid-low	via-mid-low	to-mid		
+²²⁴	rising	from-mid-low	via-mid-low	to-mid-high		
+²²⁵	rising	from-mid-low	via-mid-low	to-high		
+²³¹	contour	from-mid-low	via-mid	to-low		
+²³²	contour	from-mid-low	via-mid	to-mid-low		
+²³³	rising	from-mid-low	via-mid	to-mid		
+²⁴¹	contour	from-mid-low	via-mid-high	to-low		
+²⁴²	contour	from-mid-low	via-mid-high	to-mid-low		
+²⁴³	contour	from-mid-low	via-mid-high	to-mid		
+²⁴⁴	rising	from-mid-low	via-mid-high	to-mid-high		
+²⁵¹	contour	from-mid-low	via-high	to-low		
+²⁵²	contour	from-mid-low	via-high	to-mid-low		
+²⁵³	contour	from-mid-low	via-high	to-mid		
+²⁵⁴	contour	from-mid-low	via-high	to-mid-high		
+²⁵⁵	rising	from-mid-low	via-high	to-high		
+³¹¹	falling	from-mid	via-low	to-low		
+³¹²	contour	from-mid	via-low	to-mid-low		
+³¹³	contour	from-mid	via-low	to-mid		
+³¹⁴	contour	from-mid	via-low	to-mid-high		
+³¹⁵	contour	from-mid	via-low	to-high		
+³²²	falling	from-mid	via-mid-low	to-mid-low		
+³²³	contour	from-mid	via-mid-low	to-mid		
+³²⁴	contour	from-mid	via-mid-low	to-mid-high		
+³²⁵	contour	from-mid	via-mid-low	to-high		
+³³¹	falling	from-mid	via-mid	to-low		
+³³²	falling	from-mid	via-mid	to-mid-low		
+³³⁴	rising	from-mid	via-mid	to-mid-high		
+³³⁵	rising	from-mid	via-mid	to-high		
+³⁴¹	contour	from-mid	via-mid-high	to-low		
+³⁴²	contour	from-mid	via-mid-high	to-mid-low		
+³⁴³	contour	from-mid	via-mid-high	to-mid		
+³⁴⁴	rising	from-mid	via-mid-high	to-mid-high		
+³⁴⁵	contour	from-mid	via-mid-high	to-high		
+³⁵¹	contour	from-mid	via-high	to-low		
+³⁵²	contour	from-mid	via-high	to-mid-low		
+³⁵³	contour	from-mid	via-high	to-mid		
+³⁵⁴	contour	from-mid	via-high	to-mid-high		
+³⁵⁵	rising	from-mid	via-high	to-high		
+⁴¹¹	falling	from-mid-high	via-low	to-low		
+⁴¹²	contour	from-mid-high	via-low	to-mid-low		
+⁴¹³	contour	from-mid-high	via-low	to-mid		
+⁴¹⁴	contour	from-mid-high	via-low	to-mid-high		
+⁴¹⁵	contour	from-mid-high	via-low	to-high		
+⁴²²	falling	from-mid-high	via-mid-low	to-mid-low		
+⁴²³	contour	from-mid-high	via-mid-low	to-mid		
+⁴²⁴	contour	from-mid-high	via-mid-low	to-mid-high		
+⁴²⁵	contour	from-mid-high	via-mid-low	to-high		
+⁴³³	falling	from-mid-high	via-mid	to-mid		
+⁴³⁴	contour	from-mid-high	via-mid	to-mid-high		
+⁴³⁵	contour	from-mid-high	via-mid	to-high		
+⁴⁴¹	falling	from-mid-high	via-mid-high	to-low		
+⁴⁴²	falling	from-mid-high	via-mid-high	to-mid-low		
+⁴⁴³	falling	from-mid-high	via-mid-high	to-mid		
+⁴⁴⁵	rising	from-mid-high	via-mid-high	to-high		
+⁴⁵¹	contour	from-mid-high	via-high	to-low		
+⁴⁵²	contour	from-mid-high	via-high	to-mid-low		
+⁴⁵³	contour	from-mid-high	via-high	to-mid		
+⁴⁵⁴	contour	from-mid-high	via-high	to-mid-high		
+⁴⁵⁵	rising	from-mid-high	via-high	to-high		
+⁵¹¹	falling	from-high	via-low	to-low		
+⁵¹²	contour	from-high	via-low	to-mid-low		
+⁵¹³	contour	from-high	via-low	to-mid		
+⁵¹⁴	contour	from-high	via-low	to-mid-high		
+⁵¹⁵	contour	from-high	via-low	to-high		
+⁵²²	falling	from-high	via-mid-low	to-mid-low		
+⁵²³	contour	from-high	via-mid-low	to-mid		
+⁵²⁴	contour	from-high	via-mid-low	to-mid-high		
+⁵²⁵	contour	from-high	via-mid-low	to-high		
+⁵³³	falling	from-high	via-mid	to-mid		
+⁵³⁴	contour	from-high	via-mid	to-mid-high		
+⁵³⁵	contour	from-high	via-mid	to-high		
+⁵⁴⁴	falling	from-high	via-mid-high	to-mid-high		
+⁵⁴⁵	contour	from-high	via-mid-high	to-high		
+⁵⁵¹	falling	from-high	via-high	to-low		
+⁵⁵²	falling	from-high	via-high	to-mid-low		
+⁵⁵³	falling	from-high	via-high	to-mid		
+⁵⁵⁴	falling	from-high	via-high	to-mid-high		
+⁰	short	neutral		

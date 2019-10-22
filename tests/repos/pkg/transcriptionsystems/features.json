@@ -1,0 +1,249 @@
+{
+  "vowel": {
+    "relative_articulation": [
+      "centralized",
+      "mid-centralized",
+      "advanced",
+      "retracted"
+    ],
+    "centrality": [
+      "back",
+      "central",
+      "front",
+      "near-back",
+      "near-front"
+    ],
+    "creakiness": [
+      "creaky"
+    ],
+    "rounding": [
+      "less-rounded",
+      "more-rounded"
+    ],
+    "stress": [
+      "primary-stress",
+      "secondary-stress"
+    ],
+    "pharyngealization": [
+      "pharyngealized"
+    ],
+    "rhotacization": [
+      "rhotacized"
+    ],
+    "voicing": [
+      "devoiced"
+    ],
+    "nasalization": [
+      "nasalized"
+    ],
+    "syllabicity": [
+      "non-syllabic"
+    ],
+    "raising": [
+      "lowered",
+      "raised"
+    ],
+    "height": [
+      "close",
+      "close-mid",
+      "mid",
+      "near-close",
+      "near-open",
+      "open",
+      "open-mid"
+    ],
+    "frication": [
+      "with-frication"
+    ],
+    "roundedness": [
+      "rounded",
+      "unrounded"
+    ],
+    "duration": [
+      "long",
+      "mid-long",
+      "ultra-long",
+      "ultra-short"
+    ],
+    "velarization": [
+      "velarized"
+    ],
+    "tongue_root": [
+      "advanced-tongue-root",
+      "retracted-tongue-root"
+    ],
+    "tone": [
+      "with_downstep",
+      "with_extra-high_tone",
+      "with_extra-low_tone",
+      "with_falling_tone",
+      "with_global_fall",
+      "with_global_rise",
+      "with_high_tone",
+      "with_low_tone",
+      "with_mid_tone",
+      "with_rising_tone",
+      "with_upstep"
+    ],
+    "articulation": [
+      "strong"
+    ],
+    "breathiness": [
+      "breathy"
+    ],
+    "glottalization": [
+      "glottalized"
+    ]
+  },
+  "consonant": {
+    "relative_articulation": [
+        "centralized",
+        "mid-centralized",
+        "advanced",
+        "retracted"
+    ],
+    "aspiration": [
+      "aspirated"
+    ],
+    "sibilancy": [
+      "sibilant"
+    ],
+    "creakiness": [
+      "creaky"
+    ],
+    "release": [
+      "unreleased",
+      "with-lateral-release",
+      "with-mid-central-vowel-release",
+      "with-nasal-release"
+    ],
+    "ejection": [
+      "ejective"
+    ],
+    "place": [
+      "alveolar",
+      "alveolo-palatal",
+      "bilabial",
+      "dental",
+      "epiglottal",
+      "glottal",
+      "labial",
+      "linguolabial",
+      "labio-palatal",
+      "labio-velar",
+      "labio-dental",
+      "palatal",
+      "palatal-velar",
+      "pharyngeal",
+      "post-alveolar",
+      "retroflex",
+      "uvular",
+      "velar"
+    ],
+    "pharyngealization": [
+      "pharyngealized"
+    ],
+    "voicing": [
+      "devoiced",
+      "revoiced"
+    ],
+    "nasalization": [
+      "nasalized"
+    ],
+    "preceding": [
+      "pre-aspirated",
+      "pre-glottalized",
+      "pre-labialized",
+      "pre-nasalized",
+      "pre-palatalized"
+    ],
+    "labialization": [
+      "labialized"
+    ],
+    "syllabicity": [
+      "syllabic"
+    ],
+    "palatalization": [
+      "labio-palatalized",
+      "palatalized"
+    ],
+    "phonation": [
+      "voiced",
+      "voiceless"
+    ],
+    "duration": [
+      "long",
+      "mid-long"
+    ],
+    "stress": [
+      "primary-stress",
+      "secondary-stress"
+    ],
+    "laterality": [
+      "lateral"
+    ],
+    "velarization": [
+      "velarized"
+    ],
+    "manner": [
+      "affricate",
+      "approximant",
+      "click",
+      "fricative",
+      "implosive",
+      "nasal",
+      "nasal-click",
+      "stop",
+      "tap",
+      "trill"
+    ],
+    "laminality": [
+      "apical",
+      "laminal"
+    ],
+    "articulation": [
+      "strong"
+    ],
+    "breathiness": [
+      "breathy"
+    ],
+    "raising": [
+      "lowered",
+      "raised"
+    ],
+    "glottalization": [
+      "glottalized"
+    ]
+  },
+  "tone": {
+    "middle": [
+      "via-high",
+      "via-low",
+      "via-mid",
+      "via-mid-high",
+      "via-mid-low"
+    ],
+    "start": [
+      "from-high",
+      "from-low",
+      "from-mid",
+      "from-mid-high",
+      "from-mid-low",
+      "neutral"
+    ],
+    "contour": [
+      "contour",
+      "falling",
+      "flat",
+      "rising",
+      "short"
+    ],
+    "end": [
+      "to-high",
+      "to-low",
+      "to-mid",
+      "to-mid-high",
+      "to-mid-low"
+    ]
+  }
+}

@@ -1,0 +1,200 @@
+{
+    "@context": [
+        "http://www.w3.org/ns/csvw",
+        {
+            "@language": "en"
+        }
+    ],
+    "dialect": {
+        "doubleQuote": false,
+        "commentPrefix": null,
+        "delimiter": "\t",
+        "trim": true
+    },
+    "tables": [
+        {
+            "url": "consonants.tsv",
+            "tableSchema": {
+                "columns": [
+                    {
+                        "name": "GRAPHEME",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "PHONATION",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "PLACE",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "MANNER",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "ALIAS",
+                        "datatype": {"base": "boolean", "format": "+|"}
+                    },
+                    {
+                        "name": "EXTRA",
+                        "separator": ",",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "NOTE",
+                        "datatype": {"base": "string"}
+                    }
+                ]
+            }
+        },
+        {
+            "url": "diacritics.tsv",
+            "tableSchema": {
+                "columns": [
+                    {
+                        "name": "GRAPHEME",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "TYPE",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "FEATURE",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "VALUE",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "ALIAS",
+                        "datatype": {"base": "boolean", "format": "+|"}
+                    },
+                    {
+                        "name": "TYPOGRAPHY",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "NOTE",
+                        "datatype": {"base": "string"}
+                    }
+                ]
+            }
+        },
+        {
+            "url": "markers.tsv",
+            "tableSchema": {
+                "columns": [
+                    {
+                        "name": "GRAPHEME",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "FEATURE",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "VALUE",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "ALIAS",
+                        "datatype": {"base": "boolean", "format": "+|"}
+                    },
+                    {
+                        "name": "NOTE",
+                        "datatype": {"base": "string"}
+                    }
+                ]
+            }
+        },
+        {
+            "url": "normalize.tsv",
+            "tableSchema": {
+                "columns": [
+                    {
+                        "name": "SOURCE",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "TARGET",
+                        "datatype": {"base": "string"}
+                    }
+                ]
+            }
+        },
+        {
+            "url": "tones.tsv",
+            "tableSchema": {
+                "columns": [
+                    {
+                        "name": "GRAPHEME",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "CONTOUR",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "START",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "MIDDLE",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "END",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "ALIAS",
+                        "datatype": {"base": "boolean", "format": "+|"}
+                    },
+                    {
+                        "name": "NOTE",
+                        "datatype": {"base": "string"}
+                    }
+                ]
+            }
+        },
+        {
+            "url": "vowels.tsv",
+            "tableSchema": {
+                "columns": [
+                    {
+                        "name": "GRAPHEME",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "ROUNDEDNESS",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "HEIGHT",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "CENTRALITY",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "ALIAS",
+                        "datatype": {"base": "boolean", "format": "+|"}
+                    },
+                    {
+                        "name": "EXTRA",
+                        "separator": ",",
+                        "datatype": {"base": "string"}
+                    },
+                    {
+                        "name": "NOTE",
+                        "datatype": {"base": "string"}
+                    }
+                ]
+            }
+        }
+   ]
+}

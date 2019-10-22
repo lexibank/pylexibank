@@ -1,0 +1,7 @@
+GRAPHEME	FEATURE	VALUE	ALIAS	NOTE
+¯	sandhi	sandhi		
++	boundary	morpheme		
+_	boundary	morpheme		
+→	boundary	morpheme		
+←	boundary	morpheme		
+∼	nasality	nasalized		This character is being used to represent a nasal element in alignments, serving as a placeholder in nasal vowels, so they can be aligned.
