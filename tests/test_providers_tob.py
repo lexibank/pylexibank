@@ -34,6 +34,6 @@ def test_TOB(tmpdir, mocker):
     mocker.patch(
         'pylexibank.providers.tob.getEvoBibAsBibtex',
         mocker.Mock(return_value='@misc{id,\ntitle="abc"\n}'))
-    mocker.patch('pylexibank.util.requests', Requests())
-    ds.cmd_download()
-    ds.cmd_install()
+    mocker.patch('cldfbench.datadir.requests', Requests())
+    ds._cmd_download(mocker.Mock())
+    ds.cmd_makecldf(mocker.Mock(writer=mocker.MagicMock()))

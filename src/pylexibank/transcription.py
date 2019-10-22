@@ -3,11 +3,7 @@ from collections import Counter, defaultdict
 import attr
 import pyclts
 import pyclts.models
-from pyclts import TranscriptionSystem, SoundClasses
 from clldutils.markup import Table
-
-BIPA = TranscriptionSystem('bipa')
-DOLGO = SoundClasses('dolgo')
 
 
 @attr.s
@@ -34,7 +30,7 @@ class Stats(Analysis):
 
 
 # Note: We use a mutable default argument intentionally to serve as a cache.
-def analyze(segments, analysis, lookup=dict(bipa={}, dolgo={})):
+def analyze(clts, segments, analysis, lookup=dict(bipa={}, dolgo={})):
     """
     Test a sequence for compatibility with CLPA and LingPy.
 
@@ -55,12 +51,12 @@ def analyze(segments, analysis, lookup=dict(bipa={}, dolgo={})):
         for s in segments:
             a = lookup['bipa'].get(s)
             if a is None:
-                a = lookup['bipa'].setdefault(s, BIPA[s])
+                a = lookup['bipa'].setdefault(s, clts.bipa[s])
             bipa_analysis.append(a)
 
             sc = lookup['dolgo'].get(s)
             if sc is None:
-                sc = lookup['dolgo'].setdefault(s, BIPA.translate(s, DOLGO))
+                sc = lookup['dolgo'].setdefault(s, clts.bipa.translate(s, clts.soundclass('dolgo')))
             sc_analysis.append(sc)
     except:  # noqa
         print(segments)

@@ -1,0 +1,803 @@
+CLTS_NAME	BIPA_GRAPHEME	sca	cv	art	dolgo	asjp	color
++	+	_	+	9	+	+	#bbbbbb
+_	_	_	_	9	_	_	#bbbbbb
+unrounded open front vowel	a	A	V	7	V	a	#c86464
+long unrounded open front vowel	aː	A	V	7	V	a	#c86464
+mid-long unrounded open front vowel	aˑ	A	V	7	V	a	#c86464
+rhotacized unrounded open front vowel	a˞	A	V	7	V	a	#c86464
+nasalized unrounded open front vowel	ã	A	V	7	V	a	#c86464
+long nasalized unrounded open front vowel	ãː	A	V	7	V	a	#c86464
+ultra-short unrounded open front vowel	ă	A	V	7	V	a	#c86464
+devoiced unrounded open front vowel	ḁ	A	V	7	V	a	#c86464
+non-syllabic unrounded open front vowel	a̯	A	V	7	V	a	#c86464
+creaky unrounded open front vowel	a̰	A	V	7	V	a	#c86464
+ultra-long creaky unrounded open front vowel	a̰ːː	A	V	7	V	a	#c86464
+voiced bilabial stop consonant	b	P	C	1	P	b	#c8c864
+voiced labio-dental affricate consonant	bv	B	C	2	P	b	#c8c864
+aspirated voiced bilabial stop consonant	bʰ	P	C	1	P	b	#c8c864
+aspirated long voiced bilabial stop consonant	bʰː	P	C	1	P	b	#c8c864
+breathy voiced bilabial stop consonant	bʱ	P	C	1	P	b	#c8c864
+long breathy voiced bilabial stop consonant	bʱː	P	C	1	P	b	#c8c864
+palatalized voiced bilabial stop consonant	bʲ	P	C	1	P	b	#c8c864
+labialized voiced bilabial stop consonant	bʷ	P	C	1	P	b	#c8c864
+labialized long voiced bilabial stop consonant	bʷː	P	C	1	P	b	#c8c864
+long voiced bilabial stop consonant	bː	P	C	1	P	b	#c8c864
+velarized voiced bilabial stop consonant	bˠ	P	C	1	P	b	#c8c864
+pharyngealized long voiced bilabial stop consonant	bˤː	P	C	1	P	b	#c8c864
+unreleased voiced bilabial stop consonant	b̚	P	C	1	P	b	#c8c864
+devoiced voiced bilabial stop consonant	b̥	P	C	1	P	b	#c8c864
+aspirated devoiced voiced bilabial stop consonant	b̥ʰ	P	C	1	P	b	#c8c864
+voiced labio-dental stop consonant	b̪	P	C	1	P	b	#c8c864
+voiced bilabial affricate consonant	bβ	P	C	1	P	b	#c8c864
+with-nasal-release voiced bilabial stop consonant	bⁿ	P	C	1	P	b	#c8c864
+voiceless palatal stop consonant	c	C	C	1	K	T	#c89664
+voiceless palatal affricate consonant	cç	C	C	1	K	T	#c89664
+aspirated voiceless palatal affricate consonant	cçʰ	C	C	1	K	T	#c89664
+aspirated voiceless palatal stop consonant	cʰ	C	C	1	K	T	#c89664
+voiceless palatal ejective stop consonant	cʼ	C	C	1	K	T	#c89664
+long voiceless palatal stop consonant	cː	C	C	1	K	T	#c89664
+voiceless palatal sibilant fricative consonant	ç	C	C	1	K	T	#c89664
+voiced alveolar stop consonant	d	T	C	1	T	d	#9664c8
+voiced alveolar sibilant affricate consonant	dz	C	C	2	K	j	#c89664
+long voiced alveolar sibilant affricate consonant	dzː	T	C	1	T	d	#9664c8
+voiced dental sibilant affricate consonant	dz̪	T	C	1	T	d	#9664c8
+long voiced dental sibilant affricate consonant	dz̪ː	T	C	1	T	d	#9664c8
+voiced dental affricate consonant	dð	T	C	1	T	d	#9664c8
+voiced alveolar lateral affricate consonant	dɮ	T	C	1	T	d	#9664c8
+voiced alveolo-palatal sibilant affricate consonant	dʑ	C	C	2	K	j	#c89664
+long voiced alveolo-palatal sibilant affricate consonant	dʑː	T	C	1	T	d	#9664c8
+voiced post-alveolar sibilant affricate consonant	dʒ	T	C	1	T	d	#9664c8
+breathy voiced post-alveolar sibilant affricate consonant	dʒʱ	T	C	1	T	d	#9664c8
+palatalized voiced post-alveolar sibilant affricate consonant	dʒʲ	T	C	1	T	d	#9664c8
+labialized voiced post-alveolar sibilant affricate consonant	dʒʷ	T	C	1	T	d	#9664c8
+aspirated voiced alveolar stop consonant	dʰ	T	C	1	T	d	#9664c8
+aspirated long voiced alveolar stop consonant	dʰː	T	C	1	T	d	#9664c8
+breathy voiced alveolar stop consonant	dʱ	T	C	1	T	d	#9664c8
+long breathy voiced alveolar stop consonant	dʱː	T	C	1	T	d	#9664c8
+palatalized voiced alveolar stop consonant	dʲ	T	C	1	T	d	#9664c8
+long voiced alveolar stop consonant	dː	T	C	1	T	d	#9664c8
+long voiced post-alveolar sibilant affricate consonant	dːʒ	T	C	1	T	d	#9664c8
+pharyngealized voiced alveolar stop consonant	dˤ	T	C	1	T	d	#9664c8
+voiced post-alveolar stop consonant	d̠	T	C	1	T	d	#9664c8
+devoiced voiced alveolar stop consonant	d̥	T	C	1	T	d	#9664c8
+unreleased devoiced voiced alveolar stop consonant	d̥̚	T	C	1	T	d	#9664c8
+with-nasal-release devoiced voiced alveolar stop consonant	d̥ⁿ	T	C	1	T	d	#9664c8
+voiced dental stop consonant	d̪	T	C	1	T	d	#9664c8
+voiced dental lateral affricate consonant	d̪ɮ	T	C	1	T	d	#9664c8
+breathy voiced dental stop consonant	d̪ʱ	T	C	1	T	d	#9664c8
+long breathy voiced dental stop consonant	d̪ʱː	T	C	1	T	d	#9664c8
+palatalized voiced dental stop consonant	d̪ʲ	T	C	1	T	d	#9664c8
+long voiced dental stop consonant	d̪ː	T	C	1	T	d	#9664c8
+velarized voiced dental stop consonant	d̪ˠ	T	C	1	T	d	#9664c8
+pharyngealized voiced dental stop consonant	d̪ˤ	T	C	1	T	d	#9664c8
+unreleased voiced dental stop consonant	d̪̚	T	C	1	T	d	#9664c8
+unreleased devoiced voiced dental stop consonant	d̪̥̚	T	C	1	T	d	#9664c8
+with-nasal-release devoiced voiced dental stop consonant	d̪̥ⁿ	T	C	1	T	d	#9664c8
+creaky voiced dental stop consonant	d̪̰	T	C	1	T	d	#9664c8
+with-nasal-release voiced dental stop consonant	d̪ⁿ	T	C	1	T	d	#9664c8
+creaky voiced alveolar stop consonant	d̰	T	C	1	T	d	#9664c8
+voiced linguolabial stop consonant	d̼	T	C	1	T	d	#9664c8
+with-nasal-release voiced alveolar stop consonant	dⁿ	T	C	1	T	d	#9664c8
+unrounded close-mid front vowel	e	E	V	7	V	e	#c86464
+long unrounded close-mid front vowel	eː	E	V	7	V	e	#c86464
+ultra-long unrounded close-mid front vowel	eːː	E	V	7	V	e	#c86464
+mid-long unrounded close-mid front vowel	eˑ	E	V	7	V	e	#c86464
+nasalized unrounded close-mid front vowel	ẽ	E	V	7	V	e	#c86464
+long nasalized unrounded close-mid front vowel	ẽː	E	V	7	V	e	#c86464
+ultra-short unrounded close-mid front vowel	ĕ	E	V	7	V	e	#c86464
+unrounded mid front vowel	e̞	E	V	7	V	e	#c86464
+long unrounded mid front vowel	e̞ː	E	V	7	V	e	#c86464
+mid-long unrounded mid front vowel	e̞ˑ	E	V	7	V	e	#c86464
+nasalized unrounded mid front vowel	ẽ̞	E	V	7	V	e	#c86464
+long nasalized unrounded mid front vowel	ẽ̞ː	E	V	7	V	e	#c86464
+breathy unrounded close-mid front vowel	e̤	E	V	7	V	e	#c86464
+devoiced unrounded close-mid front vowel	e̥	E	V	7	V	e	#c86464
+non-syllabic unrounded close-mid front vowel	e̯	E	V	7	V	e	#c86464
+creaky unrounded close-mid front vowel	ḛ	E	V	7	V	e	#c86464
+voiceless labio-dental fricative consonant	f	B	C	3	P	f	#c8c864
+aspirated voiceless labio-dental fricative consonant	fʰ	B	C	3	P	f	#c8c864
+palatalized voiceless labio-dental fricative consonant	fʲ	B	C	3	P	f	#c8c864
+labialized long voiceless labio-dental fricative consonant	fʷː	B	C	3	P	f	#c8c864
+voiceless labio-dental ejective fricative consonant	fʼ	B	C	3	P	f	#c8c864
+long voiceless labio-dental fricative consonant	fː	B	C	3	P	f	#c8c864
+velarized voiceless labio-dental fricative consonant	fˠ	B	C	3	P	f	#c8c864
+voiced velar stop consonant	g	K	C	1	K	g	#c89664
+voiced dental click consonant	gǀ	!	C	1	K	!	#c89664
+voiced lateral click consonant	gǁ	!	C	1	K	!	#c89664
+voiced palatal click consonant	gǂ	!	C	1	K	!	#c89664
+voiced alveolar click consonant	gǃ	!	C	1	K	!	#c89664
+voiced retroflex click consonant	gǃǃ	K	C	1	K	g	#c89664
+voiced velar affricate consonant	gɣ	K	C	1	K	g	#c89664
+voiced labial click consonant	gʘ	!	C	1	K	!	#c89664
+aspirated voiced velar stop consonant	gʰ	K	C	1	K	g	#c89664
+breathy voiced velar stop consonant	gʱ	K	C	1	K	g	#c89664
+palatalized voiced velar stop consonant	gʲ	K	C	1	K	g	#c89664
+labialized voiced velar stop consonant	gʷ	K	C	1	K	g	#c89664
+long voiced velar stop consonant	gː	K	C	1	K	g	#c89664
+devoiced voiced velar stop consonant	g̊	K	C	1	K	g	#c89664
+aspirated devoiced voiced velar stop consonant	g̊ʰ	K	C	1	K	g	#c89664
+voiceless glottal fricative consonant	h	H	C	3	H	h	#96c864
+nasalized voiceless glottal fricative consonant	h̃	H	C	3	H	h	#96c864
+unrounded close front vowel	i	I	V	7	V	i	#c86464
+long unrounded close front vowel	iː	I	V	7	V	i	#c86464
+ultra-long unrounded close front vowel	iːː	I	V	7	V	i	#c86464
+mid-long unrounded close front vowel	iˑ	I	V	7	V	i	#c86464
+nasalized unrounded close front vowel	ĩ	I	V	7	V	i	#c86464
+long nasalized unrounded close front vowel	ĩː	I	V	7	V	i	#c86464
+breathy unrounded close front vowel	i̤	I	V	7	V	i	#c86464
+devoiced unrounded close front vowel	i̥	I	V	7	V	i	#c86464
+creaky unrounded close front vowel	ḭ	I	V	7	V	i	#c86464
+long creaky unrounded close front vowel	ḭː	I	V	7	V	i	#c86464
+ultra-long creaky unrounded close front vowel	ḭːː	I	V	7	V	i	#c86464
+voiced palatal approximant consonant	j	J	C	6	J	y	#64c864
+long voiced palatal approximant consonant	jː	J	C	6	J	y	#64c864
+nasalized voiced palatal approximant consonant	j̃	J	C	6	J	y	#64c864
+devoiced voiced palatal approximant consonant	j̊	J	C	6	J	y	#64c864
+voiceless velar stop consonant	k	K	C	1	K	k	#c89664
+voiceless velar affricate consonant	kx	K	C	1	K	k	#c89664
+aspirated voiceless velar stop consonant	kʰ	K	C	1	K	k	#c89664
+palatalized voiceless velar stop consonant	kʲ	K	C	1	K	k	#c89664
+labialized voiceless velar stop consonant	kʷ	K	C	1	K	k	#c89664
+labialized aspirated voiceless velar stop consonant	kʷʰ	K	C	1	K	k	#c89664
+labialized long voiceless velar stop consonant	kʷː	K	C	1	K	k	#c89664
+voiceless velar ejective stop consonant	kʼ	K	C	1	K	k	#c89664
+labialized voiceless velar ejective stop consonant	kʼʷ	K	C	1	K	k	#c89664
+long voiceless velar stop consonant	kː	K	C	1	K	k	#c89664
+unreleased voiceless velar stop consonant	k̚	K	C	1	K	k	#c89664
+revoiced voiced velar stop consonant	k̬	K	C	1	K	k	#c89664
+voiceless velar lateral affricate consonant	k	K	C	1	K	k	#c89664
+voiceless velar ejective lateral affricate consonant	kʼ	K	C	1	K	k	#c89664
+voiced alveolar lateral approximant consonant	l	L	C	5	R	l	#6464c8
+breathy voiced alveolar lateral approximant consonant	lʱ	L	C	5	R	l	#6464c8
+palatalized voiced alveolar lateral approximant consonant	lʲ	L	C	5	R	l	#6464c8
+long voiced alveolar lateral approximant consonant	lː	L	C	5	R	l	#6464c8
+velarized voiced alveolar lateral approximant consonant	lˠ	L	C	5	R	l	#6464c8
+voiced post-alveolar lateral approximant consonant	l̠	L	C	5	R	l	#6464c8
+palatalized voiced post-alveolar lateral approximant consonant	l̠ʲ	L	C	5	R	l	#6464c8
+devoiced voiced alveolar lateral approximant consonant	l̥	L	C	5	R	l	#6464c8
+syllabic voiced alveolar lateral approximant consonant	l̩	L	C	5	R	l	#6464c8
+voiced dental lateral approximant consonant	l̪	L	C	5	R	l	#6464c8
+palatalized voiced dental lateral approximant consonant	l̪ʲ	L	C	5	R	l	#6464c8
+long voiced dental lateral approximant consonant	l̪ː	L	C	5	R	l	#6464c8
+devoiced voiced dental lateral approximant consonant	l̪̥	L	C	5	R	l	#6464c8
+syllabic voiced dental lateral approximant consonant	l̪̩	L	C	5	R	l	#6464c8
+voiced laminal alveolar lateral approximant consonant	l̻	L	C	5	R	l	#6464c8
+voiced linguolabial lateral approximant consonant	l̼	L	C	5	R	l	#6464c8
+voiced bilabial nasal consonant	m	M	C	4	M	m	#64c896
+aspirated voiced bilabial nasal consonant	mʰ	M	C	4	M	m	#64c896
+breathy voiced bilabial nasal consonant	mʱ	M	C	4	M	m	#64c896
+palatalized voiced bilabial nasal consonant	mʲ	M	C	4	M	m	#64c896
+labialized voiced bilabial nasal consonant	mʷ	M	C	4	M	m	#64c896
+labialized long voiced bilabial nasal consonant	mʷː	M	C	4	M	m	#64c896
+long voiced bilabial nasal consonant	mː	M	C	4	M	m	#64c896
+velarized voiced bilabial nasal consonant	mˠ	M	C	4	M	m	#64c896
+pharyngealized long voiced bilabial nasal consonant	mˤː	M	C	4	M	m	#64c896
+devoiced voiced bilabial nasal consonant	m̥	M	C	4	M	m	#64c896
+syllabic voiced bilabial nasal consonant	m̩	M	C	4	M	m	#64c896
+voiced alveolar nasal consonant	n	N	C	4	N	n	#64c8c8
+palatalized voiced alveolar nasal consonant	nʲ	N	C	4	N	n	#64c8c8
+long voiced alveolar nasal consonant	nː	N	C	4	N	n	#64c8c8
+pharyngealized voiced alveolar nasal consonant	nˤ	N	C	4	N	n	#64c8c8
+devoiced voiced alveolar nasal consonant	n̥	N	C	4	N	n	#64c8c8
+syllabic voiced alveolar nasal consonant	n̩	N	C	4	N	n	#64c8c8
+voiced dental nasal consonant	n̪	N	C	4	N	n	#64c8c8
+velarized voiced dental nasal consonant	n̪ˠ	N	C	4	N	n	#64c8c8
+creaky voiced alveolar nasal consonant	n̰	N	C	4	N	n	#64c8c8
+voiced laminal alveolar nasal consonant	n̻	N	C	4	N	n	#64c8c8
+voiced linguolabial nasal consonant	n̼	N	C	4	N	n	#64c8c8
+rounded close-mid back vowel	o	U	V	7	V	o	#c86464
+voiced laminal alveolar sibilant fricative consonant	oz̻	U	V	7	V	o	#c86464
+long rounded close-mid back vowel	oː	U	V	7	V	o	#c86464
+ultra-long rounded close-mid back vowel	oːː	U	V	7	V	o	#c86464
+mid-long rounded close-mid back vowel	oˑ	U	V	7	V	o	#c86464
+pharyngealized rounded close-mid back vowel	oˤ	U	V	7	V	o	#c86464
+nasalized rounded close-mid back vowel	õ	U	V	7	V	o	#c86464
+long nasalized rounded close-mid back vowel	õː	U	V	7	V	o	#c86464
+ultra-short rounded close-mid back vowel	ŏ	U	V	7	V	o	#c86464
+rounded mid back vowel	o̞	U	V	7	V	o	#c86464
+long rounded mid back vowel	o̞ː	U	V	7	V	o	#c86464
+nasalized rounded mid back vowel	õ̞	U	V	7	V	o	#c86464
+long nasalized rounded mid back vowel	õ̞ː	U	V	7	V	o	#c86464
+breathy rounded close-mid back vowel	o̤	U	V	7	V	o	#c86464
+devoiced rounded close-mid back vowel	o̥	U	V	7	V	o	#c86464
+non-syllabic rounded close-mid back vowel	o̯	U	V	7	V	o	#c86464
+creaky rounded close-mid back vowel	o̰	U	V	7	V	o	#c86464
+voiceless bilabial stop consonant	p	P	C	1	P	p	#c8c864
+voiceless labio-dental affricate consonant	pf	B	C	2	P	p	#c8c864
+aspirated voiceless labio-dental affricate consonant	pfʰ	P	C	1	P	p	#c8c864
+voiceless labio-dental ejective affricate consonant	pfʼ	P	C	1	P	p	#c8c864
+voiceless bilabial affricate consonant	pɸ	P	C	1	P	p	#c8c864
+aspirated voiceless bilabial stop consonant	pʰ	P	C	1	P	p	#c8c864
+palatalized aspirated voiceless bilabial stop consonant	pʰʲ	P	C	1	P	p	#c8c864
+aspirated long voiceless bilabial stop consonant	pʰː	P	C	1	P	p	#c8c864
+palatalized voiceless bilabial stop consonant	pʲ	P	C	1	P	p	#c8c864
+labialized voiceless bilabial stop consonant	pʷ	P	C	1	P	p	#c8c864
+voiceless bilabial ejective stop consonant	pʼ	P	C	1	P	p	#c8c864
+long voiceless bilabial stop consonant	pː	P	C	1	P	p	#c8c864
+velarized voiceless bilabial stop consonant	pˠ	P	C	1	P	p	#c8c864
+unreleased voiceless bilabial stop consonant	p̚	P	C	1	P	p	#c8c864
+voiceless labio-dental stop consonant	p̪	P	C	1	P	p	#c8c864
+revoiced voiceless bilabial stop consonant	p̬	P	C	1	P	p	#c8c864
+voiceless uvular stop consonant	q	K	C	1	K	q	#c89664
+aspirated voiceless uvular stop consonant	qʰ	K	C	1	K	q	#c89664
+labialized voiceless uvular stop consonant	qʷ	K	C	1	K	q	#c89664
+labialized aspirated voiceless uvular stop consonant	qʷʰ	K	C	1	K	q	#c89664
+voiceless uvular ejective stop consonant	qʼ	K	C	1	K	q	#c89664
+labialized voiceless uvular ejective stop consonant	qʼʷ	K	C	1	K	q	#c89664
+unreleased voiceless uvular stop consonant	q̚	K	C	1	K	q	#c89664
+voiceless uvular affricate consonant	qχ	K	C	1	K	q	#c89664
+voiced alveolar trill consonant	r	R	C	5	R	r	#6464c8
+palatalized voiced alveolar trill consonant	rʲ	R	C	5	R	r	#6464c8
+long voiced alveolar trill consonant	rː	R	C	5	R	r	#6464c8
+pharyngealized voiced alveolar trill consonant	rˤ	R	C	5	R	r	#6464c8
+pharyngealized long voiced alveolar trill consonant	rˤː	R	C	5	R	r	#6464c8
+nasalized voiced alveolar trill consonant	r̃	R	C	5	R	r	#6464c8
+devoiced voiced alveolar trill consonant	r̥	R	C	5	R	r	#6464c8
+syllabic voiced alveolar trill consonant	r̩	R	C	5	R	r	#6464c8
+voiced dental trill consonant	r̪	R	C	5	R	r	#6464c8
+long voiced dental trill consonant	r̪ː	R	C	5	R	r	#6464c8
+pharyngealized voiced dental trill consonant	r̪ˤ	R	C	5	R	r	#6464c8
+devoiced voiced dental trill consonant	r̪̥	R	C	5	R	r	#6464c8
+voiced linguolabial trill consonant	r̼	R	C	5	R	r	#6464c8
+voiceless alveolar sibilant fricative consonant	s	S	C	3	S	s	#6496c8
+palatalized voiceless alveolar sibilant fricative consonant	sʲ	S	C	3	S	s	#6496c8
+voiceless alveolar ejective sibilant fricative consonant	sʼ	S	C	3	S	s	#6496c8
+long voiceless alveolar sibilant fricative consonant	sː	S	C	3	S	s	#6496c8
+velarized voiceless alveolar sibilant fricative consonant	sˠ	S	C	3	S	s	#6496c8
+syllabic voiceless alveolar sibilant fricative consonant	s̩	S	C	3	S	s	#6496c8
+voiceless dental sibilant fricative consonant	s̪	S	C	3	S	s	#6496c8
+palatalized voiceless dental sibilant fricative consonant	s̪ʲ	S	C	3	S	s	#6496c8
+voiceless dental ejective sibilant fricative consonant	s̪ʼ	S	C	3	S	s	#6496c8
+velarized voiceless dental sibilant fricative consonant	s̪ˠ	S	C	3	S	s	#6496c8
+revoiced voiceless alveolar sibilant fricative consonant	s̬	S	C	3	S	s	#6496c8
+voiceless laminal alveolar sibilant fricative consonant	s̻	S	C	3	S	s	#6496c8
+voiceless alveolar stop consonant	t	T	C	1	T	t	#9664c8
+voiceless alveolar sibilant affricate consonant	ts	C	C	2	K	C	#c89664
+aspirated voiceless alveolar sibilant affricate consonant	tsʰ	C	C	2	K	C	#c89664
+palatalized voiceless alveolar sibilant affricate consonant	tsʲ	T	C	1	T	t	#9664c8
+voiceless alveolar ejective sibilant affricate consonant	tsʼ	T	C	1	T	t	#9664c8
+long voiceless alveolar sibilant affricate consonant	tsː	T	C	1	T	t	#9664c8
+voiceless dental sibilant affricate consonant	ts̪	T	C	1	T	t	#9664c8
+aspirated voiceless dental affricate consonant	ts̪ʰ	T	C	1	T	t	#9664c8
+palatalized voiceless dental sibilant affricate consonant	ts̪ʲ	T	C	1	T	t	#9664c8
+voiceless dental ejective sibilant affricate consonant	ts̪ʼ	T	C	1	T	t	#9664c8
+long voiceless dental sibilant affricate consonant	ts̪ː	T	C	1	T	t	#9664c8
+voiceless alveolo-palatal sibilant affricate consonant	tɕ	C	C	2	K	C	#c89664
+aspirated voiceless alveolo-palatal sibilant affricate consonant	tɕʰ	C	C	2	K	C	#c89664
+long voiceless alveolo-palatal sibilant affricate consonant	tɕː	T	C	1	T	t	#9664c8
+voiceless alveolar lateral affricate consonant	tɬ	T	C	1	T	t	#9664c8
+aspirated voiceless alveolar lateral affricate consonant	tɬʰ	T	C	1	T	t	#9664c8
+voiceless alveolar ejective lateral affricate consonant	tɬʼ	T	C	1	T	t	#9664c8
+voiceless dental lateral affricate consonant	tɬ̪	T	C	1	T	t	#9664c8
+aspirated voiceless dental lateral affricate consonant	tɬ̪ʰ	T	C	1	T	t	#9664c8
+voiceless dental ejective lateral affricate consonant	tɬ̪ʼ	T	C	1	T	t	#9664c8
+voiceless post-alveolar sibilant affricate consonant	tʃ	T	C	1	T	t	#9664c8
+aspirated voiceless post-alveolar sibilant affricate consonant	tʃʰ	T	C	1	T	t	#9664c8
+palatalized voiceless post-alveolar sibilant affricate consonant	tʃʲ	T	C	1	T	t	#9664c8
+labialized voiceless post-alveolar sibilant affricate consonant	tʃʷ	T	C	1	T	t	#9664c8
+voiceless post-alveolar ejective sibilant affricate consonant	tʃʼ	T	C	1	T	t	#9664c8
+long voiceless post-alveolar ejective sibilant affricate consonant	tʃʼː	T	C	1	T	t	#9664c8
+long voiceless post-alveolar sibilant affricate consonant	tʃː	T	C	1	T	t	#9664c8
+aspirated voiceless alveolar stop consonant	tʰ	T	C	1	T	t	#9664c8
+palatalized voiceless alveolar stop consonant	tʲ	T	C	1	T	t	#9664c8
+palatalized aspirated voiceless alveolar stop consonant	tʲʰ	T	C	1	T	t	#9664c8
+labialized voiceless alveolar stop consonant	tʷ	T	C	1	T	t	#9664c8
+labialized aspirated voiceless alveolar stop consonant	tʷʰ	T	C	1	T	t	#9664c8
+voiceless alveolar ejective stop consonant	tʼ	T	C	1	T	t	#9664c8
+long voiceless alveolar stop consonant	tː	T	C	1	T	t	#9664c8
+pharyngealized voiceless alveolar stop consonant	tˤ	T	C	1	T	t	#9664c8
+unreleased voiceless alveolar stop consonant	t̚	T	C	1	T	t	#9664c8
+voiceless post-alveolar stop consonant	t̠	T	C	1	T	t	#9664c8
+voiceless dental stop consonant	t̪	T	C	1	T	t	#9664c8
+aspirated voiceless dental stop consonant	t̪ʰ	T	C	1	T	t	#9664c8
+palatalized aspirated voiceless dental stop consonant	t̪ʰʲ	T	C	1	T	t	#9664c8
+aspirated long voiceless dental stop consonant	t̪ʰː	T	C	1	T	t	#9664c8
+palatalized voiceless dental stop consonant	t̪ʲ	T	C	1	T	t	#9664c8
+labialized voiceless dental stop consonant	t̪ʷ	T	C	1	T	t	#9664c8
+labialized aspirated voiceless dental stop consonant	t̪ʷʰ	T	C	1	T	t	#9664c8
+voiceless dental ejective stop consonant	t̪ʼ	T	C	1	T	t	#9664c8
+long voiceless dental stop consonant	t̪ː	T	C	1	T	t	#9664c8
+velarized voiceless dental stop consonant	t̪ˠ	T	C	1	T	t	#9664c8
+pharyngealized voiceless dental stop consonant	t̪ˤ	T	C	1	T	t	#9664c8
+unreleased voiceless dental stop consonant	t̪̚	T	C	1	T	t	#9664c8
+with-nasal-release voiceless dental stop consonant	t̪ⁿ	T	C	1	T	t	#9664c8
+revoiced voiceless alveolar stop consonant	t̬	T	C	1	T	t	#9664c8
+voiceless linguolabial stop consonant	t̼	T	C	1	T	t	#9664c8
+voiceless dental affricate consonant	tθ	T	C	1	T	t	#9664c8
+with-nasal-release voiceless alveolar stop consonant	tⁿ	T	C	1	T	t	#9664c8
+rounded close back vowel	u	Y	V	7	V	u	#c86464
+long rounded close back vowel	uː	Y	V	7	V	u	#c86464
+ultra-long rounded close back vowel	uːː	Y	V	7	V	u	#c86464
+mid-long rounded close back vowel	uˑ	Y	V	7	V	u	#c86464
+nasalized rounded close back vowel	ũ	Y	V	7	V	u	#c86464
+long nasalized rounded close back vowel	ũː	Y	V	7	V	u	#c86464
+breathy rounded close back vowel	ṳ	Y	V	7	V	u	#c86464
+devoiced rounded close back vowel	u̥	Y	V	7	V	u	#c86464
+creaky rounded close back vowel	ṵ	Y	V	7	V	u	#c86464
+voiced labio-dental fricative consonant	v	B	C	3	W	v	#c864c8
+palatalized voiced labio-dental fricative consonant	vʲ	B	C	3	W	v	#c864c8
+long voiced labio-dental fricative consonant	vː	B	C	3	W	v	#c864c8
+devoiced voiced labio-dental fricative consonant	v̥	B	C	3	W	v	#c864c8
+syllabic voiced labio-dental fricative consonant	v̩	B	C	3	W	v	#c864c8
+voiced labio-velar approximant consonant	w	W	C	6	W	w	#c864c8
+long voiced labio-velar approximant consonant	wː	W	C	6	W	w	#c864c8
+velarized voiced labio-velar approximant consonant	wˠ	W	C	6	W	w	#c864c8
+nasalized voiced labio-velar approximant consonant	w̃	W	C	6	W	w	#c864c8
+voiceless velar fricative consonant	x	G	C	3	K	x	#c89664
+palatalized voiceless velar fricative consonant	xʲ	G	C	3	K	x	#c89664
+labialized voiceless velar fricative consonant	xʷ	G	C	3	K	x	#c89664
+voiceless velar ejective fricative consonant	xʼ	G	C	3	K	x	#c89664
+rounded close front vowel	y	Y	V	7	V	i	#c86464
+long rounded close front vowel	yː	Y	V	7	V	i	#c86464
+ultra-long rounded close front vowel	yːː	Y	V	7	V	i	#c86464
+mid-long rounded close front vowel	yˑ	Y	V	7	V	i	#c86464
+nasalized rounded close front vowel	ỹ	Y	V	7	V	i	#c86464
+long nasalized rounded close front vowel	ỹː	Y	V	7	V	i	#c86464
+voiced alveolar sibilant fricative consonant	z	S	C	3	S	z	#6496c8
+palatalized voiced alveolar sibilant fricative consonant	zʲ	S	C	3	S	z	#6496c8
+devoiced voiced alveolar sibilant fricative consonant	z̥	S	C	3	S	z	#6496c8
+syllabic voiced alveolar sibilant fricative consonant	z̩	S	C	3	S	z	#6496c8
+voiced dental sibilant fricative consonant	z̪	S	C	3	S	z	#6496c8
+devoiced voiced dental sibilant fricative consonant	z̪̥	S	C	3	S	z	#6496c8
+¯	¯	0	0	0	0	0	0
+short from-mid-low tone	²	6	T	8	1	6	#c86496
+flat from-mid-low to-mid-low tone	²²	1	T	8	1	1	#c86496
+rising from-mid-low via-mid-low to-mid tone	²²³	6	T	8	1	6	#c86496
+falling from-mid-low via-mid-low to-low tone	²²¹	6	T	8	1	6	#c86496
+rising from-mid-low via-mid-low to-mid-high tone	²²⁴	6	T	8	1	6	#c86496
+rising from-mid-low via-mid-low to-high tone	²²⁵	6	T	8	1	6	#c86496
+rising from-mid-low to-mid tone	²³	2	T	8	1	2	#c86496
+contour from-mid-low via-mid to-mid-low tone	²³²	6	T	8	1	6	#c86496
+rising from-mid-low via-mid to-mid tone	²³³	6	T	8	1	6	#c86496
+contour from-mid-low via-mid to-low tone	²³¹	6	T	8	1	6	#c86496
+falling from-mid-low to-low tone	²¹	3	T	8	1	3	#c86496
+contour from-mid-low via-low to-mid-low tone	²¹²	6	T	8	1	6	#c86496
+contour from-mid-low via-low to-mid tone	²¹³	6	T	8	1	6	#c86496
+falling from-mid-low via-low to-low tone	²¹¹	6	T	8	1	6	#c86496
+contour from-mid-low via-low to-mid-high tone	²¹⁴	6	T	8	1	6	#c86496
+contour from-mid-low via-low to-high tone	²¹⁵	6	T	8	1	6	#c86496
+rising from-mid-low to-mid-high tone	²⁴	2	T	8	1	2	#c86496
+contour from-mid-low via-mid-high to-mid-low tone	²⁴²	6	T	8	1	6	#c86496
+contour from-mid-low via-mid-high to-mid tone	²⁴³	6	T	8	1	6	#c86496
+contour from-mid-low via-mid-high to-low tone	²⁴¹	6	T	8	1	6	#c86496
+rising from-mid-low via-mid-high to-mid-high tone	²⁴⁴	6	T	8	1	6	#c86496
+rising from-mid-low to-high tone	²⁵	2	T	8	1	2	#c86496
+contour from-mid-low via-high to-mid-low tone	²⁵²	6	T	8	1	6	#c86496
+contour from-mid-low via-high to-mid tone	²⁵³	6	T	8	1	6	#c86496
+contour from-mid-low via-high to-low tone	²⁵¹	6	T	8	1	6	#c86496
+contour from-mid-low via-high to-mid-high tone	²⁵⁴	6	T	8	1	6	#c86496
+rising from-mid-low via-high to-high tone	²⁵⁵	6	T	8	1	6	#c86496
+short from-mid tone	³	6	T	8	1	6	#c86496
+falling from-mid to-mid-low tone	³²	3	T	8	1	3	#c86496
+falling from-mid via-mid-low to-mid-low tone	³²²	6	T	8	1	6	#c86496
+contour from-mid via-mid-low to-mid tone	³²³	6	T	8	1	6	#c86496
+contour from-mid via-mid-low to-mid-high tone	³²⁴	6	T	8	1	6	#c86496
+contour from-mid via-mid-low to-high tone	³²⁵	6	T	8	1	6	#c86496
+flat from-mid to-mid tone	³³	4	T	8	1	4	#c86496
+falling from-mid via-mid to-mid-low tone	³³²	6	T	8	1	6	#c86496
+falling from-mid via-mid to-low tone	³³¹	6	T	8	1	6	#c86496
+rising from-mid via-mid to-mid-high tone	³³⁴	6	T	8	1	6	#c86496
+rising from-mid via-mid to-high tone	³³⁵	6	T	8	1	6	#c86496
+falling from-mid to-low tone	³¹	3	T	8	1	3	#c86496
+contour from-mid via-low to-mid-low tone	³¹²	6	T	8	1	6	#c86496
+contour from-mid via-low to-mid tone	³¹³	6	T	8	1	6	#c86496
+falling from-mid via-low to-low tone	³¹¹	6	T	8	1	6	#c86496
+contour from-mid via-low to-mid-high tone	³¹⁴	6	T	8	1	6	#c86496
+contour from-mid via-low to-high tone	³¹⁵	6	T	8	1	6	#c86496
+rising from-mid to-mid-high tone	³⁴	2	T	8	1	2	#c86496
+contour from-mid via-mid-high to-mid-low tone	³⁴²	6	T	8	1	6	#c86496
+contour from-mid via-mid-high to-mid tone	³⁴³	6	T	8	1	6	#c86496
+contour from-mid via-mid-high to-low tone	³⁴¹	6	T	8	1	6	#c86496
+rising from-mid via-mid-high to-mid-high tone	³⁴⁴	6	T	8	1	6	#c86496
+contour from-mid via-mid-high to-high tone	³⁴⁵	6	T	8	1	6	#c86496
+rising from-mid to-high tone	³⁵	2	T	8	1	2	#c86496
+contour from-mid via-high to-mid-low tone	³⁵²	6	T	8	1	6	#c86496
+contour from-mid via-high to-mid tone	³⁵³	6	T	8	1	6	#c86496
+contour from-mid via-high to-low tone	³⁵¹	6	T	8	1	6	#c86496
+contour from-mid via-high to-mid-high tone	³⁵⁴	6	T	8	1	6	#c86496
+rising from-mid via-high to-high tone	³⁵⁵	6	T	8	1	6	#c86496
+short from-low tone	¹	6	T	8	1	6	#c86496
+rising from-low to-mid-low tone	¹²	2	T	8	1	2	#c86496
+rising from-low via-mid-low to-mid-low tone	¹²²	6	T	8	1	6	#c86496
+contour from-low via-mid-low to-low tone	¹²¹	6	T	8	1	6	#c86496
+rising from-low to-mid tone	¹³	2	T	8	1	2	#c86496
+contour from-low via-mid to-mid-low tone	¹³²	6	T	8	1	6	#c86496
+rising from-low via-mid to-mid tone	¹³³	6	T	8	1	6	#c86496
+contour from-low via-mid to-low tone	¹³¹	6	T	8	1	6	#c86496
+flat from-low to-low tone	¹¹	1	T	8	1	1	#c86496
+rising from-low via-low to-mid-low tone	¹¹²	6	T	8	1	6	#c86496
+rising from-low via-low to-mid tone	¹¹³	6	T	8	1	6	#c86496
+rising from-low via-low to-mid-high tone	¹¹⁴	6	T	8	1	6	#c86496
+rising from-low via-low to-high tone	¹¹⁵	6	T	8	1	6	#c86496
+rising from-low to-mid-high tone	¹⁴	2	T	8	1	2	#c86496
+contour from-low via-mid-high to-mid-low tone	¹⁴²	6	T	8	1	6	#c86496
+contour from-low via-mid-high to-mid tone	¹⁴³	6	T	8	1	6	#c86496
+contour from-low via-mid-high to-low tone	¹⁴¹	6	T	8	1	6	#c86496
+rising from-low via-mid-high to-mid-high tone	¹⁴⁴	6	T	8	1	6	#c86496
+rising from-low to-high tone	¹⁵	2	T	8	1	2	#c86496
+contour from-low via-high to-mid-low tone	¹⁵²	6	T	8	1	6	#c86496
+contour from-low via-high to-mid tone	¹⁵³	6	T	8	1	6	#c86496
+contour from-low via-high to-low tone	¹⁵¹	6	T	8	1	6	#c86496
+contour from-low via-high to-mid-high tone	¹⁵⁴	6	T	8	1	6	#c86496
+rising from-low via-high to-high tone	¹⁵⁵	6	T	8	1	6	#c86496
+unrounded near-open front vowel	æ	E	V	7	V	E	#c86464
+long unrounded near-open front vowel	æː	E	V	7	V	E	#c86464
+ultra-long unrounded near-open front vowel	æːː	E	V	7	V	E	#c86464
+mid-long unrounded near-open front vowel	æˑ	E	V	7	V	E	#c86464
+nasalized unrounded near-open front vowel	æ̃	E	V	7	V	E	#c86464
+long nasalized unrounded near-open front vowel	æ̃ː	E	V	7	V	E	#c86464
+creaky unrounded near-open front vowel	æ̰	E	V	7	V	E	#c86464
+voiced dental fricative consonant	ð	D	C	3	T	8	#9664c8
+long voiced dental fricative consonant	ðː	D	C	3	T	8	#9664c8
+unreleased voiced dental fricative consonant	ð̚	D	C	3	T	8	#9664c8
+voiced dental approximant consonant	ð̞	D	C	3	T	8	#9664c8
+voiced linguolabial fricative consonant	ð̼	D	C	3	T	8	#9664c8
+rounded close-mid front vowel	ø	U	V	7	V	e	#c86464
+long rounded close-mid front vowel	øː	U	V	7	V	e	#c86464
+ultra-long rounded close-mid front vowel	øːː	U	V	7	V	e	#c86464
+mid-long rounded close-mid front vowel	øˑ	U	V	7	V	e	#c86464
+nasalized rounded close-mid front vowel	ø̃	U	V	7	V	e	#c86464
+long nasalized rounded close-mid front vowel	ø̃ː	U	V	7	V	e	#c86464
+rounded mid front vowel	ø̞	U	V	7	V	e	#c86464
+long rounded mid front vowel	ø̞ː	U	V	7	V	e	#c86464
+nasalized rounded mid front vowel	ø̞̃	U	V	7	V	e	#c86464
+long nasalized rounded mid front vowel	ø̞̃ː	U	V	7	V	e	#c86464
+voiceless pharyngeal fricative consonant	ħ	H	C	3	H	G	#96c864
+voiced velar nasal consonant	ŋ	N	C	4	N	N	#64c8c8
+voiced dental nasal-click consonant	ŋǀ	N	C	4	N	N	#64c8c8
+voiced lateral nasal-click consonant	ŋǁ	N	C	4	N	N	#64c8c8
+voiced palatal nasal-click consonant	ŋǂ	N	C	4	N	N	#64c8c8
+voiced alveolar nasal-click consonant	ŋǃ	N	C	4	N	N	#64c8c8
+voiced retroflex nasal-click consonant	ŋǃǃ	N	C	4	N	N	#64c8c8
+voiced labial nasal-click consonant	ŋʘ	N	C	4	N	N	#64c8c8
+labialized voiced velar nasal consonant	ŋʷ	N	C	4	N	N	#64c8c8
+long voiced velar nasal consonant	ŋː	N	C	4	N	N	#64c8c8
+devoiced voiced velar nasal consonant	ŋ̊	N	C	4	N	N	#64c8c8
+devoiced voiced dental nasal-click consonant	ŋ̊ǀ	N	C	4	N	N	#64c8c8
+devoiced voiced lateral nasal-click consonant	ŋ̊ǁ	N	C	4	N	N	#64c8c8
+devoiced voiced palatal nasal-click consonant	ŋ̊ǂ	N	C	4	N	N	#64c8c8
+devoiced voiced alveolar nasal-click consonant	ŋ̊ǃ	N	C	4	N	N	#64c8c8
+devoiced voiced retroflex nasal-click consonant	ŋ̊ǃǃ	N	C	4	N	N	#64c8c8
+devoiced voiced labial nasal-click consonant	ŋ̊ʘ	N	C	4	N	N	#64c8c8
+syllabic voiced velar nasal consonant	ŋ̍	N	C	4	N	N	#64c8c8
+rounded open-mid front vowel	œ	U	V	7	V	E	#c86464
+long rounded open-mid front vowel	œː	U	V	7	V	E	#c86464
+nasalized rounded open-mid front vowel	œ̃	U	V	7	V	E	#c86464
+long nasalized rounded open-mid front vowel	œ̃ː	U	V	7	V	E	#c86464
+voiceless dental click consonant	ǀ	!	C	1	K	!	#c89664
+voiceless lateral click consonant	ǁ	!	C	1	K	!	#c89664
+voiceless palatal click consonant	ǂ	!	C	1	K	!	#c89664
+voiceless alveolar click consonant	ǃ	!	C	1	K	!	#c89664
+voiceless retroflex click consonant	ǃǃ	!	C	1	K	!	#c89664
+voiced alveolo-palatal stop consonant	ȡ	T	C	1	T	d	#9664c8
+voiced alveolo-palatal lateral approximant consonant	ȴ	L	C	5	R	L	#6464c8
+voiced alveolo-palatal nasal consonant	ȵ	N	C	4	N	H	#64c8c8
+devoiced voiced alveolo-palatal nasal consonant	ȵ̊	N	C	4	N	H	#64c8c8
+voiceless alveolo-palatal stop consonant	ȶ	T	C	1	T	t	#9664c8
+unrounded near-open central vowel	ɐ	E	V	7	V	a	#c86464
+long unrounded near-open central vowel	ɐː	E	V	7	V	a	#c86464
+nasalized unrounded near-open central vowel	ɐ̃	E	V	7	V	a	#c86464
+long nasalized unrounded near-open central vowel	ɐ̃ː	E	V	7	V	a	#c86464
+non-syllabic unrounded near-open central vowel	ɐ̯	R	C	5	R	r	#6464c8
+unrounded open back vowel	ɑ	A	V	7	V	o	#c86464
+long unrounded open back vowel	ɑː	A	V	7	V	o	#c86464
+nasalized unrounded open back vowel	ɑ̃	A	V	7	V	o	#c86464
+long nasalized unrounded open back vowel	ɑ̃ː	A	V	7	V	o	#c86464
+advanced unrounded open back vowel	ɑ̟	A	V	7	V	o	#c86464
+rounded open back vowel	ɒ	O	V	7	V	o	#c86464
+long rounded open back vowel	ɒː	O	V	7	V	o	#c86464
+nasalized rounded open back vowel	ɒ̃	O	V	7	V	o	#c86464
+long nasalized rounded open back vowel	ɒ̃ː	O	V	7	V	o	#c86464
+voiced bilabial implosive consonant	ɓ	P	C	1	P	b	#c8c864
+palatalized voiced bilabial implosive consonant	ɓʲ	P	C	1	P	b	#c8c864
+rounded open-mid back vowel	ɔ	U	V	7	V	o	#c86464
+long rounded open-mid back vowel	ɔː	U	V	7	V	o	#c86464
+nasalized rounded open-mid back vowel	ɔ̃	U	V	7	V	o	#c86464
+long nasalized rounded open-mid back vowel	ɔ̃ː	U	V	7	V	o	#c86464
+non-syllabic rounded open-mid back vowel	ɔ̯	U	V	7	V	o	#c86464
+creaky rounded open-mid back vowel	ɔ̰	U	V	7	V	o	#c86464
+voiceless alveolo-palatal sibilant fricative consonant	ɕ	S	C	3	S	S	#6496c8
+voiced retroflex stop consonant	ɖ	T	C	1	T	d	#9664c8
+voiced retroflex sibilant affricate consonant	ɖʐ	C	C	2	K	j	#c89664
+breathy voiced retroflex stop consonant	ɖʱ	T	C	1	T	d	#9664c8
+voiced dental implosive consonant	ɗ	T	C	1	T	d	#9664c8
+devoiced voiced dental implosive consonant	ɗ̥	T	C	1	T	d	#9664c8
+unrounded close-mid central vowel	ɘ	E	V	7	V	I	#c86464
+long unrounded close-mid central vowel	ɘː	E	V	7	V	I	#c86464
+nasalized unrounded close-mid central vowel	ɘ̃	E	V	7	V	I	#c86464
+long nasalized unrounded close-mid central vowel	ɘ̃ː	E	V	7	V	I	#c86464
+unrounded mid central vowel	ə	E	V	7	V	I	#c86464
+long unrounded mid central vowel	əː	E	V	7	V	I	#c86464
+rhotacized unrounded mid central vowel	ə˞	E	V	7	V	I	#c86464
+nasalized unrounded mid central vowel	ə̃	E	V	7	V	I	#c86464
+long nasalized unrounded mid central vowel	ə̃ː	E	V	7	V	I	#c86464
+ultra-short unrounded mid central vowel	ə̆	E	V	7	V	I	#c86464
+creaky unrounded mid central vowel	ə̰	E	V	7	V	I	#c86464
+unrounded open-mid front vowel	ɛ	E	V	7	V	E	#c86464
+long unrounded open-mid front vowel	ɛː	E	V	7	V	E	#c86464
+ultra-long unrounded open-mid front vowel	ɛːː	E	V	7	V	E	#c86464
+nasalized unrounded open-mid front vowel	ɛ̃	E	V	7	V	E	#c86464
+long nasalized unrounded open-mid front vowel	ɛ̃ː	E	V	7	V	E	#c86464
+non-syllabic unrounded open-mid front vowel	ɛ̯	E	V	7	V	E	#c86464
+creaky unrounded open-mid front vowel	ɛ̰	E	V	7	V	E	#c86464
+unrounded open-mid central vowel	ɜ	E	V	7	V	I	#c86464
+long unrounded open-mid central vowel	ɜː	E	V	7	V	I	#c86464
+nasalized unrounded open-mid central vowel	ɜ̃	E	V	7	V	I	#c86464
+long nasalized unrounded open-mid central vowel	ɜ̃ː	E	V	7	V	I	#c86464
+rounded open-mid central vowel	ɞ	U	V	7	V	u	#c86464
+long rounded open-mid central vowel	ɞː	U	V	7	V	u	#c86464
+nasalized rounded open-mid central vowel	ɞ̃	U	V	7	V	u	#c86464
+long nasalized rounded open-mid central vowel	ɞ̃ː	U	V	7	V	u	#c86464
+rounded near-open central vowel	ɞ̞	U	V	7	V	u	#c86464
+long rounded near-open central vowel	ɞ̞ː	U	V	7	V	u	#c86464
+nasalized rounded near-open central vowel	ɞ̞̃	U	V	7	V	u	#c86464
+long nasalized rounded near-open central vowel	ɞ̞̃ː	U	V	7	V	u	#c86464
+voiced palatal stop consonant	ɟ	C	C	1	K	C	#c89664
+voiced palatal affricate consonant	ɟʝ	C	C	1	K	C	#c89664
+voiced velar implosive consonant	ɠ	K	C	1	K	g	#c89664
+voiced uvular stop consonant	ɢ	K	C	1	K	q	#c89664
+voiced uvular affricate consonant	ɢʁ	K	C	1	K	q	#c89664
+aspirated voiced uvular stop consonant	ɢʰ	K	C	1	K	q	#c89664
+voiced velar fricative consonant	ɣ	G	C	3	K	x	#c89664
+labialized voiced velar fricative consonant	ɣʷ	G	C	3	K	x	#c89664
+devoiced voiced velar fricative consonant	ɣ̊	G	C	3	K	x	#c89664
+unrounded close-mid back vowel	ɤ	E	V	7	V	o	#c86464
+long unrounded close-mid back vowel	ɤː	E	V	7	V	o	#c86464
+nasalized unrounded close-mid back vowel	ɤ̃	E	V	7	V	o	#c86464
+long nasalized unrounded close-mid back vowel	ɤ̃ː	E	V	7	V	o	#c86464
+ultra-short unrounded close-mid back vowel	ɤ̆	E	V	7	V	o	#c86464
+unrounded mid back vowel	ɤ̞	E	V	7	V	o	#c86464
+long unrounded mid back vowel	ɤ̞ː	E	V	7	V	o	#c86464
+nasalized unrounded mid back vowel	ɤ̞̃	E	V	7	V	o	#c86464
+long nasalized unrounded mid back vowel	ɤ̞̃ː	E	V	7	V	o	#c86464
+non-syllabic unrounded close-mid back vowel	ɤ̯	E	V	7	V	o	#c86464
+voiced labio-palatal approximant consonant	ɥ	J	C	6	J	y	#64c864
+voiced glottal fricative consonant	ɦ	H	C	3	H	h	#96c864
+voiceless palatal-velar fricative consonant	ɧ	S	C	3	S	S	#6496c8
+unrounded close central vowel	ɨ	I	V	7	V	I	#c86464
+long unrounded close central vowel	ɨː	I	V	7	V	I	#c86464
+nasalized unrounded close central vowel	ɨ̃	I	V	7	V	I	#c86464
+long nasalized unrounded close central vowel	ɨ̃ː	I	V	7	V	I	#c86464
+unrounded near-close near-front vowel	ɪ	I	V	7	V	i	#c86464
+long unrounded near-close near-front vowel	ɪː	I	V	7	V	i	#c86464
+nasalized unrounded near-close near-front vowel	ɪ̃	I	V	7	V	i	#c86464
+long nasalized unrounded near-close near-front vowel	ɪ̃ː	I	V	7	V	i	#c86464
+unrounded near-close central vowel	ɪ̈	I	V	7	V	i	#c86464
+long unrounded near-close central vowel	ɪ̈ː	I	V	7	V	i	#c86464
+nasalized unrounded near-close central vowel	ɪ̈̃	I	V	7	V	i	#c86464
+long nasalized unrounded near-close central vowel	ɪ̈̃ː	I	V	7	V	i	#c86464
+devoiced unrounded near-close near-front vowel	ɪ̥	I	V	7	V	i	#c86464
+non-syllabic unrounded near-close near-front vowel	ɪ̯	I	V	7	V	i	#c86464
+creaky unrounded near-close near-front vowel	ɪ̰	I	V	7	V	i	#c86464
+voiceless alveolar lateral fricative consonant	ɬ	L	C	5	R	L	#6464c8
+voiceless alveolar ejective lateral fricative consonant	ɬʼ	L	C	5	R	L	#6464c8
+voiceless dental lateral fricative consonant	ɬ̪	L	C	5	R	L	#6464c8
+voiceless dental ejective lateral fricative consonant	ɬ̪ʼ	L	C	5	R	L	#6464c8
+voiceless linguolabial lateral fricative consonant	ɬ̼	L	C	5	R	L	#6464c8
+voiced retroflex lateral approximant consonant	ɭ	L	C	5	R	L	#6464c8
+devoiced voiced retroflex lateral approximant consonant	ɭ̊	L	C	5	R	L	#6464c8
+syllabic voiced retroflex lateral approximant consonant	ɭ̩	L	C	5	R	L	#6464c8
+voiced alveolar lateral fricative consonant	ɮ	L	C	5	R	L	#6464c8
+voiced linguolabial lateral fricative consonant	ɮ̼	L	C	5	R	L	#6464c8
+unrounded close back vowel	ɯ	I	V	7	V	u	#c86464
+long unrounded close back vowel	ɯː	I	V	7	V	u	#c86464
+nasalized unrounded close back vowel	ɯ̃	I	V	7	V	u	#c86464
+long nasalized unrounded close back vowel	ɯ̃ː	I	V	7	V	u	#c86464
+breathy unrounded close back vowel	ɯ̤	I	V	7	V	u	#c86464
+devoiced unrounded close back vowel	ɯ̥	I	V	7	V	u	#c86464
+nasalized devoiced unrounded close back vowel	ɯ̥̃	I	V	7	V	u	#c86464
+non-syllabic unrounded close back vowel	ɯ̯	I	V	7	V	u	#c86464
+unrounded near-close near-back vowel	ɯ̽	I	V	7	V	u	#c86464
+long unrounded near-close near-back vowel	ɯ̽ː	I	V	7	V	u	#c86464
+nasalized unrounded near-close near-back vowel	ɯ̽̃	I	V	7	V	u	#c86464
+long nasalized unrounded near-close near-back vowel	ɯ̽̃ː	I	V	7	V	u	#c86464
+voiced velar approximant consonant	ɰ	J	C	6	J	w	#64c864
+voiced labio-dental nasal consonant	ɱ	M	C	4	M	m	#64c896
+devoiced voiced labio-dental nasal consonant	ɱ̊	M	C	4	M	m	#64c896
+voiced palatal nasal consonant	ɲ	N	C	4	N	H	#64c8c8
+long voiced palatal nasal consonant	ɲː	N	C	4	N	H	#64c8c8
+devoiced voiced palatal nasal consonant	ɲ̊	N	C	4	N	H	#64c8c8
+syllabic voiced palatal nasal consonant	ɲ̍	N	C	4	N	H	#64c8c8
+voiced retroflex nasal consonant	ɳ	N	C	4	N	n	#64c8c8
+devoiced voiced retroflex nasal consonant	ɳ̊	N	C	4	N	n	#64c8c8
+syllabic voiced retroflex nasal consonant	ɳ̍	N	C	4	N	n	#64c8c8
+voiced uvular nasal consonant	ɴ	N	C	4	N	N	#64c8c8
+devoiced voiced uvular nasal consonant	ɴ̥	N	C	4	N	N	#64c8c8
+syllabic voiced uvular nasal consonant	ɴ̩	N	C	4	N	N	#64c8c8
+rounded close-mid central vowel	ɵ	U	V	7	V	I	#c86464
+long rounded close-mid central vowel	ɵː	U	V	7	V	I	#c86464
+nasalized rounded close-mid central vowel	ɵ̃	U	V	7	V	I	#c86464
+long nasalized rounded close-mid central vowel	ɵ̃ː	U	V	7	V	I	#c86464
+rounded mid central vowel	ɵ̞	U	V	7	V	I	#c86464
+long rounded mid central vowel	ɵ̞ː	U	V	7	V	I	#c86464
+nasalized rounded mid central vowel	ɵ̞̃	U	V	7	V	I	#c86464
+long nasalized rounded mid central vowel	ɵ̞̃ː	U	V	7	V	I	#c86464
+rounded open front vowel	ɶ	U	V	7	V	E	#c86464
+long rounded open front vowel	ɶː	U	V	7	V	E	#c86464
+nasalized rounded open front vowel	ɶ̃	U	V	7	V	E	#c86464
+long nasalized rounded open front vowel	ɶ̃ː	U	V	7	V	E	#c86464
+voiceless bilabial fricative consonant	ɸ	B	C	3	P	f	#c8c864
+voiced alveolar approximant consonant	ɹ	R	C	5	R	r	#6464c8
+voiced post-alveolar approximant consonant	ɹ̠	R	C	5	R	r	#6464c8
+syllabic voiced alveolar approximant consonant	ɹ̩	R	C	5	R	r	#6464c8
+voiced alveolar lateral tap consonant	ɺ	R	C	5	R	r	#6464c8
+voiced retroflex approximant consonant	ɻ	R	C	5	R	L	#6464c8
+voiced retroflex tap consonant	ɽ	R	C	5	R	r	#6464c8
+breathy voiced retroflex tap consonant	ɽʱ	R	C	5	R	r	#6464c8
+voiced alveolar tap consonant	ɾ	R	C	5	R	r	#6464c8
+devoiced voiced alveolar tap consonant	ɾ̥	R	C	5	R	r	#6464c8
+voiced linguolabial tap consonant	ɾ̼	R	C	5	R	r	#6464c8
+unrounded close with-frication back vowel	ɿ	I	V	7	V	i	#c86464
+voiced uvular trill consonant	ʀ	R	C	5	R	r	#6464c8
+devoiced voiced uvular trill consonant	ʀ̥	R	C	5	R	r	#6464c8
+voiced uvular fricative consonant	ʁ	R	C	5	R	G	#6464c8
+voiced uvular approximant consonant	ʁ̞	R	C	5	R	G	#6464c8
+devoiced voiced uvular fricative consonant	ʁ̥	R	C	5	R	G	#6464c8
+voiceless retroflex sibilant fricative consonant	ʂ	S	C	3	S	S	#6496c8
+voiceless post-alveolar sibilant fricative consonant	ʃ	S	C	3	S	S	#6496c8
+palatalized voiceless post-alveolar sibilant fricative consonant	ʃʲ	S	C	3	S	S	#6496c8
+voiceless post-alveolar ejective sibilant fricative consonant	ʃʼ	S	C	3	S	S	#6496c8
+voiced palatal implosive consonant	ʄ	C	C	2	K	C	#c89664
+unrounded close with-frication central vowel	ʅ	I	V	7	V	i	#c86464
+voiced linguolabial click consonant	ʇ̼	0	0	0	0	0	0
+voiceless retroflex stop consonant	ʈ	T	C	1	T	t	#9664c8
+voiceless retroflex sibilant affricate consonant	ʈʂ	C	C	2	K	C	#c89664
+aspirated voiceless retroflex sibilant affricate consonant	ʈʂʰ	C	C	2	K	C	#c89664
+long voiced retroflex sibilant affricate consonant	ʈʂː	T	C	1	T	t	#9664c8
+voiceless retroflex ejective sibilant affricate consonant	ʈʂ’	T	C	1	T	t	#9664c8
+aspirated voiceless retroflex stop consonant	ʈʰ	T	C	1	T	t	#9664c8
+aspirated long voiceless retroflex stop consonant	ʈʰː	T	C	1	T	t	#9664c8
+rounded close central vowel	ʉ	Y	V	7	V	I	#c86464
+long rounded close central vowel	ʉː	Y	V	7	V	I	#c86464
+nasalized rounded close central vowel	ʉ̃	Y	V	7	V	I	#c86464
+long nasalized rounded close central vowel	ʉ̃ː	Y	V	7	V	I	#c86464
+creaky rounded close central vowel	ʉ̰	Y	V	7	V	I	#c86464
+rounded near-close near-back vowel	ʊ	Y	V	7	V	u	#c86464
+long rounded near-close near-back vowel	ʊː	Y	V	7	V	u	#c86464
+nasalized rounded near-close near-back vowel	ʊ̃	Y	V	7	V	u	#c86464
+long nasalized rounded near-close near-back vowel	ʊ̃ː	Y	V	7	V	u	#c86464
+rounded near-close central vowel	ʊ̈	Y	V	7	V	u	#c86464
+long rounded near-close central vowel	ʊ̈ː	Y	V	7	V	u	#c86464
+nasalized rounded near-close central vowel	ʊ̈̃	Y	V	7	V	u	#c86464
+long nasalized rounded near-close central vowel	ʊ̈̃ː	Y	V	7	V	u	#c86464
+devoiced rounded near-close near-back vowel	ʊ̥	Y	V	7	V	u	#c86464
+non-syllabic rounded near-close near-back vowel	ʊ̯	Y	V	7	V	u	#c86464
+creaky rounded near-close near-back vowel	ʊ̰	Y	V	7	V	u	#c86464
+voiced labio-dental approximant consonant	ʋ	W	C	6	W	w	#c864c8
+unrounded open-mid back vowel	ʌ	E	V	7	V	o	#c86464
+long unrounded open-mid back vowel	ʌː	E	V	7	V	o	#c86464
+nasalized unrounded open-mid back vowel	ʌ̃	E	V	7	V	o	#c86464
+long nasalized unrounded open-mid back vowel	ʌ̃ː	E	V	7	V	o	#c86464
+ultra-short unrounded open-mid back vowel	ʌ̆	E	V	7	V	o	#c86464
+breathy unrounded open-mid back vowel	ʌ̤	E	V	7	V	o	#c86464
+nasalized breathy unrounded open-mid back vowel	ʌ̤̃	E	V	7	V	o	#c86464
+long non-syllabic unrounded open-mid back vowel	ʌ̯ː	E	V	7	V	o	#c86464
+voiceless labio-velar approximant consonant	ʍ	M	C	6	M	w	#64c896
+voiced palatal lateral approximant consonant	ʎ	L	C	5	R	l	#6464c8
+devoiced voiced palatal lateral approximant consonant	ʎ̥	L	C	5	R	l	#6464c8
+rounded near-close near-front vowel	ʏ	Y	V	7	V	i	#c86464
+long rounded near-close near-front vowel	ʏː	Y	V	7	V	i	#c86464
+nasalized rounded near-close near-front vowel	ʏ̃	Y	V	7	V	i	#c86464
+long nasalized rounded near-close near-front vowel	ʏ̃ː	Y	V	7	V	i	#c86464
+voiced retroflex sibilant fricative consonant	ʐ	S	C	3	S	Z	#6496c8
+voiced alveolo-palatal sibilant fricative consonant	ʑ	S	C	3	S	Z	#6496c8
+voiced post-alveolar sibilant fricative consonant	ʒ	S	C	3	S	Z	#6496c8
+devoiced voiced post-alveolar sibilant fricative consonant	ʒ̊	S	C	3	S	Z	#6496c8
+syllabic voiced post-alveolar sibilant fricative consonant	ʒ̍	S	C	3	S	Z	#6496c8
+voiceless glottal stop consonant	ʔ	H	C	1	H	7	#96c864
+voiceless glottal affricate consonant	ʔh	H	C	1	H	7	#96c864
+palatalized voiceless glottal stop consonant	ʔʲ	H	C	1	H	7	#96c864
+labialized voiceless glottal stop consonant	ʔʷ	H	C	1	H	7	#96c864
+voiced pharyngeal fricative consonant	ʕ	H	C	1	H	G	#96c864
+voiceless labial click consonant	ʘ	!	C	1	K	!	#c89664
+voiced bilabial trill consonant	ʙ	B	C	3	W	b	#c864c8
+devoiced voiced bilabial trill consonant	ʙ̥	B	C	3	W	b	#c864c8
+syllabic voiced bilabial trill consonant	ʙ̩	B	C	3	W	b	#c864c8
+voiced uvular implosive consonant	ʛ	K	C	1	K	q	#c89664
+voiceless uvular implosive consonant	ʛ̥	K	C	1	K	q	#c89664
+voiceless epiglottal fricative consonant	ʜ	0	0	0	0	0	0
+voiced palatal fricative consonant	ʝ	S	C	3	S	S	#6496c8
+voiced velar lateral approximant consonant	ʟ	L	C	5	R	L	#6464c8
+devoiced voiced velar lateral approximant consonant	ʟ̥	L	C	5	R	L	#6464c8
+voiceless epiglottal stop consonant	ʡ	H	C	1	H	G	#96c864
+voiced epiglottal fricative consonant	ʢ	0	0	0	0	0	0
+rounded close with-frication back vowel	ʮ	U	V	7	V	u	#c86464
+rounded close with-frication central vowel	ʯ	Y	V	7	V	i	#c86464
+pre-aspirated voiceless velar stop consonant	ʰk	K	C	1	K	k	#c89664
+pre-aspirated voiceless bilabial stop consonant	ʰp	P	C	1	P	p	#c8c864
+pre-aspirated voiceless alveolar stop consonant	ʰt	T	C	1	T	t	#9664c8
+pre-aspirated aspirated voiceless alveolar stop consonant	ʰtʰ	T	C	1	T	t	#9664c8
+pre-aspirated voiceless dental stop consonant	ʰt̪	T	C	1	T	t	#9664c8
+pre-aspirated aspirated voiceless dental stop consonant	ʰt̪ʰ	T	C	1	T	t	#9664c8
+pre-glottalized voiced dental nasal-click consonant	ˀŋǀ	N	C	4	N	N	#64c8c8
+pre-glottalized voiced lateral nasal-click consonant	ˀŋǁ	N	C	4	N	N	#64c8c8
+pre-glottalized voiced palatal nasal-click consonant	ˀŋǂ	N	C	4	N	N	#64c8c8
+pre-glottalized voiced alveolar nasal-click consonant	ˀŋǃ	N	C	4	N	N	#64c8c8
+pre-glottalized voiced retroflex nasal-click consonant	ˀŋǃǃ	N	C	4	N	N	#64c8c8
+pre-glottalized voiced labial nasal-click consonant	ˀŋʘ	N	C	4	N	N	#64c8c8
+voiced bilabial fricative consonant	β	B	C	3	P	b	#c8c864
+labialized voiced bilabial fricative consonant	βʷ	B	C	3	P	b	#c8c864
+voiced bilabial approximant consonant	β̞	B	C	3	P	b	#c8c864
+voiceless dental fricative consonant	θ	D	C	3	T	8	#9664c8
+long voiceless dental fricative consonant	θː	D	C	3	T	8	#9664c8
+revoiced voiceless dental fricative consonant	θ̬	D	C	3	T	8	#9664c8
+voiceless linguolabial fricative consonant	θ̼	D	C	3	T	8	#9664c8
+voiceless uvular fricative consonant	χ	G	C	3	K	G	#c89664
+labialized voiceless uvular fricative consonant	χʷ	G	C	3	K	G	#c89664
+voiceless uvular ejective fricative consonant	χʼ	G	C	3	K	G	#c89664
+voiced retroflex implosive consonant	ᶑ	0	0	0	0	0	0
+short neutral tone	⁰	6	T	8	1	6	#c86496
+short from-mid-high tone	⁴	6	T	8	1	6	#c86496
+falling from-mid-high to-mid-low tone	⁴²	3	T	8	1	3	#c86496
+falling from-mid-high via-mid-low to-mid-low tone	⁴²²	6	T	8	1	6	#c86496
+contour from-mid-high via-mid-low to-mid tone	⁴²³	6	T	8	1	6	#c86496
+contour from-mid-high via-mid-low to-mid-high tone	⁴²⁴	6	T	8	1	6	#c86496
+contour from-mid-high via-mid-low to-high tone	⁴²⁵	6	T	8	1	6	#c86496
+falling from-mid-high to-mid tone	⁴³	3	T	8	1	3	#c86496
+falling from-mid-high via-mid to-mid tone	⁴³³	6	T	8	1	6	#c86496
+contour from-mid-high via-mid to-mid-high tone	⁴³⁴	6	T	8	1	6	#c86496
+contour from-mid-high via-mid to-high tone	⁴³⁵	6	T	8	1	6	#c86496
+falling from-mid-high to-low tone	⁴¹	3	T	8	1	3	#c86496
+contour from-mid-high via-low to-mid-low tone	⁴¹²	6	T	8	1	6	#c86496
+contour from-mid-high via-low to-mid tone	⁴¹³	6	T	8	1	6	#c86496
+falling from-mid-high via-low to-low tone	⁴¹¹	6	T	8	1	6	#c86496
+contour from-mid-high via-low to-mid-high tone	⁴¹⁴	6	T	8	1	6	#c86496
+contour from-mid-high via-low to-high tone	⁴¹⁵	6	T	8	1	6	#c86496
+flat from-mid-high to-mid-high tone	⁴⁴	5	T	8	1	5	#c86496
+falling from-mid-high via-mid-high to-mid-low tone	⁴⁴²	6	T	8	1	6	#c86496
+falling from-mid-high via-mid-high to-mid tone	⁴⁴³	6	T	8	1	6	#c86496
+falling from-mid-high via-mid-high to-low tone	⁴⁴¹	6	T	8	1	6	#c86496
+rising from-mid-high via-mid-high to-high tone	⁴⁴⁵	6	T	8	1	6	#c86496
+rising from-mid-high to-high tone	⁴⁵	2	T	8	1	2	#c86496
+contour from-mid-high via-high to-mid-low tone	⁴⁵²	6	T	8	1	6	#c86496
+contour from-mid-high via-high to-mid tone	⁴⁵³	6	T	8	1	6	#c86496
+contour from-mid-high via-high to-low tone	⁴⁵¹	6	T	8	1	6	#c86496
+contour from-mid-high via-high to-mid-high tone	⁴⁵⁴	6	T	8	1	6	#c86496
+rising from-mid-high via-high to-high tone	⁴⁵⁵	6	T	8	1	6	#c86496
+short from-high tone	⁵	6	T	8	1	6	#c86496
+falling from-high to-mid-low tone	⁵²	3	T	8	1	3	#c86496
+falling from-high via-mid-low to-mid-low tone	⁵²²	6	T	8	1	6	#c86496
+contour from-high via-mid-low to-mid tone	⁵²³	6	T	8	1	6	#c86496
+contour from-high via-mid-low to-mid-high tone	⁵²⁴	6	T	8	1	6	#c86496
+contour from-high via-mid-low to-high tone	⁵²⁵	6	T	8	1	6	#c86496
+falling from-high to-mid tone	⁵³	3	T	8	1	3	#c86496
+falling from-high via-mid to-mid tone	⁵³³	6	T	8	1	6	#c86496
+contour from-high via-mid to-mid-high tone	⁵³⁴	6	T	8	1	6	#c86496
+contour from-high via-mid to-high tone	⁵³⁵	6	T	8	1	6	#c86496
+falling from-high to-low tone	⁵¹	3	T	8	1	3	#c86496
+contour from-high via-low to-mid-low tone	⁵¹²	6	T	8	1	6	#c86496
+contour from-high via-low to-mid tone	⁵¹³	6	T	8	1	6	#c86496
+falling from-high via-low to-low tone	⁵¹¹	6	T	8	1	6	#c86496
+contour from-high via-low to-mid-high tone	⁵¹⁴	6	T	8	1	6	#c86496
+contour from-high via-low to-high tone	⁵¹⁵	6	T	8	1	6	#c86496
+falling from-high to-mid-high tone	⁵⁴	3	T	8	1	3	#c86496
+falling from-high via-mid-high to-mid-high tone	⁵⁴⁴	6	T	8	1	6	#c86496
+contour from-high via-mid-high to-high tone	⁵⁴⁵	6	T	8	1	6	#c86496
+flat from-high to-high tone	⁵⁵	5	T	8	1	5	#c86496
+falling from-high via-high to-mid-low tone	⁵⁵²	6	T	8	1	6	#c86496
+falling from-high via-high to-mid tone	⁵⁵³	6	T	8	1	6	#c86496
+falling from-high via-high to-low tone	⁵⁵¹	6	T	8	1	6	#c86496
+falling from-high via-high to-mid-high tone	⁵⁵⁴	6	T	8	1	6	#c86496
+pre-nasalized voiced bilabial stop consonant	ⁿb	P	C	1	P	b	#c8c864
+pre-nasalized voiced alveolar stop consonant	ⁿd	T	C	1	T	d	#9664c8
+pre-nasalized voiced post-alveolar affricate consonant	ⁿdʒ	T	C	1	T	d	#9664c8
+pre-nasalized voiced dental stop consonant	ⁿd̪	T	C	1	T	d	#9664c8
+pre-nasalized voiced linguolabial stop consonant	ⁿd̼	T	C	1	T	d	#9664c8
+pre-nasalized voiced velar stop consonant	ⁿg	K	C	1	K	g	#c89664
+pre-nasalized voiced dental click consonant	ⁿgǀ	!	C	1	K	!	#c89664
+pre-nasalized voiced lateral click consonant	ⁿgǁ	!	C	1	K	!	#c89664
+pre-nasalized voiced palatal click consonant	ⁿgǂ	!	C	1	K	!	#c89664
+pre-nasalized voiced alveolar nasal-click consonant	ⁿgǃ	!	C	1	K	!	#c89664
+pre-nasalized voiced retroflex click consonant	ⁿgǃǃ	K	C	1	K	g	#c89664
+pre-nasalized voiced labial click consonant	ⁿgʘ	!	C	1	K	!	#c89664
+pre-nasalized voiceless velar stop consonant	ⁿk	K	C	1	K	k	#c89664
+pre-nasalized labialized voiceless velar stop consonant	ⁿkʷ	K	C	1	K	k	#c89664
+pre-nasalized voiceless bilabial stop consonant	ⁿp	P	C	1	P	p	#c8c864
+pre-nasalized voiceless alveolar stop consonant	ⁿt	T	C	1	T	t	#9664c8
+pre-nasalized voiceless post-alveolar sibilant affricate consonant	ⁿtʃ	T	C	1	T	t	#9664c8
+pre-nasalized voiceless dental stop consonant	ⁿt̪	T	C	1	T	t	#9664c8
+pre-nasalized voiced palatal stop consonant	ⁿɟ	C	C	1	K	C	#c89664
+←	←	0	0	0	0	0	0
+→	→	0	0	0	0	0	0
+∼	∼	9	C	4	N	n	#64c8c8
+voiced labio-dental tap consonant	ⱱ	W	C	3	W	v	#c864c8

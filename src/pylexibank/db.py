@@ -9,18 +9,15 @@ from collections import OrderedDict, defaultdict
 import sqlite3
 from contextlib import closing
 from json import dumps
+from pathlib import Path
 
 import attr
 from csvw.datatypes import DATATYPES
-from clldutils.path import Path, remove
 from clldutils.misc import nfilter
 from clldutils.jsonlib import load
 
 from pycldf.terms import term_uri
 from pycldf.sources import Sources
-
-
-from pylexibank.util import git_hash
 
 
 def identity(s):
@@ -77,9 +74,6 @@ def insert(db, table, keys, *rows, **kw):
             keys = [k.strip() for k in keys.split(',')]
         sql = "INSERT INTO {0} ({1}) VALUES ({2})".format(
             table, ','.join(keys), ','.join(['?' for _ in keys]))
-        if kw.get('verbose'):  # pragma: no cover
-            print(sql)
-            print(rows)
         db.executemany(sql, rows)
 
 
@@ -249,7 +243,7 @@ class Database(object):
 
     def drop(self):
         if self.fname.exists():
-            remove(self.fname)
+            self.fname.unlink()
 
     def connection(self):
         return closing(sqlite3.connect(self.fname.as_posix()))
@@ -352,12 +346,14 @@ CREATE TABLE SourceTable (
         :param dataset:
         :return:
         """
+        print(ds)
         try:
             self.fetchone('select ID from dataset')
         except sqlite3.OperationalError:
             self.create(force=True)
         self.unload(ds)
-        dataset = ds.cldf.wl
+
+        dataset = ds.cldf_reader()
         tables, ref_tables = schema(dataset)
 
         # update the DB schema:
@@ -392,7 +388,7 @@ CREATE TABLE SourceTable (
                 (
                     ds.id,
                     '{0}'.format(dataset),
-                    git_hash(ds.dir),
+                    ds.repo.hash() if ds.repo else '',
                     dumps(dataset.metadata_dict)))
             insert(
                 db,

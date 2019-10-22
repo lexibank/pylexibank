@@ -1,39 +1,35 @@
 import re
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from itertools import chain
+from pathlib import Path
+import logging
 
 import attr
 from csvw.metadata import Column
-from clldutils.path import copy, Path, git_describe
 from pycldf.dataset import Wordlist
 import pyclts.models
 from pyconcepticon.api import Concept
 
+from cldfbench.cldf import CLDFWriter
+
 from pylexibank.transcription import Analysis, analyze
-from pylexibank.util import pb
-from pylexibank import __version__
+
+log = logging.getLogger('pylexibank')
 
 MD_NAME = 'cldf-metadata.json'
-ALT_MD_NAME = 'Wordlist-metadata.json'
 ID_PATTERN = re.compile('[A-Za-z0-9_\-]+$')
 
 
-class Dataset(object):
-    def __init__(self, dataset):
+class LexibankWriter(CLDFWriter):
+    def __init__(self, **kw):
+        super().__init__(**kw)
         self._count = defaultdict(int)
         self._cognate_count = defaultdict(int)
-        self.dataset = dataset
 
-        md = self.dataset.cldf_dir / MD_NAME
-        if not md.exists():
-            md = self.dataset.cldf_dir / ALT_MD_NAME
-            if not md.exists():
-                md = self.dataset.cldf_dir / MD_NAME
-                copy(Path(__file__).parent / MD_NAME, md)
-        self.wl = Wordlist.from_metadata(md)
-        default_cldf = Wordlist.from_metadata(Path(__file__).parent / 'cldf-metadata.json')
+    def __enter__(self):
+        super().__enter__()
+        default_cldf = Wordlist.from_metadata(Path(__file__).parent / MD_NAME)
 
-        self.objects = {}
         self._obj_index = {}
         for cls in [
             self.dataset.lexeme_class,
@@ -45,9 +41,9 @@ class Dataset(object):
             self._obj_index[cls.__cldf_table__()] = set()
 
             cols = set(
-                col.header for col in self.wl[cls.__cldf_table__()].tableSchema.columns)
+                col.header for col in self.cldf[cls.__cldf_table__()].tableSchema.columns)
             properties = set(
-                col.propertyUrl.uri for col in self.wl[cls.__cldf_table__()].tableSchema.columns
+                col.propertyUrl.uri for col in self.cldf[cls.__cldf_table__()].tableSchema.columns
                 if col.propertyUrl)
             for field in cls.fieldnames():
                 try:
@@ -59,21 +55,13 @@ class Dataset(object):
                     if field in ['Latitude', 'Longitude'] \
                             and cls.__cldf_table__() == 'LanguageTable':
                         properties.add(col.propertyUrl.uri)
-                        self.wl[cls.__cldf_table__(), field].propertyUrl = col.propertyUrl
-                        self.wl[cls.__cldf_table__(), field].datatype = col.datatype
+                        self.cldf[cls.__cldf_table__(), field].propertyUrl = col.propertyUrl
+                        self.cldf[cls.__cldf_table__(), field].datatype = col.datatype
                 except KeyError:
                     col = Column(name=field, datatype="string")
                 if (col.propertyUrl and col.propertyUrl.uri not in properties) or \
                         ((not col.propertyUrl) and (field not in cols)):
-                    self.wl[cls.__cldf_table__()].tableSchema.columns.append(col)
-
-    def validate(self, log=None):
-        return self.wl.validate(log)
-
-    def __getitem__(self, type_):
-        return self.wl[type_]
-
-    def __enter__(self):
+                    self.cldf[cls.__cldf_table__()].tableSchema.columns.append(col)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -83,12 +71,12 @@ class Dataset(object):
         for fk, table in [('Parameter_ID', 'ParameterTable'), ('Language_ID', 'LanguageTable')]:
             refs = set(obj[fk] for obj in self.objects['FormTable'])
             self.objects[table] = [obj for obj in self.objects[table] if obj['ID'] in refs]
-        self.write(**self.objects)
+        super().__exit__(exc_type, exc_val, exc_tb)
 
     def add_sources(self, *args):
-        if not args and self.dataset.raw.joinpath('sources.bib').exists():
-            args = self.dataset.raw.read_bib()
-        self.wl.sources.add(*args)
+        if not args and self.dataset.raw_dir.joinpath('sources.bib').exists():
+            args = self.dataset.raw_dir.read_bib()
+        self.cldf.sources.add(*args)
 
     def lexeme_id(self, kw):
         self._count[(kw['Language_ID'], kw['Parameter_ID'])] += 1
@@ -105,32 +93,30 @@ class Dataset(object):
         if self.dataset.tokenizer:
             return self.dataset.tokenizer(item, string)
     
-    def add_form_with_segments(self, with_morphemes=False, **kw):
+    def add_form_with_segments(self, **kw):
         """
         :return: dict with the newly created lexeme
         """
-
         # Do we have morpheme segmentation on top of phonemes?
         with_morphemes = '+' in self['FormTable', 'Segments'].separator
 
         language, concept, value, form, segments = [kw.get(v) for v in [
             'Language_ID', 'Parameter_ID', 'Value', 'Form', 'Segments']]
+
         # check for required kws
         if language is None or concept is None or value is None \
                 or form is None or segments is None:
-            raise ValueError('language, concept, value, form, ' 
-                    'and segments must be supplied')
+            raise ValueError('language, concept, value, form, and segments must be supplied')
         kw.setdefault('Segments', segments)
         kw.update(ID=self.lexeme_id(kw), Form=form)
         lexeme = self._add_object(self.dataset.lexeme_class, **kw)
 
-        analysis = self.dataset.tr_analyses.setdefault(
-            kw['Language_ID'], Analysis())
+        analysis = self.dataset.tr_analyses.setdefault(kw['Language_ID'], Analysis())
         try:
             segments = kw['Segments']
             if with_morphemes:
                 segments = list(chain(*[s.split() for s in segments]))
-            _, _bipa, _sc, _analysis = analyze(segments, analysis)
+            _, _bipa, _sc, _analysis = analyze(self.args.clts.api, segments, analysis)
 
             # update the list of `bad_words` if necessary; we precompute a
             # list of data types in `_bipa` just to make the conditional
@@ -155,55 +141,45 @@ class Dataset(object):
         # check for required kws
         if language is None or concept is None or value is None \
                 or form is None:
-            raise ValueError('language, concept, value, and form ' 
-                    'must be supplied')
+            raise ValueError('language, concept, value, and form must be supplied')
 
         # check for kws not allowed
         if 'Segments' in kw:
-            raise ValueError('segmented data must be passed with'
-                'add_segments')
+            raise ValueError('segmented data must be passed with add_segments')
 
         # point to difference in value and form
-        if  form != value:
-            self.dataset.log.debug(
-                'iter_forms split: "{0}" -> "{1}"'.format(value, form))
+        if form != value:
+            log.debug('iter_forms split: "{0}" -> "{1}"'.format(value, form))
 
         if form:
             # try to segment the data now
             kw.setdefault('Segments', self.tokenize(kw, form) or [])
             if kw['Segments']:
-                return self.add_form_with_segments(
-                        with_morphemes=with_morphemes,
-                        **kw)
+                return self.add_form_with_segments(**kw)
 
             kw.update(ID=self.lexeme_id(kw), Form=form)
             return self._add_object(self.dataset.lexeme_class, **kw)
 
-    def add_forms_from_value(
-            self, 
-            split_value=None,
-            **kw
-            ):
+    def add_forms_from_value(self, split_value=None, **kw):
         """
         :return: list of dicts corresponding to newly created Lexemes
         """
         lexemes = []
 
         if 'Segments' in kw:
-            raise ValueError('segmented data must be passed with ' 
-                    'add_form_with_segments')
+            raise ValueError('segmented data must be passed with add_form_with_segments')
         if 'Form' in kw:
-            raise ValueError('forms must be passed with '
-                    'add_form')
+            raise ValueError('forms must be passed with add_form')
 
-        # modify split_forms
+        svkw = {}
         if split_value is None:
-            split_value = self.dataset.split_forms
-        
+            split_value = self.dataset.form_spec.split
+            svkw = dict(lexemes=self.dataset.lexemes)
+
         # Do we have morpheme segmentation on top of phonemes?
         with_morphemes = '+' in self['FormTable', 'Segments'].separator
 
-        for i, form in enumerate(split_value(kw, kw['Value'])):
+        for i, form in enumerate(split_value(kw, kw['Value'], **svkw)):
             kw_ = kw.copy()
             kw_['Form'] = form
             if kw_['Form']:
@@ -213,16 +189,11 @@ class Dataset(object):
             
         return lexemes
 
-    def add_lexemes(
-            self, 
-            split_value=None,
-            **kw
-            ):
+    def add_lexemes(self, split_value=None, **kw):
         """
         :return: list of dicts corresponding to newly created Lexemes
         """
-        lexemes = self.add_forms_from_value(split_value=split_value, **kw)
-        return lexemes
+        return self.add_forms_from_value(split_value=split_value, **kw)
 
     def _add_object(self, cls, **kw):
         # Instantiating an object will trigger potential validators:
@@ -329,21 +300,3 @@ class Dataset(object):
             cognates or self.objects['CognateTable'],
             column=column,
             method=method)
-
-    def write(self, **kw):
-        self.wl.properties.update(self.dataset.metadata.common_props)
-        self.wl.properties['rdf:ID'] = self.dataset.id
-        self.wl.properties['rdf:type'] = 'http://www.w3.org/ns/dcat#Distribution'
-        if self.dataset.github_repo:
-            self.wl.properties['dcat:accessURL'] = 'https://github.com/{0}'.format(
-                self.dataset.github_repo)
-        self.wl.tablegroup.notes.append(OrderedDict([
-            ('dc:title', 'environment'),
-            ('properties', OrderedDict([
-                ('glottolog_version', self.dataset.glottolog.version),
-                ('concepticon_version', self.dataset.concepticon.version),
-                ('pylexibank_version', __version__),
-                ('repository_version', git_describe(self.dataset.dir))
-            ]))
-        ]))
-        self.wl.write(**kw)

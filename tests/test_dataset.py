@@ -1,22 +1,22 @@
+import sys
 import json
+import argparse
+import importlib
 
 import pytest
-from clldutils.path import import_module
-import git
+from clldutils.path import sys_path
+from cldfbench.dataset import NOOP
+from pyclts import TranscriptionSystem
 
-from pylexibank.dataset import Lexeme, Unmapped, Dataset, NOOP, Metadata
+from pylexibank import Lexeme, Dataset
+from pylexibank.dataset import Unmapped
 
 
-def test_Metadata():
-    md = Metadata(license='CC-BY-1.0')
-    assert md.known_license
-    assert md.common_props
-
-    md = Metadata()
-    assert md.common_props
-
-    md = Metadata(license='CC-BY')
-    assert md.common_props['dc:license'] == 'CC-BY'
+def import_module(p):
+    with sys_path(p.parent):
+        if p.stem in sys.modules:
+            return importlib.reload(sys.modules[p.stem])
+        return importlib.import_module(p.stem)
 
 
 def test_Item():
@@ -50,30 +50,16 @@ def test_BaseDataset(mocker, repos):
         id = 'abc'
 
     ds = TestDataset(glottolog=mocker.Mock(), concepticon=mocker.Mock())
-    assert ds.cmd_download() == NOOP
-    assert ds.cmd_install() == NOOP
+    assert ds.cmd_download(mocker.Mock()) == NOOP
+    assert ds.cmd_makecldf(mocker.Mock()) == NOOP
     assert ds.sources
     assert ds.concepts
     assert ds.languages
-    assert len(ds.raw.read_bib('sources_ext.bib')) == 96
+    assert len(ds.raw_dir.read_bib('sources_ext.bib')) == 96
 
     assert not ds.stats
     ds.dir.write('README.json', json.dumps({'a': 1}))
     assert ds.stats['a'] == 1
-
-    def repo(url):
-        return mocker.Mock(remotes=mocker.Mock(origin=mocker.Mock(url=url)))
-
-    mocker.patch('pylexibank.dataset.git', mocker.Mock(Repo=lambda _: repo('github.com/org/repo')))
-    assert TestDataset().github_repo == 'org/repo'
-
-    mocker.patch('pylexibank.dataset.git', mocker.Mock(Repo=lambda _: repo('example.org/org/repo')))
-    assert TestDataset().github_repo is None
-
-    mocker.patch(
-        'pylexibank.dataset.git',
-        mocker.Mock(Repo=mocker.Mock(side_effect=ValueError())))
-    assert TestDataset().github_repo is None
 
 
 @pytest.mark.parametrize(
@@ -89,12 +75,6 @@ def test_tokenizer(repos, string, tokens):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        mod = import_module(repos / 'datasets' / 'test_dataset_cldf')
+        mod = import_module(repos / 'datasets' / 'test_dataset_cldf' / 'tdc')
         dataset = mod.Test()
         assert dataset.tokenizer(None, string) == tokens.split()
-
-
-def test_Dataset(dataset, capsys):
-    dataset.cmd_download()
-    dataset.cmd_install()
-    assert dataset.tokenizer

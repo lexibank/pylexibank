@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pylexibank',
-    version='1.1.2.dev0',
+    version='2.0.0.rc1',
     author='Robert Forkel',
     author_email='forkel@shh.mpg.de',
     description='Python library implementing the lexibank workbench',
@@ -17,22 +17,26 @@ setup(
     include_package_data=True,
     zip_safe=False,
     entry_points={
-        'console_scripts': [
-            'lexibank=pylexibank.__main__:main',
+        'cldfbench.commands': [
+            'lexibank=pylexibank.commands',
+        ],
+        'cldfbench.scaffold': [
+            'lexibank=pylexibank.scaffold:LexibankTemplate'
         ],
     },
     platforms='any',
     python_requires='>=3.5',
     install_requires=[
-        'csvw<=1.5.6',
-        'clldutils==2.8.0',
-        'pycldf==1.7.0',
+        'cldfbench[excel]>=0.4',
+        'csvw>=1.5.6',
+        'clldutils>=2.8.0',
+        'pycldf>=1.7.0',
         'attrs>=18.1.0',
         'pyglottolog>=2.0',
         'pyconcepticon>=2.1.0',
-        'pyclts>=1.2.0',
+        'pyclts>=2.0',
         'segments>=2.0.2',
-        'lingpy>=2.6.4',
+        'lingpy>=2.6.5',
         'appdirs',
         'requests',
         'termcolor',

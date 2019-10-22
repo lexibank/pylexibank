@@ -3,7 +3,7 @@ from copy import deepcopy
 import lingpy
 from clldutils.misc import slug
 
-from pylexibank.dataset import Cognate
+from pylexibank import Cognate
 
 
 def wordlist2cognates(wordlist, source, expert='expert', ref='cogid'):
