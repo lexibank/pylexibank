@@ -21,13 +21,13 @@ setup(
             'lexibank=pylexibank.commands',
         ],
         'cldfbench.scaffold': [
-            'lexibank=pylexibank.scaffold:LexibankTemplate'
+            'lexibank_simple=pylexibank.scaffold:LexibankTemplate'
         ],
     },
     platforms='any',
     python_requires='>=3.5',
     install_requires=[
-        'cldfbench[excel]>=0.4',
+        'cldfbench[excel]>=0.5',
         'csvw>=1.5.6',
         'clldutils>=2.8.0',
         'pycldf>=1.7.0',
