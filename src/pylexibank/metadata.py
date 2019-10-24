@@ -2,6 +2,8 @@ import attr
 
 from cldfbench.metadata import Metadata
 
+__all__ = ['LexibankMetadata']
+
 
 @attr.s
 class LexibankMetadata(Metadata):

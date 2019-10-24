@@ -1,3 +1,4 @@
+import pathlib
 import shlex
 
 from cldfbench.__main__ import main
@@ -30,3 +31,9 @@ def test_check_profile(dataset, repos):
 def test_init_profile(dataset, repos):
     _main('lexibank.init_profile {0} --clts {1} -f --context'.format(
         str(dataset.dir / 'td.py'), repos))
+
+
+def test_new(tmpdir, mocker):
+    mocker.patch('cldfbench.metadata.input', mocker.Mock(return_value='abc'))
+    _main('new --template lexibank_simple --out ' + str(tmpdir))
+    assert pathlib.Path(str(tmpdir)).joinpath('abc', 'CONTRIBUTORS.md').exists()

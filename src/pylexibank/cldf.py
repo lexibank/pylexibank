@@ -14,6 +14,7 @@ from cldfbench.cldf import CLDFWriter
 
 from pylexibank.transcription import Analysis, analyze
 
+__all__ = ['LexibankWriter']
 log = logging.getLogger('pylexibank')
 
 MD_NAME = 'cldf-metadata.json'

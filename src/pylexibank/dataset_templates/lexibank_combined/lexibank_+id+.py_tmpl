@@ -1,0 +1,71 @@
+from clldutils.path import Path
+import cldfbench
+import pylexibank
+
+# Customize your basic data.
+# if you need to store other data in columns than the lexibank defaults, then over-ride
+# the table type (pylexibank.[Language|Lexeme|Concept|Cognate|]) and add the required columns e.g.
+#
+#import attr
+#
+#@attr.s
+#class Concept(pylexibank.Concept):
+#    MyAttribute1 = attr.ib(default=None)
+
+
+class Dataset(pylexibank.Dataset):
+    dir = Path(__file__).parent
+    id = "{id}"
+
+    # register custom data types here (or language_class, lexeme_class, cognate_class):
+    #concept_class = Concept
+
+    # define the way in which forms should be handled
+    form_spec = pylexibank.FormSpec(
+        brackets={{"(": ")"}},  # characters that function as brackets
+        separators=";/,",  # characters that split forms e.g. "a, b".
+        missing_data=('?', '-'),  # characters that denote missing data.
+        strip_inside_brackets=True   # do you want data removed in brackets or not?
+    )
+
+    def cldf_specs(self):
+        return {{
+            None: pylexibank.Dataset.cldf_specs(self),
+            'structure': cldfbench.CLDFSpec(
+                dir=self.cldf_dir,
+                module='StructureDataset',
+                data_fnames={{'ParameterTable': 'features.csv'}},
+                writer_cls=cldfbench.CLDFWriter,
+            ),
+        }}
+
+    def cmd_download(self, args):
+        """
+        Download files to the raw/ directory. You can use helpers methods of `self.raw_dir`, e.g.
+        to download a temporary TSV file and convert to persistent CSV:
+
+        >>> with self.raw_dir.temp_download("http://www.example.com/e.tsv", "example.tsv") as data:
+        ...     self.raw_dir.write_csv('template.csv', self.raw_dir.read_csv(data, delimiter='\t'))
+        """
+
+    def cmd_makecldf(self, args):
+        """
+        Convert the raw data to a CLDF dataset.
+        """
+        with self.cldf_writer(args) as writer:
+            #writer.add_language(ID='abc')
+            #writer.add_concept(ID='c')
+            #writer.add_lexemes(Value='xy', Parameter_ID='c', Language_ID='abc')
+
+            # Note: We want to re-use LanguageTable across the two CLDF datasets:
+            LanguageTable = writer.cldf['LanguageTable']
+
+        with self.cldf_writer(args, cldf_spec='structure', clean=False) as writer:
+            writer.cldf.add_component(LanguageTable)  # we reuse the one from above!
+            #writer.objects['ParameterTable'].append({'ID': 'f1'})
+            #writer.objects['ValueTable'].append({
+            #    'ID': 1,
+            #    'Value': 'x',
+            #    'Language_ID': 'abc',
+            #    'Parameter_ID': 'f1',
+            #})
