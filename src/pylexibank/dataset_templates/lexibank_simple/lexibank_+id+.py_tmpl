@@ -36,7 +36,7 @@ class Dataset(pylexibank.Dataset):
         ...     self.raw_dir.write_csv('template.csv', self.raw_dir.read_csv(data, delimiter='\t'))
         """
 
-    def cmd_install(self, args):
+    def cmd_makecldf(self, args):
         """
         Convert the raw data to a CLDF dataset.
 

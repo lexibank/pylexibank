@@ -36,7 +36,6 @@ class Dataset(BaseDataset):
     - concepticon concept-list ID as attribute `conceptlist`
     """
     metadata_cls = metadata.LexibankMetadata
-    cldf_writer_cls = cldf.LexibankWriter
 
     lexeme_class = models.Lexeme
     cognate_class = models.Cognate
@@ -73,6 +72,7 @@ class Dataset(BaseDataset):
     def cldf_specs(self):
         return CLDFSpec(
             module='Wordlist',
+            writer_cls=cldf.LexibankWriter,
             dir=self.cldf_dir,
             metadata_fname=cldf.MD_NAME,
             default_metadata_path=pathlib.Path(__file__).parent / cldf.MD_NAME)

@@ -38,6 +38,9 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
     if not list(cldf_spec.dir.glob('*.csv')):
         return lines
 
+    if cldf_spec.module != 'Wordlist':
+        return lines
+
     cldf = cldf_spec.get_dataset()
 
     synonyms = collections.defaultdict(collections.Counter)
