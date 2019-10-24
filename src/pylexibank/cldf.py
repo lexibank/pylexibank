@@ -1,5 +1,5 @@
 import re
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from itertools import chain
 from pathlib import Path
 import logging
@@ -223,7 +223,7 @@ class LexibankWriter(CLDFWriter):
     def add_language(self, **kw):
         return self._add_object(self.dataset.language_class, **kw)
 
-    def add_languages(self, id_factory=lambda d: d['ID']):
+    def add_languages(self, id_factory='ID', lookup_factory=None):
         """
         Add languages as specified in a dataset's etc/languages.csv
 
@@ -231,14 +231,19 @@ class LexibankWriter(CLDFWriter):
         a value to be used as ID for the language.
         :return: The set of language IDs which have been added.
         """
-        ids = set()
-        for kw in self.dataset.languages:
+        assert callable(id_factory) or isinstance(id_factory, str)
+        ids = OrderedDict()
+        for i, kw in enumerate(self.dataset.languages):
             if (not kw.get('Glottocode')) and kw.get('ISO639P3code'):
                 kw['Glottocode'] = self.dataset.glottolog.glottocode_by_iso.get(kw['ISO639P3code'])
-            kw['ID'] = id_factory(kw)
-            ids.add(kw['ID'])
+            kw['ID'] = id_factory(kw) if callable(id_factory) else kw[id_factory]
+            if lookup_factory is None:
+                key = i
+            else:
+                key = lookup_factory(kw) if callable(lookup_factory) else kw[lookup_factory]
+            ids[key] = kw['ID']
             self.add_language(**kw)
-        return ids
+        return ids if lookup_factory else list(ids.values())
 
     def add_concept(self, **kw):
         if kw.get('Concepticon_ID'):
@@ -247,7 +252,7 @@ class LexibankWriter(CLDFWriter):
                 self.dataset.concepticon.cached_glosses[int(kw['Concepticon_ID'])])
         return self._add_object(self.dataset.concept_class, **kw)
 
-    def add_concepts(self, id_factory=lambda d: d.number):
+    def add_concepts(self, id_factory=lambda d: d.number, lookup_factory=None):
         """
         Add concepts as specified in a dataset's associated Concepticon concept list or in
         etc/concepts.csv
@@ -256,7 +261,8 @@ class LexibankWriter(CLDFWriter):
         returning a value to be used as ID for the concept.
         :return: The set of concept IDs which have been added.
         """
-        ids, concepts = set(), []
+        assert callable(id_factory) or isinstance(id_factory, str)
+        ids, concepts = OrderedDict(), []
         if self.dataset.conceptlist:
             concepts = self.dataset.conceptlist.concepts.values()
         else:
@@ -276,18 +282,22 @@ class LexibankWriter(CLDFWriter):
                 concepts.append(Concept(attributes=attrs, **kw))
 
         fieldnames = {f.lower(): f for f in self.dataset.concept_class.fieldnames()}
-        for c in concepts:
+        for i, c in enumerate(concepts):
             attrs = dict(
-                ID=id_factory(c),
+                ID=id_factory(c) if callable(id_factory) else getattr(c, id_factory),
                 Name=c.label,
                 Concepticon_ID=c.concepticon_id,
                 Concepticon_Gloss=c.concepticon_gloss)
             for fl, f in fieldnames.items():
                 if fl in c.attributes:
                     attrs[f] = c.attributes[fl]
-            ids.add(attrs['ID'])
+            if lookup_factory is None:
+                key = i
+            else:
+                key = lookup_factory(attrs) if callable(lookup_factory) else attrs[lookup_factory]
+            ids[key] = attrs['ID']
             self.add_concept(**attrs)
-        return ids
+        return ids if lookup_factory else list(ids.values())
 
     def align_cognates(self,
                        alm=None,
