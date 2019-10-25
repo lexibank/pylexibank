@@ -271,6 +271,9 @@ class LexibankWriter(CLDFWriter):
         passed, otherwise an `OrderedDict`, mapping lookup to ID.
         """
         assert callable(id_factory) or isinstance(id_factory, str)
+
+        # Read pyconcepticon.Concept instances either from a conceptlist in Concepticon, or from
+        # etc/concepts.csv:
         ids, concepts = OrderedDict(), []
         if self.dataset.conceptlist:
             concepts = self.dataset.conceptlist.concepts.values()
@@ -290,9 +293,11 @@ class LexibankWriter(CLDFWriter):
                     kw['number'] = str(i)
                 concepts.append(Concept(attributes=attrs, **kw))
 
+        # Now turn the concepts into `dict`s suitable to instantiate `self.dataset.concept_class`:
         fieldnames = {f.lower(): f for f in self.dataset.concept_class.fieldnames()}
         for i, c in enumerate(concepts):
             try:
+                # `id_factory` might expect a pyconcepticon.Concept instance as input:
                 id_ = id_factory(c) if callable(id_factory) else getattr(c, id_factory)
             except AttributeError:
                 id_ = None
