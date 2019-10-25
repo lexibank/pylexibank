@@ -28,7 +28,7 @@ setup(
     platforms='any',
     python_requires='>=3.5',
     install_requires=[
-        'cldfbench[excel]>=0.6',
+        'cldfbench[excel]>=1.0',
         'csvw>=1.5.6',
         'clldutils>=2.8.0',
         'pycldf>=1.7.0',

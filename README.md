@@ -15,23 +15,18 @@ many other python packages along with it. To avoid any side effects for your def
 python installation, we recommend installation in a
 [virtual environment](https://virtualenv.pypa.io/en/stable/).
 
-Some code of `pylexibank` relies on [LingPy](http://lingpy.org/) functionality which is not yet released, thus,
-LingPy should be installed from the source repository, running
-```
-$ git clone https://github.com/lingpy/lingpy/
-$ cd lingpy
-$ python setup.py install
-```
-
 Now you may install `pylexibank` via pip or in development mode following the instructions
 in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Some functionality in `pylexibank` (in particular the `makecldf` sub-command), require access
-to [Glottolog](http://glottolog.org) or [Concepticon](http://concepticon.clld.org) data.
-Since the data of both these applications is curated in git repositories as well, the easiest
-way to achieve this is by cloning [glottolog/glottolog](https://github.com/glottolog/glottolog) and
-[concepticon/concepticon-data](https://github.com/concepticon/concepticon-data). But you could also download
-(and unpack) a released version of these repositories.
+Installing `pylexibank` will also install [`cldfbench`](https://github.com/cldf/cldfbench), which in turn installs a cli command `cldfbench`. This command is used
+to run `pylexibank` functionality from the command line as subcommands.
+
+`cldfbench` is also used to [manage reference catalogs](https://github.com/cldf/cldfbench/#catalogs), in particular Glottolog,
+Concepticon and CLTS. Thus, after installing `pylexibank` you should run
+```shell script
+cldfbench catconfig
+```
+to make sure the catalog data is locally available and `pylexibank` knows about it.
 
 
 ## Usage
@@ -43,9 +38,25 @@ way to achieve this is by cloning [glottolog/glottolog](https://github.com/glott
   python code to access lexibank data in a programmatic (and consistent) way.
 
 
+### The `cmd_makecldf` method
+
+The main goal of `pylexibank` is creating high-quality CLDF Wordlists. This
+happens in the custom `cmd_makecldf` method of a Lexibank dataset. To make this task
+easier, `pylexibank` provides
+- access to Glottolog and Concepticon data:
+  - `args.glottolog.api` points to an instance of [`CachingGlottologAPI`](https://github.com/cldf/cldfbench/blob/f373855e3b9cde029578e77c26136f0df26a82fa/src/cldfbench/catalogs.py#L10-L40) (a subclass of `pyglottolog.Glottolog`)
+  - `args.concepticon.api` points to an instance of [`CachingConcepticonAPI`](https://github.com/cldf/cldfbench/blob/f373855e3b9cde029578e77c26136f0df26a82fa/src/cldfbench/catalogs.py#L48-L51) (a subclass of `pyconcepticon.Concepticon`)
+- fine-grained control over form manipulation via a `Dataset.form_spec`, an instance
+  of [`pylexibank.FormSpec`](src/pylexibank/forms.py) which can be customized per
+  dataset
+- support for additional information on lexemes, cognates, concepts and languages via
+  subclassing the defaults in [`pylexibank.models`](src/pylexibank/models.py)
+- easy access to configuration data in a dataset's `etc_dir`
+
+
 ## Programmatic access to Lexibank datasets
 
-While some level of support for reading and writing any [CLDF](https://cldf.clld.org) dataset is already provided by the [`pycldf` package](https://pypi.org/projects/pycldf), `pylexibank` adds another layer of abstraction which supports 
+While some level of support for reading and writing any [CLDF](https://cldf.clld.org) dataset is already provided by the [`pycldf` package](https://pypi.org/projects/pycldf), `pylexibank` (building on `cldfbench`) adds another layer of abstraction which supports 
 - treating Lexibank datasets as Python packages (and managing them via `pip`),
 - a multi-step curation workflow
 - aggregating collections of Lexibank datasets into a single SQLite database for efficient analysis.
@@ -116,4 +127,3 @@ There are multiple levels of contributions to a Lexibank dataset:
 - Typically, Lexibank datasets are derived from published data (be it supplemental material of a paper or public databases). Attribution to this source dataset is given by specifying its full citation in the dataset's metadata and by adding the source title to the release title of a lexibank dataset.
 - Often the source dataset is also an aggregation of data from other sources. If possible, these sources (and the corresponding references) are kept in the Lexibank dataset's CLDF; otherwise we refer to the source dataset for a description of its sources.
 - Deriving a Lexibank dataset from a source dataset using the `pylexibank` curation workflow involves adding code, mapping to reference catalogs and to some extent also linguistic judgements. These contributions are listed in a dataset's `CONTRIBUTORS.md` and translate to the list of authors of released versions of the lexibank dataset.
-
