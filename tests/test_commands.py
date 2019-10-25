@@ -10,11 +10,16 @@ def _main(cmd, **kw):
     main(['--no-config'] + shlex.split(cmd), **kw)
 
 
-def test_makecldf(repos, dataset):
+def test_makecldf(repos, dataset, dataset_cldf):
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset.dir / 'td.py'),
         str(repos),
     ))
+    with pytest.raises(ValueError):
+        _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
+            str(dataset_cldf.dir / 'tdc.py'),
+            str(repos),
+        ))
 
 
 def test_ls(repos, tmpdir, dataset):

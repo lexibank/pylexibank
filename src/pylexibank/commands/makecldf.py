@@ -17,3 +17,6 @@ def run(args):
     dataset.concepticon = args.concepticon.api
     dataset.glottolog = args.glottolog.api
     with_dataset(args, 'makecldf', dataset=dataset)
+    if not dataset.cldf_dir.joinpath('sources.bib').exists():
+        raise ValueError(
+            'The dataset has no sources at {0}'.format(dataset.cldf_dir.joinpath('sources.bib')))
