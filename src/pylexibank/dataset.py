@@ -205,6 +205,8 @@ class Dataset(BaseDataset):
             by_language={k: attr.asdict(v) for k, v in self.tr_analyses.items()},
             stats=attr.asdict(stats))
 
+        jsondump(tr, self.cldf_dir / '.transcription-report.json', log=args.log)
+
         # ... and write a report:
         args.tr_analysis = tr
         self._cmd_readme(args)
@@ -213,8 +215,9 @@ class Dataset(BaseDataset):
 
     def cmd_readme(self, args):
         res = self.metadata.markdown()
-        res += report.report(
-            self, getattr(args,'tr_analysis', None), getattr(args, 'glottolog', None), args.log)
+        tr = self.cldf_dir / '.transcription-report.json'
+        tr = jsonlib.load(tr) if tr.exists() else None
+        res += report.report(self, tr, getattr(args, 'glottolog', None), args.log)
         return res
 
 

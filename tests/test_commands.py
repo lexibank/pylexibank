@@ -33,6 +33,10 @@ def test_init_profile(dataset, repos):
         str(dataset.dir / 'td.py'), repos))
 
 
+def test_readme(dataset, repos):
+    _main('lexibank.readme {0} --glottolog {1}'.format(str(dataset.dir / 'td.py'), repos))
+
+
 def test_new(tmpdir, mocker):
     mocker.patch('cldfbench.metadata.input', mocker.Mock(return_value='abc'))
     _main('new --template lexibank_simple --out ' + str(tmpdir))

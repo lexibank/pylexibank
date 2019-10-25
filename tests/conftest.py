@@ -9,7 +9,7 @@ import pytest
 
 from clldutils.path import copytree, copy, sys_path
 from pycldf import Dataset
-from cldfbench.catalogs import CachingConcepticonAPI, CachingGlottologAPI
+from cldfbench.catalogs import CachingConcepticonAPI, CachingGlottologAPI, CLTSAPI
 from cldfcatalog.repository import get_test_repo
 
 import pylexibank
@@ -61,6 +61,11 @@ def concepticon(repos):
 
 
 @pytest.fixture
+def clts(repos):
+    return CLTSAPI(repos)
+
+
+@pytest.fixture
 def dataset_cldf(repos, glottolog, concepticon):
     with sys_path(repos / 'datasets' / 'test_dataset_cldf'):
         if 'tdc' in sys.modules:
@@ -71,12 +76,12 @@ def dataset_cldf(repos, glottolog, concepticon):
 
 
 @pytest.fixture
-def dataset(repos, glottolog, concepticon, mocker):
+def dataset(repos, glottolog, concepticon, clts, mocker):
     with sys_path(repos / 'datasets' / 'test_dataset'):
         if 'td' in sys.modules:
             mod = importlib.reload(sys.modules['td'])
         else:
             mod = importlib.import_module('td')
     ds = mod.Test(glottolog=glottolog, concepticon=concepticon)
-    ds._cmd_makecldf(Namespace(log=mocker.Mock(), clts=mocker.MagicMock(), verbose=True))
+    ds._cmd_makecldf(Namespace(log=mocker.Mock(), clts=mocker.Mock(api=clts), verbose=True))
     return ds
