@@ -1,11 +1,20 @@
 import pathlib
 import shlex
 
+import pytest
+
 from cldfbench.__main__ import main
 
 
 def _main(cmd, **kw):
     main(['--no-config'] + shlex.split(cmd), **kw)
+
+
+def test_makecldf(repos, dataset):
+    _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
+        str(dataset.dir / 'td.py'),
+        str(repos),
+    ))
 
 
 def test_ls(repos, tmpdir, dataset):
@@ -18,6 +27,15 @@ def test_ls(repos, tmpdir, dataset):
     _main('lexibank.ls {0} --all --db {1}'.format(
         str(dataset.dir / 'td.py'),
         str(tmpdir.join('db'))))
+    _main('lexibank.unload --db {1} {0}'.format(
+        str(dataset.dir / 'td.py'),
+        str(tmpdir.join('db')),
+    ))
+
+
+def test_db(tmpdir, mocker):
+    mocker.patch('pylexibank.commands.db.subprocess', mocker.Mock(return_value=0))
+    _main('lexibank.db --db {0}'.format(str(tmpdir.join('db'))))
 
 
 def test_check_phonotactics(dataset):
@@ -31,6 +49,8 @@ def test_check_profile(dataset, repos):
 def test_init_profile(dataset, repos):
     _main('lexibank.init_profile {0} --clts {1} -f --context'.format(
         str(dataset.dir / 'td.py'), repos))
+    with pytest.raises(SystemExit):
+        _main('lexibank.init_profile {0} --clts {1}'.format(str(dataset.dir / 'td.py'), repos))
 
 
 def test_readme(dataset, repos):

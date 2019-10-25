@@ -26,12 +26,12 @@ class Test(Dataset):
 
     def cmd_makecldf(self, args):
         from pylexibank.lingpy_util import iter_cognates
-        self.raw_dir.read_bib()
+        args.writer.add_sources()
         args.writer.add_sources('@book{abc,\ntitle={The Title}\n}')
         args.writer.add_languages()
         args.writer.add_language(ID='lang1', Glottocode='abcd1234')
         args.writer.add_language(ID='lang2')
-        args.writer.add_concepts()
+        args.writer.add_concepts(lookup_factory='Chinese', id_factory='Concepticon_ID')
         args.writer.add_concept(ID='param1', Concepticon_ID=1)
         args.writer.add_concept(ID='param2')
         for l in args.writer.add_lexemes(

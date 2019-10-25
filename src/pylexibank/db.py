@@ -320,7 +320,7 @@ CREATE TABLE SourceTable (
                 "PRAGMA table_info({0})".format(t))}
         return res
 
-    def unload(self, dataset_id):
+    def unload(self, dataset_id, args=None):
         dataset_id = getattr(dataset_id, 'id', dataset_id)
         with self.connection() as db:
             for table in self.tables:
@@ -339,7 +339,7 @@ CREATE TABLE SourceTable (
             conn.execute(table.sql)
         return True
 
-    def load(self, ds, verbose=False):
+    def load(self, ds, args=None, verbose=False):
         """
         Load a CLDF dataset into the database.
 

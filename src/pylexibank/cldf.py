@@ -54,7 +54,7 @@ class LexibankWriter(CLDFWriter):
                     # make sure, existing datasets are upgraded silently.
                     #
                     if field in ['Latitude', 'Longitude'] \
-                            and cls.__cldf_table__() == 'LanguageTable':
+                            and cls.__cldf_table__() == 'LanguageTable':  # pragma: no cover
                         properties.add(col.propertyUrl.uri)
                         self.cldf[cls.__cldf_table__(), field].propertyUrl = col.propertyUrl
                         self.cldf[cls.__cldf_table__(), field].datatype = col.datatype
@@ -146,7 +146,7 @@ class LexibankWriter(CLDFWriter):
 
         # check for kws not allowed
         if 'Segments' in kw:
-            raise ValueError('segmented data must be passed with add_segments')
+            raise ValueError('segmented data must be passed with add_form_with_segments')
 
         # point to difference in value and form
         if form != value:
@@ -228,8 +228,13 @@ class LexibankWriter(CLDFWriter):
         Add languages as specified in a dataset's etc/languages.csv
 
         :param id_factory: A callable taking a dict describing a language as argument and returning\
-        a value to be used as ID for the language.
-        :return: The set of language IDs which have been added.
+        a value to be used as ID for the language or a `str` specifying a key in the language \
+        `dict`.
+        :param lookup_factory: A callable taking a language `dict` and returning a reverse \
+        lookup key to associate the generated ID with (or a `str` specifying a key in the language \
+        `dict`).
+        :return: The `list` of language IDs which have been added, if no `lookup_factory` was \
+        passed, otherwise an `OrderedDict`, mapping lookup to ID.
         """
         assert callable(id_factory) or isinstance(id_factory, str)
         ids = OrderedDict()
@@ -259,7 +264,11 @@ class LexibankWriter(CLDFWriter):
 
         :param id_factory: A callable taking a pyconcepticon.api.Concept object as argument and \
         returning a value to be used as ID for the concept.
-        :return: The set of concept IDs which have been added.
+        :param lookup_factory: A callable taking a `dict` object and returning a reverse \
+        lookup key to associate the generated ID with (or a `str` specifying an attribute in \
+        `Concept`).
+        :return: The `list` of concept IDs which have been added, if no `lookup_factory` was \
+        passed, otherwise an `OrderedDict`, mapping lookup to ID.
         """
         assert callable(id_factory) or isinstance(id_factory, str)
         ids, concepts = OrderedDict(), []
@@ -283,14 +292,21 @@ class LexibankWriter(CLDFWriter):
 
         fieldnames = {f.lower(): f for f in self.dataset.concept_class.fieldnames()}
         for i, c in enumerate(concepts):
+            try:
+                id_ = id_factory(c) if callable(id_factory) else getattr(c, id_factory)
+            except AttributeError:
+                id_ = None
             attrs = dict(
-                ID=id_factory(c) if callable(id_factory) else getattr(c, id_factory),
+                ID=id_,
                 Name=c.label,
                 Concepticon_ID=c.concepticon_id,
                 Concepticon_Gloss=c.concepticon_gloss)
             for fl, f in fieldnames.items():
                 if fl in c.attributes:
                     attrs[f] = c.attributes[fl]
+            print(attrs)
+            if attrs['ID'] is None:
+                attrs['ID'] = id_factory(attrs) if callable(id_factory) else attrs[id_factory]
             if lookup_factory is None:
                 key = i
             else:

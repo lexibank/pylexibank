@@ -6,7 +6,7 @@ from lingpy import Wordlist
 from lingpy.sequence import profile
 from cldfbench.cli_util import get_dataset, add_catalog_spec
 from csvw.dsv import UnicodeWriter
-from pyclts import TranscriptionSystem
+from clldutils.clilib import ParserError
 
 from pylexibank.cli_util import add_dataset_spec
 
@@ -39,8 +39,7 @@ def run(args):
     ds = get_dataset(args)
     profile_path = ds.etc_dir / 'orthography.tsv'
     if profile_path.exists() and not args.force:
-        args.log.warning('Orthography profile exists already. To overwrite, pass "-f" flag')
-        return
+        raise ParserError('Orthography profile exists already. To overwrite, pass "-f" flag')
 
     header, D = [], {}
     for i, row in enumerate(ds.cldf_reader()['FormTable'], start=1):

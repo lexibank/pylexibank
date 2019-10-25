@@ -2,8 +2,16 @@ import attr
 from lingpy import Wordlist
 import pyclts
 
+import pytest
+
 from pylexibank import lingpy_util
 from pylexibank import models as pbds
+
+
+def test_iter_cognates(dataset_cldf):
+    with pytest.raises(ValueError):
+        list(lingpy_util.iter_cognates(
+            dataset_cldf.cldf_specs().get_writer(dataset=dataset_cldf), method='sca'))
 
 
 def test_wordlist2cognates(repos, mocker, dataset):
