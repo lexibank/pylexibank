@@ -304,7 +304,6 @@ class LexibankWriter(CLDFWriter):
             for fl, f in fieldnames.items():
                 if fl in c.attributes:
                     attrs[f] = c.attributes[fl]
-            print(attrs)
             if attrs['ID'] is None:
                 attrs['ID'] = id_factory(attrs) if callable(id_factory) else attrs[id_factory]
             if lookup_factory is None:
