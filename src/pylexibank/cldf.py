@@ -93,7 +93,7 @@ class LexibankWriter(CLDFWriter):
     def tokenize(self, item, string):
         if self.dataset.tokenizer:
             return self.dataset.tokenizer(item, string)
-    
+
     def add_form_with_segments(self, **kw):
         """
         :return: dict with the newly created lexeme
@@ -187,7 +187,7 @@ class LexibankWriter(CLDFWriter):
                 kw_ = self.add_form(with_morphemes=with_morphemes, **kw_)
                 if kw_:
                     lexemes.append(kw_)
-            
+
         return lexemes
 
     def add_lexemes(self, split_value=None, **kw):

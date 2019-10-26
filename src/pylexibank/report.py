@@ -141,12 +141,13 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
             '- **Tokens:** {0:,}'.format(sum(stats['segments'].values())),
             '- **Segments:** {0:,} ({1} BIPA errors, {2} CTLS sound class errors, '
             '{3} CLTS modified)'
-                .format(lsegments, lbipapyerr, lsclasserr, len(stats['replacements'])),
+            .format(lsegments, lbipapyerr, lsclasserr, len(stats['replacements'])),
             '- **Inventory size (avg):** {:0.2f}'.format(stats['inventory_size']),
         ])
 
     if log:
-        log.info('\n'.join(['Summary for dataset {}'.format(cldf_spec.metadata_path)] + stats_lines))
+        log.info(
+            '\n'.join(['Summary for dataset {}'.format(cldf_spec.metadata_path)] + stats_lines))
     lines.extend(stats_lines)
 
     totals['languages'] = len(totals['lids'])
