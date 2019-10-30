@@ -215,6 +215,8 @@ class LexibankWriter(CLDFWriter):
 
     def add_cognate(self, lexeme=None, **kw):
         if lexeme:
+            if not isinstance(lexeme, self.dataset.lexeme_class):
+                raise TypeError("add_cognate expects a lexeme instance")
             kw.setdefault('Form_ID', lexeme['ID'])
             kw.setdefault('Form', lexeme['Form'])
         kw.setdefault('ID', self.cognate_id(kw))
