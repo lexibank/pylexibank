@@ -237,7 +237,7 @@ class LexibankWriter(CLDFWriter):
         :return: The (possibly augmented) instance data as `dict`.
         """
         if lexeme:
-            if not isinstance(lexeme, Mapping):
+            if not isinstance(lexeme, Mapping):  # pragma: no cover
                 raise TypeError('lexeme must be a mapping (`dict`) of lexeme attributes')
             kw.setdefault('Form_ID', lexeme['ID'])
             kw.setdefault('Form', lexeme['Form'])
@@ -246,6 +246,23 @@ class LexibankWriter(CLDFWriter):
         return self._add_object(self.dataset.cognate_class, **kw)
 
     def add_language(self, **kw):
+        if 'Glottocode' in kw \
+                and hasattr(self.args, 'glottolog') \
+                and kw['Glottocode'] in self.args.glottolog.api.cached_languoids:
+            glang = self.args.glottolog.api.cached_languoids[kw['Glottocode']]
+            for key, attribute in [
+                ('Latitude', 'latitude'),
+                ('Longitude', 'longitude'),
+                ('Glottolog_Name', 'name'),
+                ('ISO639P3code', 'iso')
+            ]:
+                if kw.get(key) is None:
+                    kw[key] = getattr(glang, attribute)
+            if kw.get('Family') is None:
+                kw['Family'] = glang.lineage[0][0] if glang.lineage else glang.name
+            if kw.get('Macroarea') is None:
+                kw['Macroarea'] = glang.macroareas[0].name if glang.macroareas else None
+
         return self._add_object(self.dataset.language_class, **kw)
 
     def add_languages(self, id_factory='ID', lookup_factory=None):

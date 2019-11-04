@@ -21,6 +21,8 @@ class Language(FieldnamesMixin):
     ISO639P3code = attr.ib(default=None)
     Glottocode = attr.ib(default=None)
     Macroarea = attr.ib(default=None)
+    Latitude = attr.ib(default=None)
+    Longitude = attr.ib(default=None)
 
     Glottolog_Name = attr.ib(default=None)
     Family = attr.ib(default=None)
