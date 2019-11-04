@@ -2,6 +2,7 @@ import re
 from collections import defaultdict, OrderedDict, Mapping
 from itertools import chain
 from pathlib import Path
+import pkg_resources
 import logging
 
 import attr
@@ -11,6 +12,7 @@ import pyclts.models
 from pyconcepticon.api import Concept
 
 from cldfbench.cldf import CLDFWriter
+from cldfbench.util import iter_requirements
 
 from pylexibank.transcription import Analysis, analyze
 
@@ -26,6 +28,19 @@ class LexibankWriter(CLDFWriter):
         super().__init__(**kw)
         self._count = defaultdict(int)
         self._cognate_count = defaultdict(int)
+
+    def write(self, **kw):
+        from pylexibank import ENTRY_POINT
+
+        super().write(**kw)
+        # We rewrite requirements.txt, excluding all lexibank dataset modules:
+        exclude = {'egg=' + ep.module_name for ep in pkg_resources.iter_entry_points(ENTRY_POINT)}
+        reqs = []
+        for req in iter_requirements():
+            if not any(mod in req for mod in exclude):
+                reqs.append(req)
+
+        self.cldf_spec.dir.joinpath('requirements.txt').write_text('\n'.join(reqs), encoding='utf8')
 
     def __enter__(self):
         super().__enter__()
