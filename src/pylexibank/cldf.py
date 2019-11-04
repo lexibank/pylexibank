@@ -1,5 +1,5 @@
 import re
-from collections import defaultdict, OrderedDict
+from collections import defaultdict, OrderedDict, Mapping
 from itertools import chain
 from pathlib import Path
 import logging
@@ -214,9 +214,19 @@ class LexibankWriter(CLDFWriter):
         return d
 
     def add_cognate(self, lexeme=None, **kw):
+        """
+        Add a row to `CognateTable`.
+
+        :param lexeme: An optional `FormTable` row (i.e. `dict`) to lookup lexeme data.
+        :param kw: Attribute data to intialise a `self.dataset.cognate class` instance.
+        :return: The (possibly augmented) instance data as `dict`.
+        """
         if lexeme:
+            if not isinstance(lexeme, Mapping):
+                raise TypeError('lexeme must be a mapping (`dict`) of lexeme attributes')
             kw.setdefault('Form_ID', lexeme['ID'])
             kw.setdefault('Form', lexeme['Form'])
+
         kw.setdefault('ID', self.cognate_id(kw))
         return self._add_object(self.dataset.cognate_class, **kw)
 
