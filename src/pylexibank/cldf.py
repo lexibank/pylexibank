@@ -285,8 +285,9 @@ class LexibankWriter(CLDFWriter):
         # Read pyconcepticon.Concept instances either from a conceptlist in Concepticon, or from
         # etc/concepts.csv:
         ids, concepts = OrderedDict(), []
-        if self.dataset.conceptlist:
-            concepts = self.dataset.conceptlist.concepts.values()
+        if self.dataset.conceptlists:
+            for cl in self.dataset.conceptlists:
+                concepts.extend(cl.concepts.values())
         else:
             fields = Concept.public_fields()
             for i, concept in enumerate(self.dataset.concepts, start=1):

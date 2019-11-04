@@ -62,7 +62,7 @@ class Dataset(BaseDataset):
         self.unmapped = Unmapped()
         self._json = self.dir.joinpath('lexibank.json')
 
-        self.conceptlist = {}
+        self.conceptlists = []
         self.glottolog = glottolog
         self.concepticon = concepticon
         self.tr_analyses = {}
@@ -163,7 +163,8 @@ class Dataset(BaseDataset):
         self.tr_invalid_words = []
 
         if len(self.metadata.conceptlist):
-            self.conceptlist = self.concepticon.conceptlists[self.metadata.conceptlist[0]]
+            self.conceptlists = [
+                self.concepticon.conceptlists[key] for key in self.metadata.conceptlist]
 
         super()._cmd_makecldf(args)
 
