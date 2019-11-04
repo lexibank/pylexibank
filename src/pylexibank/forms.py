@@ -29,15 +29,13 @@ def attrib(help, **kw):
 @attr.s
 class FormSpec(object):
     """
-    Specification of the value-to-form processing in Lexibank datasets.
+    Specification of the value-to-form processing in Lexibank datasets:
 
     The value-to-form processing is divided into two steps, implemented as methods:
-    - `split`: Splits a string into individual form chunks.
-    - `clean`: Normalizes a form chunk.
+    - `FormSpec.split`: Splits a string into individual form chunks.
+    - `FormSpec.clean`: Normalizes a form chunk.
 
     These methods use the attributes of a `FormSpec` instance to configure their behaviour.
-    Thus, rather than overwriting these methods in a drived class, datasets should use
-    suitably initialized `FormSpec` instances to transparently massage data.
     """
     brackets = attrib(
         "Pairs of strings that should be recognized as brackets, specified as `dict` "
@@ -87,6 +85,7 @@ class FormSpec(object):
         :return: Description of `FormSpec` in markdown.
         """
         res = ['## Specification of form manipulation\n']
+        res.extend([line.strip() for line in self.__class__.__doc__.splitlines()])
         for field in attr.fields(self.__class__):
             res.extend([
                 '- `{0}`: `{1}`'.format(field.name, getattr(self, field.name)),
