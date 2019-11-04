@@ -8,6 +8,17 @@ __all__ = ['FormSpec', 'FirstFormOnlySpec']
 log = logging.getLogger('pylexibank')
 
 
+def valid_replacements(instance, attribute, value):
+    if not isinstance(value, list):
+        raise ValueError('replacements must be list of pairs')
+    for v in value:
+        if not (isinstance(v, tuple)
+                and len(v) == 2
+                and isinstance(v[0], str)
+                and isinstance(v[1], str)):
+            raise ValueError('replacements must be list of pairs')
+
+
 @attr.s
 class FormSpec(object):
     brackets = attr.ib(
@@ -20,6 +31,9 @@ class FormSpec(object):
     strip_inside_brackets = attr.ib(
         default=True,
         validator=attr.validators.instance_of(bool))
+    replacements = attr.ib(
+        default=attr.Factory(list),
+        validator=valid_replacements)
 
     def clean(self, form, item=None):
         """
@@ -29,6 +43,8 @@ class FormSpec(object):
         :return: None to skip the form, or the cleaned form as string.
         """
         if form not in self.missing_data:
+            for source, target in self.replacements:
+                form = form.replace(source, target)
             if self.strip_inside_brackets:
                 return text.strip_brackets(form, brackets=self.brackets)
             return form
