@@ -139,19 +139,37 @@ class Dataset(BaseDataset):
         - `kw` may be used to pass any context info to the tokenizer, when called
           explicitly.
         """
-        profile = self.dir / 'etc' / 'orthography.tsv'
-        if profile.exists():
-            profile = Profile.from_file(str(profile), form='NFC')
-            default_spec = list(next(iter(profile.graphemes.values())).keys())
+        def get_tokenizer(profile_):
+            profile_ = Profile.from_file(str(profile_), form='NFC')
+            default_spec = list(next(iter(profile_.graphemes.values())).keys())
             for grapheme in ['^', '$']:
-                if grapheme not in profile.graphemes:
-                    profile.graphemes[grapheme] = {k: None for k in default_spec}
-            profile.tree = Tree(list(profile.graphemes.keys()))
-            tokenizer = Tokenizer(profile=profile, errors_replace=lambda c: '<{0}>'.format(c))
+                if grapheme not in profile_.graphemes:
+                    profile_.graphemes[grapheme] = {k: None for k in default_spec}
+            profile_.tree = Tree(list(profile_.graphemes.keys()))
+            return Tokenizer(profile=profile_, errors_replace=lambda c: '<{0}>'.format(c))
 
+        tokenizers = {}
+        profile = self.etc_dir / 'orthography.tsv'
+        profile_dir = self.etc_dir / 'orthography'
+        if profile.exists():
+            tokenizers[None] = get_tokenizer(profile)
+        if profile_dir.exists() and profile_dir.is_dir():
+            for profile in profile_dir.glob('*.tsv'):
+                tokenizers[profile.stem] = get_tokenizer(profile)
+
+        if tokenizers:
             def _tokenizer(item, string, **kw):
                 kw.setdefault("column", "IPA")
                 kw.setdefault("separator", " + ")
+                profile = kw.pop('profile', None)
+                if profile:
+                    tokenizer = tokenizers[profile]
+                elif isinstance(item, dict) \
+                        and 'Language_ID' in item \
+                        and item['Language_ID'] in tokenizers:
+                    tokenizer = tokenizers[item['Language_ID']]
+                else:
+                    tokenizer = tokenizers[None]
                 return tokenizer(unicodedata.normalize('NFC', '^' + string + '$'), **kw).split()
             return _tokenizer
 
