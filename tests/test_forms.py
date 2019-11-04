@@ -11,6 +11,10 @@ def test_split():
     spec.strip_inside_brackets = False
     assert spec.split({}, 'x(a)') == ['x(a)']
 
+    spec = FormSpec(separators='|')
+    assert spec.split(None, 'x|y') == ['x', 'y']
+    assert spec.split(None, 'x;y') == ['x;y']
+
     spec = FirstFormOnlySpec()
     assert spec.split({}, 'x', lexemes={'x': 'x;y'}) == ['x']
 

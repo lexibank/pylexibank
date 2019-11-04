@@ -21,6 +21,15 @@ def valid_replacements(instance, attribute, value):
             raise ValueError('replacements must be list of pairs')
 
 
+def valid_separators(instance, attribute, value):
+    if not isinstance(value, str):
+        if not isinstance(value, (list, tuple)):
+            raise ValueError('separators must be an iterable of single character strings')
+        for v in value:
+            if (not isinstance(v, str)) or len(v) > 1:
+                raise ValueError('separators must be an iterable of single character strings')
+
+
 def attrib(help, **kw):
     kw['metadata'] = dict(help=help)
     return attr.ib(**kw)
@@ -45,7 +54,8 @@ class FormSpec(object):
     )
     separators = attrib(
         "Iterable of single character tokens that should be recognized as word separator",
-        default=";/,",
+        default=(";", "/", ","),
+        validator=valid_separators,
     )
     missing_data = attrib(
         "Iterable of strings that are used to mark missing data",
