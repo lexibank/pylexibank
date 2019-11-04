@@ -58,7 +58,7 @@ def analyze(clts, segments, analysis, lookup=dict(bipa={}, dolgo={})):
             if sc is None:
                 sc = lookup['dolgo'].setdefault(s, clts.bipa.translate(s, clts.soundclass('dolgo')))
             sc_analysis.append(sc)
-    except:  # noqa
+    except:  # noqa; pragma: no cover
         print(segments)
         raise
 
@@ -124,7 +124,7 @@ def report(analysis):
 
     invalid = Table('ID', 'LANGUAGE', 'CONCEPT', 'FORM')
     for row in analysis['stats']['invalid_words']:
-        invalid.append(row)
+        invalid.append(row)  # pragma: no cover
 
     words = Table('ID', 'LANGUAGE', 'CONCEPT', 'FORM', 'SEGMENTS')
     for row in analysis['stats']['bad_words']:

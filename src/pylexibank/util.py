@@ -106,5 +106,5 @@ def getEvoBibAsBibtex(*keys, **kw):
         try:
             res.append('@' + bib.split('@')[1].split('</pre>')[0])
         except IndexError:  # pragma: no cover
-            res.append('@misc{' + key + ',\nNote={missing source}\n\n}')
+            raise KeyError('Missing entry {0} in evobib'.format(key))
     return '\n\n'.join(res)
