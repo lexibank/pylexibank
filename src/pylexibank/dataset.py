@@ -218,6 +218,7 @@ class Dataset(BaseDataset):
         tr = self.cldf_dir / '.transcription-report.json'
         tr = jsonlib.load(tr) if tr.exists() else None
         res += report.report(self, tr, getattr(args, 'glottolog', None), args.log)
+        self.dir.write('FORMS.md', self.form_spec.as_markdown())
         return res
 
 

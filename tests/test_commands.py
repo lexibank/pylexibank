@@ -60,6 +60,7 @@ def test_init_profile(dataset, repos):
 
 def test_readme(dataset, repos):
     _main('lexibank.readme {0} --glottolog {1}'.format(str(dataset.dir / 'td.py'), repos))
+    assert dataset.dir.joinpath('FORMS.md').exists()
 
 
 def test_new(tmpdir, mocker):
