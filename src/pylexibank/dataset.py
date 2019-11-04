@@ -153,7 +153,7 @@ class Dataset(BaseDataset):
         profile_dir = self.etc_dir / 'orthography'
         if profile.exists():
             tokenizers[None] = get_tokenizer(profile)
-        elif profile_dir.exists() and profile_dir.is_dir():
+        if profile_dir.exists() and profile_dir.is_dir():
             for profile in profile_dir.glob('*.tsv'):
                 tokenizers[profile.stem] = get_tokenizer(profile)
 
@@ -162,12 +162,14 @@ class Dataset(BaseDataset):
                 kw.setdefault("column", "IPA")
                 kw.setdefault("separator", " + ")
                 profile = kw.pop('profile', None)
-                if len(tokenizers) == 1 and None in tokenizers:
-                    tokenizer = list(tokenizers.values())[0]
-                elif profile:
+                if profile:
                     tokenizer = tokenizers[profile]
-                else:
+                elif isinstance(item, dict) \
+                        and 'Language_ID' in item \
+                        and item['Language_ID'] in tokenizers:
                     tokenizer = tokenizers[item['Language_ID']]
+                else:
+                    tokenizer = tokenizers[None]
                 return tokenizer(unicodedata.normalize('NFC', '^' + string + '$'), **kw).split()
             return _tokenizer
 

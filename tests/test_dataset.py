@@ -1,12 +1,11 @@
 import sys
 import json
-import argparse
 import importlib
+import pathlib
 
 import pytest
 from clldutils.path import sys_path
 from cldfbench.dataset import NOOP
-from pyclts import TranscriptionSystem
 
 from pylexibank import Lexeme, Dataset
 from pylexibank.dataset import Unmapped
@@ -42,6 +41,26 @@ def test_invalid_dataset():
 
     with pytest.raises(ValueError):
         Test()
+
+
+def test_Dataset_tokenizer(tmpdir):
+    etc = pathlib.Path(str(tmpdir)).joinpath('etc')
+    etc.mkdir()
+    orth_dir = etc.joinpath('orthography')
+    orth_dir.mkdir()
+    orth_dir.joinpath('l1.tsv').write_text('Grapheme\tIPA\na\tb')
+
+    class DS(Dataset):
+        id = '1'
+        dir = etc.parent
+
+    ds = DS()
+    assert ds.tokenizer({}, 'a', profile='l1') == ['b']
+    assert ds.tokenizer({'Language_ID': 'l1'}, 'a') == ['b']
+
+    etc.joinpath('orthography.tsv').write_text('Grapheme\tIPA\na\tc')
+    ds = DS()
+    assert ds.tokenizer({}, 'a') == ['c']
 
 
 def test_BaseDataset(mocker, repos):
