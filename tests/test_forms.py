@@ -15,6 +15,25 @@ def test_split():
     assert spec.split({}, 'x', lexemes={'x': 'x;y'}) == ['x']
 
 
+def test_markdown():
+    spec = FormSpec()
+    assert spec.as_markdown()
+
+
+def test_normalize_whitespace():
+    spec = FormSpec()
+    assert spec.clean(' a\t b\n') == 'a b'
+
+    spec = FormSpec(normalize_whitespace=False, strip_inside_brackets=False)
+    assert spec.clean(' a\t b\n') == ' a\t b\n'
+
+
+def test_normalize_unicode():
+    spec = FormSpec(normalize_unicode='NFD', separators='\u0308')
+    # The combining diaresis is used as separator:
+    assert len(spec.split(None, 'äb')) == 2
+
+
 def test_replacements():
     spec = FormSpec(replacements=[('x', 'y')])
     assert spec.clean('x') == 'y'

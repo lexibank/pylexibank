@@ -1,3 +1,5 @@
+import re
+import unicodedata
 import logging
 
 import attr
@@ -19,21 +21,78 @@ def valid_replacements(instance, attribute, value):
             raise ValueError('replacements must be list of pairs')
 
 
+def attrib(help, **kw):
+    kw['metadata'] = dict(help=help)
+    return attr.ib(**kw)
+
+
 @attr.s
 class FormSpec(object):
-    brackets = attr.ib(
+    """
+    Specification of the value-to-form processing in Lexibank datasets.
+
+    The value-to-form processing is divided into two steps, implemented as methods:
+    - `split`: Splits a string into individual form chunks.
+    - `clean`: Normalizes a form chunk.
+
+    These methods use the attributes of a `FormSpec` instance to configure their behaviour.
+    Thus, rather than overwriting these methods in a drived class, datasets should use
+    suitably initialized `FormSpec` instances to transparently massage data.
+    """
+    brackets = attrib(
+        "Pairs of strings that should be recognized as brackets, specified as `dict` "
+        "mapping opening string to closing string",
         default={"(": ")"},
-        validator=attr.validators.instance_of(dict))
-    separators = attr.ib(default=";/,")
-    missing_data = attr.ib(
+        validator=attr.validators.instance_of(dict),
+    )
+    separators = attrib(
+        "Iterable of single character tokens that should be recognized as word separator",
+        default=";/,",
+    )
+    missing_data = attrib(
+        "Iterable of strings that are used to mark missing data",
         default=('?', '-'),
-        validator=attr.validators.instance_of((tuple, list)))
-    strip_inside_brackets = attr.ib(
+        validator=attr.validators.instance_of((tuple, list)),
+    )
+    strip_inside_brackets = attrib(
+        "Flag signaling whether to strip content in brackets "
+        "(**and** strip leading and trailing whitespace)",
         default=True,
         validator=attr.validators.instance_of(bool))
-    replacements = attr.ib(
+    replacements = attrib(
+        "List of pairs (`source`, `target`) used to replace occurrences of `source` in forms"
+        "with `target` (before stripping content in brackets)",
         default=attr.Factory(list),
         validator=valid_replacements)
+    first_form_only = attrib(
+        "Flag signaling whether at most one form should be returned from `split` - "
+        "effectively ignoring any spelling variants, etc.",
+        default=False,
+        validator=attr.validators.instance_of(bool),
+    )
+    normalize_whitespace = attrib(
+        "Flag signaling whether to normalize whitespace - stripping leading and trailing "
+        "whitespace and collapsing multi-character whitespace to single spaces",
+        default=True,
+        validator=attr.validators.instance_of(bool),
+    )
+    normalize_unicode = attrib(
+        "UNICODE normalization form to use for input of `split` (`None`, 'NFD' or 'NFC')",
+        default=None,
+        validator=attr.validators.in_(['NFD', 'NFC', None]),
+    )
+
+    def as_markdown(self):
+        """
+        :return: Description of `FormSpec` in markdown.
+        """
+        res = ['## Specification of form manipulation\n']
+        for field in attr.fields(self.__class__):
+            res.extend([
+                '- `{0}`: `{1}`'.format(field.name, getattr(self, field.name)),
+                '  {0}'.format(field.metadata['help'])
+            ])
+        return '\n'.join(res)
 
     def clean(self, form, item=None):
         """
@@ -43,6 +102,8 @@ class FormSpec(object):
         :return: None to skip the form, or the cleaned form as string.
         """
         if form not in self.missing_data:
+            if self.normalize_whitespace:
+                form = re.sub(r'\s+', ' ', form.strip())
             for source, target in self.replacements:
                 form = form.replace(source, target)
             if self.strip_inside_brackets:
@@ -54,13 +115,18 @@ class FormSpec(object):
         if value in lexemes:
             log.debug('overriding via lexemes.csv: %r -> %r' % (value, lexemes[value]))
             value = lexemes[value]
-        return misc.nfilter(
+        if self.normalize_unicode:
+            value = unicodedata.normalize(self.normalize_unicode, value)
+        res = misc.nfilter(
             self.clean(form, item=item)
             for form in text.split_text_with_context(
                 value, separators=self.separators, brackets=self.brackets))
+        if self.first_form_only:
+            return res[:1]
+        return res
 
 
 @attr.s
 class FirstFormOnlySpec(FormSpec):
-    def split(self, *args, **kw):
-        return super().split(*args, **kw)[:1]
+    def __attrs_post_init__(self):
+        self.first_form_only = True
