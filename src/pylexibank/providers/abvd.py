@@ -2,7 +2,6 @@ import re
 
 import attr
 from clldutils.misc import slug, nfilter
-from clldutils.text import split_text_with_context
 from pycldf.sources import Source
 
 from pylexibank.util import pb
