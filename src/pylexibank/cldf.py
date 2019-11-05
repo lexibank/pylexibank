@@ -1,5 +1,6 @@
 import re
-from collections import defaultdict, OrderedDict, Mapping
+from collections import defaultdict, OrderedDict
+from collections.abc import Mapping
 from itertools import chain
 from pathlib import Path
 import pkg_resources

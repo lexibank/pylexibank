@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pylexibank',
-    version='2.0.1.dev0',
+    version='2.1.0',
     author='Robert Forkel',
     author_email='forkel@shh.mpg.de',
     description='Python library implementing the lexibank workbench',
@@ -44,8 +44,6 @@ setup(
         'gitpython',
         'tqdm',
         'xlrd',
-        'prompt_toolkit>=1.0',
-        'python-nexus',
     ],
     extras_require={
         'dev': ['flake8', 'wheel', 'twine'],
