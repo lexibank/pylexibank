@@ -28,6 +28,7 @@ setup(
     platforms='any',
     python_requires='>=3.5',
     install_requires=[
+        'segments>=2.1.1',
         'cldfbench[excel]>=1.0',
         'csvw>=1.5.6',
         'clldutils>=2.8.0',
@@ -36,7 +37,6 @@ setup(
         'pyglottolog>=2.0',
         'pyconcepticon>=2.1.0',
         'pyclts>=2.0',
-        'segments>=2.0.2',
         'lingpy>=2.6.5',
         'appdirs',
         'requests',

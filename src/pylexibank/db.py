@@ -195,7 +195,7 @@ def schema(ds):
                         if c.propertyUrl and c.propertyUrl.uri in PROPERTY_URL_TO_COL[spec.name]:
                             colRefs.append(PROPERTY_URL_TO_COL[spec.name][c.propertyUrl.uri])
                         else:
-                            colRefs.append(c.header)
+                            colRefs.append(c.header)  # pragma: no cover
                 rcolRefs = sorted(fk.reference.columnReference)
                 if ref_type in PROPERTY_URL_TO_COL:
                     # Must map foreign key targets!
@@ -205,7 +205,7 @@ def schema(ds):
                         if c.propertyUrl and c.propertyUrl.uri in PROPERTY_URL_TO_COL[ref_type]:
                             rcolRefs.append(PROPERTY_URL_TO_COL[ref_type][c.propertyUrl.uri])
                         else:
-                            rcolRefs.append(c.header)
+                            rcolRefs.append(c.header)  # pragma: no cover
                 spec.foreign_keys.append((
                     tuple(['dataset_ID'] + colRefs),
                     ds.get_tabletype(table_lookup[fk.reference.resource.string]),

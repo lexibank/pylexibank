@@ -39,7 +39,7 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
         return lines
 
     if cldf_spec.module != 'Wordlist':
-        return lines
+        return lines  # pragma: no cover
 
     cldf = cldf_spec.get_dataset()
 
@@ -83,7 +83,7 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
     if langs:
         sindex /= float(len(langs))
     else:
-        sindex = 0
+        sindex = 0  # pragma: no cover
     totals['SI'] = sindex
 
     if tr_analysis:
@@ -97,7 +97,7 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
 
     def ratio(prop):
         if float(totals['lexemes']) == 0:
-            return 0
+            return 0  # pragma: no cover
         return sum(v for k, v in totals[prop].items() if k) / float(totals['lexemes'])
 
     num_cognates = sum(1 for k, v in totals['cognate_sets'].items())
@@ -158,30 +158,30 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
     if glottolog:
         for l in glottolog.api.languoids():
             if l.category == 'Bookkeeping':
-                bookkeeping_languoids_in_gl.add(l.id)
+                bookkeeping_languoids_in_gl.add(l.id)  # pragma: no cover
 
     bookkeeping_languoids = []
     for lang in cldf['LanguageTable']:
         if lang.get('Glottocode') in bookkeeping_languoids_in_gl:
-            bookkeeping_languoids.append(lang)
+            bookkeeping_languoids.append(lang)  # pragma: no cover
 
     # improvements section
     if missing_lang or missing_source or bookkeeping_languoids:
         lines.extend(['\n## Possible Improvements:\n', ])
 
-        if missing_lang:
+        if missing_lang:  # pragma: no cover
             lines.append("- Languages missing glottocodes: %d/%d (%.2f%%)" % (
                 len(missing_lang),
                 totals['languages'],
                 (len(missing_lang) / totals['languages']) * 100
             ))
 
-        if bookkeeping_languoids:
+        if bookkeeping_languoids:  # pragma: no cover
             lines.append(
                 "- Languages linked to [bookkeeping languoids in Glottolog]"
                 "(http://glottolog.org/glottolog/glottologinformation"
                 "#bookkeepinglanguoids):")
-        for lang in bookkeeping_languoids:
+        for lang in bookkeeping_languoids:  # pragma: no cover
             lines.append(
                 '  - {0} [{1}](http://glottolog.org/resource/languoid/id/{1})'.format(
                     lang.get('Name', lang.get('ID')), lang['Glottocode']))

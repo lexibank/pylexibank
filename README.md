@@ -48,7 +48,9 @@ easier, `pylexibank` provides
   - `args.concepticon.api` points to an instance of [`CachingConcepticonAPI`](https://github.com/cldf/cldfbench/blob/f373855e3b9cde029578e77c26136f0df26a82fa/src/cldfbench/catalogs.py#L48-L51) (a subclass of `pyconcepticon.Concepticon`)
 - **fine-grained control over form manipulation** via a `Dataset.form_spec`, an instance
   of [`pylexibank.FormSpec`](src/pylexibank/forms.py) which can be customized per
-  dataset
+  dataset. `FormSpec` is meant to capture the rules that have been used when compiling
+  the source data - for cases where the source data violates these rules, wholesale
+  replacement by listing a lexeme in `etc/lexemes.csv` is recommended.
 - **support for additional information** on lexemes, cognates, concepts and languages via
   subclassing the defaults in [`pylexibank.models`](src/pylexibank/models.py)
 - **easy access to configuration data** in a dataset's `etc_dir`

@@ -8,10 +8,28 @@ from pylexibank import lingpy_util
 from pylexibank import models as pbds
 
 
-def test_iter_cognates(dataset_cldf):
-    with pytest.raises(ValueError):
-        list(lingpy_util.iter_cognates(
-            dataset_cldf.cldf_specs().get_writer(dataset=dataset_cldf), method='sca'))
+def test_iter_cognates_and_alignments(dataset_cldf):
+    assert not list(lingpy_util.iter_cognates(
+        dataset_cldf.cldf_specs().get_writer(dataset=dataset_cldf), method='sca'))
+
+    ds = dataset_cldf.cldf_specs().get_dataset()
+    res = list(lingpy_util.iter_cognates(ds, method='lexstat'))
+    assert res
+    lingpy_util.iter_alignments(ds, res)
+    assert 'Alignment' in res[0]
+
+    ds = dataset_cldf.cldf_specs().get_dataset()
+    res = list(lingpy_util.iter_cognates(ds, method='lexstat'))
+    lingpy_util.iter_alignments(
+        lingpy_util._cldf2wordlist(ds),
+        res,
+        almkw=dict(
+            ref='lid',
+            row='parameter_id',
+            transcription='form',
+            segments='segments',
+            col='language_id'))
+    assert 'Alignment' in res[0]
 
 
 def test_wordlist2cognates(repos, mocker, dataset):

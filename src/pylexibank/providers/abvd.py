@@ -44,11 +44,6 @@ class BVD(Dataset):
                     )
             yield wl
 
-    def split_forms(self, item, value):
-        value = self.lexemes.get(value, value)
-        return [self.clean_form(item, form)
-                for form in split_text_with_context(value, separators=',;')]
-
     def cmd_download(self, **kw):  # pragma: no cover
         assert self.SECTION in ['austronesian', 'mayan', 'utoaztecan']
         self.log.info('ABVD section set to %s' % self.SECTION)
