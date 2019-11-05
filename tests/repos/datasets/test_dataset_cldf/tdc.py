@@ -11,4 +11,12 @@ class Test(Dataset):
         pass
 
     def cmd_makecldf(self, args):
-        pass
+        args.writer.add_language(ID='l')
+        args.writer.add_concepts()
+        args.writer.add_form_with_segments(
+            Language_ID='l',
+            Parameter_ID='1',
+            Value='__',
+            Form='__',
+            Segments=[' ', ' '],  # This should trigger marking as invalid_word
+        )

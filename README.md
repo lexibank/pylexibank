@@ -43,15 +43,26 @@ to make sure the catalog data is locally available and `pylexibank` knows about 
 The main goal of `pylexibank` is creating high-quality CLDF Wordlists. This
 happens in the custom `cmd_makecldf` method of a Lexibank dataset. To make this task
 easier, `pylexibank` provides
-- access to Glottolog and Concepticon data:
+- **access to Glottolog and Concepticon data:**
   - `args.glottolog.api` points to an instance of [`CachingGlottologAPI`](https://github.com/cldf/cldfbench/blob/f373855e3b9cde029578e77c26136f0df26a82fa/src/cldfbench/catalogs.py#L10-L40) (a subclass of `pyglottolog.Glottolog`)
   - `args.concepticon.api` points to an instance of [`CachingConcepticonAPI`](https://github.com/cldf/cldfbench/blob/f373855e3b9cde029578e77c26136f0df26a82fa/src/cldfbench/catalogs.py#L48-L51) (a subclass of `pyconcepticon.Concepticon`)
-- fine-grained control over form manipulation via a `Dataset.form_spec`, an instance
+- **fine-grained control over form manipulation** via a `Dataset.form_spec`, an instance
   of [`pylexibank.FormSpec`](src/pylexibank/forms.py) which can be customized per
   dataset
-- support for additional information on lexemes, cognates, concepts and languages via
+- **support for additional information** on lexemes, cognates, concepts and languages via
   subclassing the defaults in [`pylexibank.models`](src/pylexibank/models.py)
-- easy access to configuration data in a dataset's `etc_dir`
+- **easy access to configuration data** in a dataset's `etc_dir`
+- **support for segmentation** using the [`segments`](https:pypi.org/project/segments)
+  package with orthography profile(s):
+  - If an orthography profile is available as `etc/orthography.tsv`, a `segments.Tokenizer`
+    instance, initialized with this profile, will be available as `Dataset.tokenizer`
+    and automatically used by `LexibankWriter.add_form`.
+  - If a directory `etc/orthography/` exists, all `*.tsv` files in it will be considered
+    orthography profiles, and a `dict` mapping filename stem to tokenizer will be available. Tokenizer
+    selection can be controlled in two ways:
+    - Passing a keyword `profile=FILENAME_STEM` in `Dataset.tokenizer()` calls.
+    - Provide orthography profiles for each language and let `Dataset.tokenizer`
+      chose the tokenizer by `item['Language_ID']`.
 
 
 ## Programmatic access to Lexibank datasets

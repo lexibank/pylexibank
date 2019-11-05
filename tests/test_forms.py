@@ -38,6 +38,14 @@ def test_normalize_unicode():
     assert len(spec.split(None, 'äb')) == 2
 
 
+def test_separators():
+    with pytest.raises(ValueError):
+        FormSpec(separators=5)
+
+    with pytest.raises(ValueError):
+        FormSpec(separators=['ab'])
+
+
 def test_replacements():
     spec = FormSpec(replacements=[('x', 'y')])
     assert spec.clean('x') == 'y'
