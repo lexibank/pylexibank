@@ -22,6 +22,7 @@ def test_makecldf(repos, dataset, dataset_cldf):
         str(repos),
     ))
     assert 'Papunesia' not in dataset.cldf_dir.joinpath('languages.csv').read_text(encoding='utf8')
+    assert '### Replacement' in dataset.dir.joinpath('FORMS.md').read_text(encoding='utf8')
 
     with pytest.raises(ValueError):
         _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(

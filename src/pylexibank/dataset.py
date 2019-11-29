@@ -1,4 +1,5 @@
 import pathlib
+import collections
 import unicodedata
 
 import attr
@@ -107,12 +108,17 @@ class Dataset(BaseDataset):
             res.append(item)
         return res
 
+    def _replacements(self, what, source_col, target_col='REPLACEMENT'):
+        return collections.OrderedDict(
+            [(item[source_col], item[target_col]) for item in self._iter_etc(what)])
+
     @lazyproperty
     def lexemes(self):
-        res = {}
-        for item in self._iter_etc('lexemes'):
-            res[item['LEXEME']] = item['REPLACEMENT']
-        return res
+        return self._replacements('lexemes', 'LEXEME')
+
+    @lazyproperty
+    def segments(self):
+        return self._replacements('segments', 'SEGMENT')
 
     # ---------------------------------------------------------------
     # handling of lexemes/forms/words
@@ -234,7 +240,7 @@ class Dataset(BaseDataset):
         tr = self.cldf_dir / '.transcription-report.json'
         tr = jsonlib.load(tr) if tr.exists() else None
         res += report.report(self, tr, getattr(args, 'glottolog', None), args.log)
-        self.dir.write('FORMS.md', self.form_spec.as_markdown())
+        self.dir.write('FORMS.md', self.form_spec.as_markdown(self))
         return res
 
 

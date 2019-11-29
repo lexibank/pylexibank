@@ -90,7 +90,7 @@ class FormSpec(object):
         validator=attr.validators.in_(['NFD', 'NFC', None]),
     )
 
-    def as_markdown(self):
+    def as_markdown(self, dataset=None):
         """
         :return: Description of `FormSpec` in markdown.
         """
@@ -101,6 +101,23 @@ class FormSpec(object):
                 '- `{0}`: `{1}`'.format(field.name, getattr(self, field.name)),
                 '  {0}'.format(field.metadata['help'])
             ])
+        if dataset:
+            if dataset.lexemes:
+                res.append("""
+### Replacement of invalid lexemes
+
+Source lexemes may be impossible to interpret correctly. {0} such lexemes are listed
+in [`etc/lexemes.csv`](etc/lexemes.csv) and replaced as specified in this file.
+""".format(len(dataset.lexemes)))
+
+            if dataset.segments:
+                res.append("""
+### Replacement of invalid segmentation
+
+Segments provided in the source data may not be valid according to CLTS.
+{0} such segments are listed in [`etc/segments.csv`](etc/segments.csv) and replaced
+as specified in this file.
+""".format(len(dataset.segments)))
         return '\n'.join(res)
 
     def clean(self, form, item=None):

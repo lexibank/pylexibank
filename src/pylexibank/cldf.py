@@ -16,6 +16,7 @@ from cldfbench.cldf import CLDFWriter
 from cldfbench.util import iter_requirements
 
 from pylexibank.transcription import Analysis, analyze
+from pylexibank.util import iter_repl
 
 __all__ = ['LexibankWriter']
 log = logging.getLogger('pylexibank')
@@ -117,14 +118,17 @@ class LexibankWriter(CLDFWriter):
         # Do we have morpheme segmentation on top of phonemes?
         with_morphemes = '+' in self['FormTable', 'Segments'].separator
 
-        language, concept, value, form, segments = [kw.get(v) for v in [
-            'Language_ID', 'Parameter_ID', 'Value', 'Form', 'Segments']]
+        language, concept, value, form, segments = (kw.get(v) for v in [
+            'Language_ID', 'Parameter_ID', 'Value', 'Form', 'Segments'])
 
         # check for required kws
-        if language is None or concept is None or value is None \
-                or form is None or segments is None:
+        if not all([language, concept, value, form, segments]):
             raise ValueError('language, concept, value, form, and segments must be supplied')
-        kw.setdefault('Segments', segments)
+
+        # Correct segments according to mapping in etc/segments.csv:
+        for k, v in self.dataset.segments.items():
+            segments = list(iter_repl(segments, k.split(), v.split()))
+        kw['Segments'] = segments
         kw.update(ID=self.lexeme_id(kw), Form=form)
         lexeme = self._add_object(self.dataset.lexeme_class, **kw)
 
