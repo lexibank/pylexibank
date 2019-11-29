@@ -247,7 +247,7 @@ class LexibankWriter(CLDFWriter):
         return self._add_object(self.dataset.cognate_class, **kw)
 
     def add_language(self, **kw):
-        if 'Glottocode' in kw \
+        if (not getattr(self.args, 'dev', False)) and 'Glottocode' in kw \
                 and hasattr(self.args, 'glottolog') \
                 and kw['Glottocode'] in self.args.glottolog.api.cached_languoids:
             glang = self.args.glottolog.api.cached_languoids[kw['Glottocode']]
