@@ -44,6 +44,7 @@ setup(
         'gitpython',
         'tqdm',
         'xlrd',
+        'bs4',
     ],
     extras_require={
         'dev': ['flake8', 'wheel', 'twine'],
