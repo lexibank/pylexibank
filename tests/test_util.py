@@ -1,7 +1,20 @@
 from collections import Counter
 from pathlib import Path
 
+import pytest
+
 from pylexibank import util
+
+
+@pytest.mark.parametrize(
+    'seq,subseq,repl,out',
+    [
+        ('abcdabcd', 'bc', 'x', list('axdaxd')),
+        ([1, 2, 3, 4], [2], [9, 9], [1, 9, 9, 3, 4]),
+    ]
+)
+def test_iter_repl(seq, subseq, repl, out):
+    assert list(util.iter_repl(seq, subseq, repl)) == out
 
 
 def test_jsondump(tmpdir):

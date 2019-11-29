@@ -1,2 +1,3 @@
 SEGMENT,REPLACEMENT
-x,u
+x y,u
+u,a b

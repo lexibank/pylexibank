@@ -16,6 +16,7 @@ from cldfbench.cldf import CLDFWriter
 from cldfbench.util import iter_requirements
 
 from pylexibank.transcription import Analysis, analyze
+from pylexibank.util import iter_repl
 
 __all__ = ['LexibankWriter']
 log = logging.getLogger('pylexibank')
@@ -125,7 +126,9 @@ class LexibankWriter(CLDFWriter):
             raise ValueError('language, concept, value, form, and segments must be supplied')
 
         # Correct segments according to mapping in etc/segments.csv:
-        kw['Segments'] = [self.dataset.segments.get(s, s) for s in segments]
+        for k, v in self.dataset.segments.items():
+            segments = list(iter_repl(segments, k.split(), v.split()))
+        kw['Segments'] = segments
         kw.update(ID=self.lexeme_id(kw), Form=form)
         lexeme = self._add_object(self.dataset.lexeme_class, **kw)
 

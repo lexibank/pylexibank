@@ -11,7 +11,7 @@ from clldutils import jsonlib
 from cldfbench.datadir import get_url
 from pycldf.sources import Source, Reference
 
-__all__ = ['progressbar', 'getEvoBibAsBibtex']
+__all__ = ['progressbar', 'getEvoBibAsBibtex', 'iter_repl']
 YEAR_PATTERN = re.compile('\s+\(?(?P<year>[1-9][0-9]{3}(-[0-9]+)?)(\)|\.)')
 
 
@@ -23,6 +23,22 @@ def progressbar(iterable=None, **kw):
 
 # backwards compat:
 pb = progressbar
+
+
+def iter_repl(seq, subseq, repl):
+    """
+    Replace sub-list `subseq` in `seq` with `repl`.
+    """
+    seq, subseq, repl = list(seq), list(subseq), list(repl)
+    subseq_len = len(subseq)
+    rem = seq[:]
+    while rem:
+        if rem[:subseq_len] == subseq:
+            for c in repl:
+                yield c
+            rem = rem[subseq_len:]
+        else:
+            yield rem.pop(0)
 
 
 def split_by_year(s):
