@@ -117,14 +117,15 @@ class LexibankWriter(CLDFWriter):
         # Do we have morpheme segmentation on top of phonemes?
         with_morphemes = '+' in self['FormTable', 'Segments'].separator
 
-        language, concept, value, form, segments = [kw.get(v) for v in [
-            'Language_ID', 'Parameter_ID', 'Value', 'Form', 'Segments']]
+        language, concept, value, form, segments = (kw.get(v) for v in [
+            'Language_ID', 'Parameter_ID', 'Value', 'Form', 'Segments'])
 
         # check for required kws
-        if language is None or concept is None or value is None \
-                or form is None or segments is None:
+        if not all([language, concept, value, form, segments]):
             raise ValueError('language, concept, value, form, and segments must be supplied')
-        kw.setdefault('Segments', segments)
+
+        # Correct segments according to mapping in etc/segments.csv:
+        kw['Segments'] = [self.dataset.segments.get(s, s) for s in segments]
         kw.update(ID=self.lexeme_id(kw), Form=form)
         lexeme = self._add_object(self.dataset.lexeme_class, **kw)
 

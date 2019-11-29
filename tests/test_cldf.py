@@ -39,5 +39,6 @@ def test_align_cognates(dataset, clts, mocker):
                 Language_ID='l', Parameter_ID='p', Value='x', Form='x', Segments=['x'])
 
         ds.cldf['FormTable', 'Segments'].separator = '+'
-        ds.add_form_with_segments(
+        lex = ds.add_form_with_segments(
             Language_ID='l', Parameter_ID='p', Value='x', Form='x', Segments=['x'])
+        assert lex['Segments'] == ['u']
