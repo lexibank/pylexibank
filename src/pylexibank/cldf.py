@@ -248,6 +248,13 @@ class LexibankWriter(CLDFWriter):
 
     def add_language(self, **kw):
         if 'Glottocode' in kw \
+                and 'Latitude' in kw \
+                and 'Longitude' in kw \
+                and 'Macroarea' in kw \
+                and 'Family' in kw \
+                and 'ISO6339P3code' in kw:
+            pass
+        elif 'Glottocode' in kw \
                 and hasattr(self.args, 'glottolog') \
                 and kw['Glottocode'] in self.args.glottolog.api.cached_languoids:
             glang = self.args.glottolog.api.cached_languoids[kw['Glottocode']]
