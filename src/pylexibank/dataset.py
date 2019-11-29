@@ -238,10 +238,6 @@ class Dataset(BaseDataset):
         return res
 
 
-class NonSplittingDataset(Dataset):
-    form_spec = forms.FirstFormOnlySpec()
-
-
 class Unmapped(object):
     def __init__(self):
         self.languages = set()

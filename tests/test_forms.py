@@ -15,7 +15,7 @@ def test_split():
     assert spec.split(None, 'x|y') == ['x', 'y']
     assert spec.split(None, 'x;y') == ['x;y']
 
-    spec = FirstFormOnlySpec()
+    spec = FormSpec(first_form_only=True)
     assert spec.split({}, 'x', lexemes={'x': 'x;y'}) == ['x']
 
 

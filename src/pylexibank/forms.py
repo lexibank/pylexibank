@@ -6,7 +6,7 @@ import attr
 from clldutils import text
 from clldutils import misc
 
-__all__ = ['FormSpec', 'FirstFormOnlySpec']
+__all__ = ['FormSpec']
 log = logging.getLogger('pylexibank')
 
 
@@ -133,9 +133,3 @@ class FormSpec(object):
         if self.first_form_only:
             return res[:1]
         return res
-
-
-@attr.s
-class FirstFormOnlySpec(FormSpec):
-    def __attrs_post_init__(self):
-        self.first_form_only = True
