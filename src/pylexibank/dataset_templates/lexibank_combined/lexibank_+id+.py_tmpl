@@ -62,10 +62,10 @@ class Dataset(pylexibank.Dataset):
 
         with self.cldf_writer(args, cldf_spec='structure', clean=False) as writer:
             writer.cldf.add_component(LanguageTable)  # we reuse the one from above!
-            #writer.objects['ParameterTable'].append({'ID': 'f1'})
-            #writer.objects['ValueTable'].append({
+            #writer.objects['ParameterTable'].append({{'ID': 'f1'}})
+            #writer.objects['ValueTable'].append({{
             #    'ID': 1,
             #    'Value': 'x',
             #    'Language_ID': 'abc',
             #    'Parameter_ID': 'f1',
-            #})
+            #}})

@@ -76,3 +76,9 @@ def test_new(tmpdir, mocker):
     mocker.patch('cldfbench.metadata.input', mocker.Mock(return_value='abc'))
     _main('new --template lexibank_simple --out ' + str(tmpdir))
     assert pathlib.Path(str(tmpdir)).joinpath('abc', 'CONTRIBUTORS.md').exists()
+
+    mocker.patch('cldfbench.metadata.input', mocker.Mock(return_value='cde'))
+    _main('new --template lexibank_combined --out ' + str(tmpdir))
+    assert '{{' not in pathlib.Path(str(tmpdir)).joinpath(
+        'cde', 'lexibank_cde.py').read_text(encoding='utf8')
+
