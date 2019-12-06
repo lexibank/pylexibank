@@ -39,7 +39,7 @@ class BVD(Dataset):
             fname.unlink()
         
         for lid in range(1, self.max_language_id + 1):
-            if i in self.invalid_ids:
+            if lid in self.invalid_ids:
                 args.log.warn("Skipping %s %d - invalid ID" % (self.SECTION, lid))
                 break
             
