@@ -3,15 +3,11 @@ import re
 import attr
 from clldutils.misc import slug, nfilter
 from pycldf.sources import Source
-
-from pylexibank.util import pb
+from pybtex.database import parse_string  # dependency of pycldf, so should be installed.
 from pylexibank import Dataset, Language
 
 BASE_URL = "https://abvd.shh.mpg.de"
 URL = BASE_URL + "/utils/save/?type=xml&section=%s&language=%d"
-INVALID_LANGUAGE_IDS = {
-    'austronesian': [261],  # Duplicate West Futuna list
-}
 
 
 @attr.s
@@ -21,44 +17,40 @@ class BVDLanguage(Language):
     typedby = attr.ib(default=None)
     checkedby = attr.ib(default=None)
     notes = attr.ib(default=None)
+    source = attr.ib(default=None)
 
 
 class BVD(Dataset):
     SECTION = None
+    invalid_ids = []
+    max_language_id = 50 # maximum language id to look for.
     language_class = BVDLanguage
     cognate_pattern = re.compile('\s*(?P<id>([A-z]?[0-9]+|[A-Z]))\s*(?P<doubt>\?+)?\s*$')
+    
+    def iter_wordlists(self, log):
+        for xml in sorted(self.raw_dir.glob('*.xml'), key=lambda p: int(p.stem)):
+            yield Wordlist(self, xml, log)
 
-    def iter_wordlists(self, language_map, log):
-        for xml in pb(
-                sorted(self.raw_dir.glob('*.xml'), key=lambda p: int(p.stem)), desc='xml-to-wl'):
-            wl = Wordlist(self, xml, log)
-            if not wl.language.glottocode:
-                if wl.language.id in language_map:
-                    wl.language.glottocode = language_map[wl.language.id]
-                else:  # pragma: no cover
-                    self.unmapped.add_language(
-                        ID=wl.language.id,
-                        Name=wl.language.name,
-                        ISO639P3code=wl.language.iso
-                    )
-            yield wl
-
-    def cmd_download(self, **kw):  # pragma: no cover
+    def cmd_download(self, args):  # pragma: no cover
         assert self.SECTION in ['austronesian', 'mayan', 'utoaztecan']
-        self.log.info('ABVD section set to %s' % self.SECTION)
+        args.log.info('ABVD section set to %s' % self.SECTION)
+        # remove
         for fname in self.raw_dir.iterdir():
             fname.unlink()
-        language_ids = [
-            i for i in range(1, 2000)
-            if i not in INVALID_LANGUAGE_IDS.get(self.SECTION, [])]
-
-        for lid in language_ids:
-            if not self.get_data(lid):
-                self.log.warn("No content for %s %d. Ending." % (self.SECTION, lid))
+        
+        for lid in range(1, self.max_language_id + 1):
+            if i in self.invalid_ids:
+                args.log.warn("Skipping %s %d - invalid ID" % (self.SECTION, lid))
                 break
+            
+            if not self.get_data(lid):
+                args.log.warn("No content for %s %d. Ending." % (self.SECTION, lid))
+                break
+            else:
+                args.log.info("Downloaded %s %4d." % (self.SECTION, lid))
 
     def get_data(self, lid):  # pragma: no cover
-        fname = self.raw_dir.download(URL % (self.SECTION, lid), '%s.xml' % lid, log=self.log)
+        fname = self.raw_dir.download(URL % (self.SECTION, lid), '%s.xml' % lid)
         if fname.stat().st_size == 0:
             fname.unlink()
             return False
@@ -107,6 +99,7 @@ class Language(XmlElement):
         ('classification', ''),
         ('typedby', ''),
         ('checkedby', ''),
+        ('source', ''),
     ]
 
     def __init__(self, e):
@@ -122,6 +115,8 @@ class Entry(XmlElement):
         ('annotation', 'comment'),
         ('loan', ''),
         ('cognacy', ''),
+        ('source_id', ''),
+        ('source', ''),
     ]
 
     def __init__(self, e, section):
@@ -151,7 +146,7 @@ class Wordlist(object):
             and getattr(r.find('item'), 'text', None)
 
     def url(self, path):
-        return '%s/bantu/%s/%s' % (BASE_URL, self.section, path)
+        return '%s/%s/%s' % (BASE_URL, self.section, path)
 
     @property
     def name(self):
@@ -161,26 +156,13 @@ class Wordlist(object):
     def id(self):
         return '%s-%s' % (self.section, self.language.id)
 
-    def md(self):
-        return dict(properties={
-            k: getattr(self.language, k, None)
-            for k in 'id name author notes problems typedby checkedby'.split()})
+    def to_cldf(self, ds, concepts):
+        """
+        :param ds: the dataset object
+        :concepts: a dictionary mapping concept labels to concept ids
 
-    def to_cldf(self, ds, concept_map, citekey=None, source=None, concept_key=None):
-        if concept_key is None:
-            def concept_key(entry):
-                return entry.word_id
-
-        ref = None
-        if citekey and source:
-            ref = citekey
-            for r in ref.split(";"):
-                for s in source:
-                    if isinstance(s, Source):
-                        ds.add_sources(s)
-                    else:
-                        ds.add_sources(Source('misc', r, title=s))
-
+        :return: A dataset object, ds.
+        """
         ds.add_language(
             ID=self.language.id,
             Glottocode=self.language.glottocode,
@@ -193,47 +175,61 @@ class Wordlist(object):
             notes=self.language.notes,
         )
 
+        source = []
+        if self.language.source:
+            bib = parse_string(self.language.source, "bibtex")
+            ds.add_sources(*[Source.from_entry(k, e) for k, e in bib.entries.items()])
+            source = bib.entries.keys()
+        
         for entry in self.entries:
             if entry.name is None or len(entry.name) == 0:  # skip empty entries
                 continue  # pragma: no cover
 
-            if entry.cognacy and (
-                    's' == entry.cognacy.lower() or 'x' in entry.cognacy.lower()):
-                # skip entries marked as incorrect word form due to semantics
-                # (x = probably, s = definitely)
+            # skip entries marked as incorrect word form due to semantics
+            # (x = probably, s = definitely)
+            if entry.cognacy and entry.cognacy.lower() in ('s', 'x'):
                 continue  # pragma: no cover
-
-            if not (citekey and source):
-                src = entry.e.find('source')
-                if (src is not None) and getattr(src, 'text'):
-                    ref = slug(str(src.text))
-                    ds.add_sources(Source('misc', ref, title=src.text))
-            cid = concept_map.get(concept_key(entry))
+            
+            # handle concepts
+            cid = concepts.get(entry.word_id)
             if not cid:
                 self.dataset.unmapped.add_concept(ID=entry.word_id, Name=entry.word)
-
-            ds.add_concept(ID=entry.word_id, Name=entry.word, Concepticon_ID=cid)
-            lex = ds.add_forms_from_value(
-                Language_ID=self.language.id,
-                Parameter_ID=entry.word_id,
-                Value=entry.name,
-                Source=[ref],
-                Cognacy=entry.cognacy,
-                Comment=entry.comment or '',
-                Loan=True if entry.loan and len(entry.loan) else False,
-                Local_ID=entry.id,
-            )
+                # add it if we don't have it.
+                ds.add_concept(ID=entry.word_id, Name=entry.word)
+            
+            # handle lexemes
+            try:
+                lex = ds.add_forms_from_value(
+                    Local_ID=entry.id,
+                    Language_ID=self.language.id,
+                    Parameter_ID=cid,
+                    Value=entry.name,
+                    # set source tp entry-level sources if they exist, otherwise use
+                    # the language level source.
+                    Source=[entry.source] if entry.source else source,
+                    Cognacy=entry.cognacy,
+                    Comment=entry.comment or '',
+                    Loan=True if entry.loan and len(entry.loan) else False,
+                )
+            except:
+                print("ERROR with %r -- %r" % (entry.id, entry.name))
+                raise
+                
             if lex:
-                lex = lex[0]
                 for cognate_set_id in entry.cognates:
                     match = self.dataset.cognate_pattern.match(cognate_set_id)
                     if not match:  # pragma: no cover
                         self.log.warn('Invalid cognateset ID for entry {0}: {1}'.format(
                             entry.id, cognate_set_id))
                     else:
+                        # make global cognate set id
+                        cs_id = "%s-%s" % (slug(entry.word), match.group('id'))
+                        
                         ds.add_cognate(
-                            lexeme=lex,
-                            Cognateset_ID=match.group('id'),
-                            Doubt=bool(match.group('doubt')))
+                            lexeme=lex[0],
+                            Cognateset_ID=cs_id,
+                            Doubt=bool(match.group('doubt')),
+                            Source=['Greenhilletal2008']
+                        )
 
         return ds
