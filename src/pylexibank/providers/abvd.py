@@ -41,7 +41,7 @@ class BVD(Dataset):
         for lid in range(1, self.max_language_id + 1):
             if lid in self.invalid_ids:
                 args.log.warn("Skipping %s %d - invalid ID" % (self.SECTION, lid))
-                break
+                next
             
             if not self.get_data(lid):
                 args.log.warn("No content for %s %d. Ending." % (self.SECTION, lid))
@@ -131,6 +131,7 @@ class Entry(XmlElement):
 
 
 class Wordlist(object):
+    
     def __init__(self, dataset, path, log):
         self.dataset = dataset
         self.log = log
@@ -178,8 +179,11 @@ class Wordlist(object):
         source = []
         if self.language.source:
             bib = parse_string(self.language.source, "bibtex")
-            ds.add_sources(*[Source.from_entry(k, e) for k, e in bib.entries.items()])
-            source = bib.entries.keys()
+            try:
+                ds.add_sources(*[Source.from_entry(k, e) for k, e in bib.entries.items()])
+                source = bib.entries.keys()
+            except:
+                self.log.warn("Invalid citekey for %s" % self.language.id)
         
         for entry in self.entries:
             if entry.name is None or len(entry.name) == 0:  # skip empty entries
@@ -230,7 +234,7 @@ class Wordlist(object):
                             lexeme=lex[0],
                             Cognateset_ID=cs_id,
                             Doubt=bool(match.group('doubt')),
-                            Source=['Greenhilletal2008']
+                            Source=['Greenhilletal2008'] if self.section == 'austronesian' else []
                         )
 
         return ds
