@@ -25,9 +25,9 @@ class BVD(Dataset):
     invalid_ids = []
     max_language_id = 50 # maximum language id to look for.
     language_class = BVDLanguage
-    cognate_pattern = re.compile('\s*(?P<id>([A-z]?[0-9]+|[A-Z]))\s*(?P<doubt>\?+)?\s*$')
+    cognate_pattern = re.compile(r'''\s*(?P<id>([A-z]?[0-9]+|[A-Z]))\s*(?P<doubt>\?+)?\s*$''')
     
-    def iter_wordlists(self, log):
+    def iter_wordlists(self, log=None):
         for xml in sorted(self.raw_dir.glob('*.xml'), key=lambda p: int(p.stem)):
             yield Wordlist(self, xml, log)
 
@@ -196,7 +196,8 @@ class Wordlist(object):
                 self.dataset.unmapped.add_concept(ID=entry.word_id, Name=entry.word)
                 # add it if we don't have it.
                 ds.add_concept(ID=entry.word_id, Name=entry.word)
-            
+                cid = entry.word_id
+                
             # handle lexemes
             try:
                 lex = ds.add_forms_from_value(
@@ -211,7 +212,7 @@ class Wordlist(object):
                     Comment=entry.comment or '',
                     Loan=True if entry.loan and len(entry.loan) else False,
                 )
-            except:
+            except:  # pragma: no cover
                 print("ERROR with %r -- %r" % (entry.id, entry.name))
                 raise
                 
