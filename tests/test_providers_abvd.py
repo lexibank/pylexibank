@@ -21,20 +21,9 @@ def abvd_dataset(repos, tmpdir, glottolog, concepticon):
 
 def test_Wordlist(abvd_dataset, mocker):
     with abvd_dataset.cldf_writer(mocker.MagicMock()) as ds:
-        for wl in abvd_dataset.iter_wordlists({'1': 'bali1278'}, None):
-            wl.to_cldf(ds, {}, citekey='x',source='s')
+        for wl in abvd_dataset.iter_wordlists():
+            wl.to_cldf(ds, {})
             assert wl.name
             assert wl.id
-            assert wl.md()
 
 
-def test_Wordlist_2(abvd_dataset, mocker):
-    with abvd_dataset.cldf_writer(mocker.MagicMock()) as ds:
-        for wl in abvd_dataset.iter_wordlists({'1': 'bali1278'}, None):
-            wl.to_cldf(ds, {}, citekey='x', source=[Source('a', 'b', **dict(title='t'))])
-
-
-def test_Wordlist_3(abvd_dataset, mocker):
-    with abvd_dataset.cldf_writer(mocker.MagicMock()) as ds:
-        for wl in abvd_dataset.iter_wordlists({'1': 'bali1278'}, None):
-            wl.to_cldf(ds, {})
