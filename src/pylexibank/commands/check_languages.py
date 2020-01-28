@@ -28,11 +28,18 @@ def check(ds, args):
         if gv != args.glottolog_version:
             warn('Dataset compiled against Glottolog {0}'.format(gv))
 
+    # no bookkeeping languages
     bookkeeping = set(
         l.id for l in args.glottolog.api.languoids() if l.lineage and l.lineage[0][1] == 'book1242')
     for l in cldf['LanguageTable']:
         if l['Glottocode'] and l['Glottocode'] in bookkeeping:
             warn('Language {0} mapped to Bookkeeping languoid {1}'.format(l['ID'], l['Glottocode']))
+
+    # lat and long should not be ALL empty
+    for col in ("Latitude", "Longitude"):
+        if not len({r[col] for r in cldf['LanguageTable'] if r[col]}):
+            warn('Column {0} is completely empty'.format(col))
+
 
 
 def run(args):
