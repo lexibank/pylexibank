@@ -1,6 +1,7 @@
 import pathlib
 
 from cldfbench import cli_util
+from termcolor import colored
 
 from pylexibank import ENTRY_POINT
 from pylexibank.db import Database
@@ -30,3 +31,9 @@ def add_catalogs(parser, with_clts=False):
     cli_util.add_catalog_spec(parser, 'concepticon')
     if with_clts:
         cli_util.add_catalog_spec(parser, 'clts')
+
+
+def warning(args, msg, dataset=None):
+    if dataset:
+        msg = '{0}: {1}'.format(colored(dataset.id, 'blue', attrs=['bold']), msg)
+    args.log.warning(msg)

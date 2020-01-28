@@ -219,6 +219,9 @@ class LexibankWriter(CLDFWriter):
     def _add_object(self, cls, **kw):
         # Instantiating an object will trigger potential validators:
         d = attr.asdict(cls(**kw))
+        #
+        # FIXME: check whether certain attributes should not be written to the table.
+        #
         t = cls.__cldf_table__()
         for key in ['ID', 'Language_ID', 'Parameter_ID', 'Cognateset_ID']:
             # stringify/sluggify identifiers:
