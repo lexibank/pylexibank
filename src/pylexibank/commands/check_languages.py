@@ -21,7 +21,7 @@ def get_glottolog_version(cldf):
 def check(ds, args):
     warn = functools.partial(warning, args, dataset=ds)
 
-    args.log.info('checking {0}'.format(ds))
+    args.log.info('checking {0} - languages'.format(ds))
     cldf = ds.cldf_reader()
     if args.glottolog_version:
         gv = get_glottolog_version(cldf)
