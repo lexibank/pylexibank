@@ -14,7 +14,7 @@ def register(parser):
 def check(ds, args):
     warn = functools.partial(warning, args, dataset=ds)
 
-    args.log.info('checking {0}'.format(ds))
+    args.log.info('checking {0} - plumbing'.format(ds))
     
     # check that there's no local concepts.csv:
     if (ds.dir / 'etc' / 'concepts.csv').exists():
