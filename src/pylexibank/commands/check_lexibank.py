@@ -1,5 +1,5 @@
 """
-Check language specifications of lexibank datasets
+Check lexibank plumbing for lexibank datasets
 """
 import functools
 
