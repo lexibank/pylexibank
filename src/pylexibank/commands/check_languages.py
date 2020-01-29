@@ -34,7 +34,7 @@ def check(ds, args):
     
     cols_with_values = Counter()  # used for check on empty columns
     nlanguages = 0
-    for nlanguages, row in enumerate(cldf['LanguageTable'], 1):
+    for nlanguages, row in enumerate(cldf['LanguageTable'], start=1):
         # no bookkeeping languages
         gc = row[cldf['LanguageTable', 'glottocode'].name]
         if gc and gc in bookkeeping:
