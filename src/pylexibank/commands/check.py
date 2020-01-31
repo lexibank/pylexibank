@@ -7,8 +7,9 @@ from pylexibank.cli_util import add_dataset_spec
 
 from pylexibank.commands.check_languages import check as check_languages
 from pylexibank.commands.check_lexibank import check as check_lexibank
+from pylexibank.commands.check_cldf import check as check_cldf
 
-CHECKERS = [check_languages, check_lexibank]
+CHECKERS = [check_languages, check_lexibank, check_cldf]
 
 def register(parser):
     add_dataset_spec(parser, multiple=True)
