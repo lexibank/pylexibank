@@ -1,9 +1,10 @@
 import attr
-
+import pkg_resources
 from cldfbench.metadata import Metadata
 
 __all__ = ['LexibankMetadata']
 
+version = pkg_resources.get_distribution('pylexibank').version
 
 @attr.s
 class LexibankMetadata(Metadata):
@@ -16,6 +17,7 @@ class LexibankMetadata(Metadata):
     related = attr.ib(default=None)
     source = attr.ib(default=None)
     patron = attr.ib(default=None)
+    version = attr.ib(default=version)
 
     def common_props(self):
         res = super().common_props()
