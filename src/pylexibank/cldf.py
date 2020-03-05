@@ -301,9 +301,10 @@ class LexibankWriter(CLDFWriter):
 
     def add_concept(self, **kw):
         if kw.get('Concepticon_ID'):
-            kw.setdefault(
-                'Concepticon_Gloss',
-                self.dataset.concepticon.cached_glosses[int(kw['Concepticon_ID'])])
+            gloss = self.dataset.concepticon.cached_glosses[int(kw['Concepticon_ID'])]
+            if kw.get('Concepticon_Gloss') and kw.get('Concepticon_Gloss') != gloss:
+                raise ValueError('Concepticon ID / Gloss mismatch')
+            kw['Concepticon_Gloss'] = gloss
         return self._add_object(self.dataset.concept_class, **kw)
 
     def add_concepts(self, id_factory=lambda d: d.number, lookup_factory=None):
