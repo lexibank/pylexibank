@@ -10,15 +10,16 @@ def register(parser):
     add_dataset_spec(parser, multiple=True)
     add_catalog_spec(parser, 'glottolog')
 
+
 def check(ds, args):
     warn = functools.partial(warning, args, dataset=ds)
 
     args.log.info('checking {0} - plumbing'.format(ds))
-    
+
     # check that there's no local concepts.csv:
     if (ds.dir / 'etc' / 'concepts.csv').exists():
         warn('Dataset uses a local ./etc/concepts.csv rather than a conceptlist from Concepticon')
-    
+
     # check for empty metadata fields:
     for field in ['citation', 'title', 'license']:
         if getattr(ds.metadata, field, None) in (None, ""):

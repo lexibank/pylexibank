@@ -28,10 +28,10 @@ def check(ds, args):
         gv = get_glottolog_version(cldf)
         if gv != args.glottolog_version:
             warn('Dataset compiled against Glottolog {0}'.format(gv))
-    
+
     bookkeeping = set(
         l.id for l in args.glottolog.api.languoids() if l.lineage and l.lineage[0][1] == 'book1242')
-    
+
     cols_with_values = Counter()  # used for check on empty columns
     nlanguages = 0
     for nlanguages, row in enumerate(cldf['LanguageTable'], start=1):
@@ -41,11 +41,11 @@ def check(ds, args):
             warn('Language {0} mapped to Bookkeeping languoid {1}'.format(row['ID'], gc))
 
         cols_with_values.update([key for key in row if row[key]])
-    
+
     if not nlanguages:
         warn('No languages in dataset')
         return  # and exit...
-    
+
     # check for empty columns
     for col in row:
         if not cols_with_values.get(col):

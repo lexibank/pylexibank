@@ -10,7 +10,6 @@ import attr
 from csvw.metadata import Column
 from pycldf.dataset import Wordlist
 import pyclts.models
-from pyconcepticon.api import Concept
 
 from cldfbench.cldf import CLDFWriter
 from cldfbench.util import iter_requirements

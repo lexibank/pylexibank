@@ -6,6 +6,7 @@ __all__ = ['LexibankMetadata']
 
 version = pkg_resources.get_distribution('pylexibank').version
 
+
 @attr.s
 class LexibankMetadata(Metadata):
     aboutUrl = attr.ib(default=None)

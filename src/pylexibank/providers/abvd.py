@@ -23,10 +23,10 @@ class BVDLanguage(Language):
 class BVD(Dataset):
     SECTION = None
     invalid_ids = []
-    max_language_id = 50 # maximum language id to look for.
+    max_language_id = 50  # maximum language id to look for.
     language_class = BVDLanguage
     cognate_pattern = re.compile(r'''\s*(?P<id>([A-z]?[0-9]+|[A-Z]))\s*(?P<doubt>\?+)?\s*$''')
-    
+
     def iter_wordlists(self, log=None):
         for xml in sorted(self.raw_dir.glob('*.xml'), key=lambda p: int(p.stem)):
             yield Wordlist(self, xml, log)
@@ -37,12 +37,12 @@ class BVD(Dataset):
         # remove
         for fname in self.raw_dir.iterdir():
             fname.unlink()
-        
+
         for lid in range(1, self.max_language_id + 1):
             if lid in self.invalid_ids:
                 args.log.warn("Skipping %s %d - invalid ID" % (self.SECTION, lid))
-                next
-            
+                continue
+
             if not self.get_data(lid):
                 args.log.warn("No content for %s %d. Ending." % (self.SECTION, lid))
                 break
@@ -131,7 +131,7 @@ class Entry(XmlElement):
 
 
 class Wordlist(object):
-    
+
     def __init__(self, dataset, path, log):
         self.dataset = dataset
         self.log = log
@@ -182,9 +182,9 @@ class Wordlist(object):
             try:
                 ds.add_sources(*[Source.from_entry(k, e) for k, e in bib.entries.items()])
                 source = bib.entries.keys()
-            except:
+            except:  # noqa: E722
                 self.log.warn("Invalid citekey for %s" % self.language.id)
-        
+
         for entry in self.entries:
             if entry.name is None or len(entry.name) == 0:  # skip empty entries
                 continue  # pragma: no cover
@@ -193,7 +193,7 @@ class Wordlist(object):
             # (x = probably, s = definitely)
             if entry.cognacy and entry.cognacy.lower() in ('s', 'x'):
                 continue  # pragma: no cover
-            
+
             # handle concepts
             cid = concepts.get(entry.word_id)
             if not cid:
@@ -201,7 +201,7 @@ class Wordlist(object):
                 # add it if we don't have it.
                 ds.add_concept(ID=entry.word_id, Name=entry.word)
                 cid = entry.word_id
-                
+
             # handle lexemes
             try:
                 lex = ds.add_forms_from_value(
@@ -216,10 +216,10 @@ class Wordlist(object):
                     Comment=entry.comment or '',
                     Loan=True if entry.loan and len(entry.loan) else False,
                 )
-            except:  # pragma: no cover
+            except:  # NOQA: E722; pragma: no cover
                 print("ERROR with %r -- %r" % (entry.id, entry.name))
                 raise
-                
+
             if lex:
                 for cognate_set_id in entry.cognates:
                     match = self.dataset.cognate_pattern.match(cognate_set_id)
@@ -229,7 +229,7 @@ class Wordlist(object):
                     else:
                         # make global cognate set id
                         cs_id = "%s-%s" % (slug(entry.word), match.group('id'))
-                        
+
                         ds.add_cognate(
                             lexeme=lex[0],
                             Cognateset_ID=cs_id,
