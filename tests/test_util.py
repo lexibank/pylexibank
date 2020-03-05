@@ -2,6 +2,7 @@ from collections import Counter
 from pathlib import Path
 
 import pytest
+from csvw.dsv import reader
 
 from pylexibank import util
 
@@ -75,3 +76,34 @@ def test_sorted_obj():
     assert util.sorted_obj(d1) == util.sorted_obj(d2)
     assert util.sorted_obj(d2)['b']['a'] == 3
     util.sorted_obj(['http://www.w3.org/ns/csvw', {'@language': 'en'}])
+
+
+def test_get_concepts(concepticon):
+    res = util.get_concepts(concepticon.conceptlists.values(), [])
+    assert len(res) == 1
+    assert 'chinese' in res[0].attributes
+    assert res[0].number == '1'
+
+    id_lookup, _ = util.get_ids_and_attrs(
+        res, {}, id_factory=lambda c: c.number + 'x', lookup_factory=lambda c: c.number + 'y')
+    assert id_lookup['1y'] == '1x'
+
+    id_lookup, _ = util.get_ids_and_attrs(
+        res,
+        {'number': 'Number'},
+        id_factory=lambda c: c.number + 'x',
+        lookup_factory=lambda c: c['Number'] + 'y')
+    assert id_lookup['1y'] == '1x'
+
+    csv = Path(__file__).parent / 'repos' / 'datasets' / 'test_dataset' / 'etc' / 'concepts.csv'
+    res = util.get_concepts([], list(reader(csv, dicts=True)))
+    assert len(res) == 2
+    assert 'chinese' in res[0].attributes
+    assert res[0].number == '1'
+
+    id_lookup, _ = util.get_ids_and_attrs(
+        res,
+        {'chinese': 'chi'},
+        id_factory=lambda c: c.number + 'x',
+        lookup_factory=lambda c: c['chi'])
+    assert id_lookup['xyz'] == '1x'

@@ -1,4 +1,5 @@
 import re
+import itertools
 from collections import OrderedDict
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from clldutils.badge import Colors, badge
 from clldutils import jsonlib
 from cldfbench.datadir import get_url
 from pycldf.sources import Source, Reference
+from pyconcepticon.api import Concept
 
 __all__ = ['progressbar', 'getEvoBibAsBibtex', 'iter_repl']
 YEAR_PATTERN = re.compile('\s+\(?(?P<year>[1-9][0-9]{3}(-[0-9]+)?)(\)|\.)')
@@ -124,3 +126,68 @@ def getEvoBibAsBibtex(*keys, **kw):
         except IndexError:  # pragma: no cover
             raise KeyError('Missing entry {0} in evobib'.format(key))
     return '\n\n'.join(res)
+
+
+def get_concepts(conceptlists, concepts):
+    """
+    Read pyconcepticon.Concept instances either from a conceptlist in Concepticon, or from
+    etc/concepts.csv:
+
+    :param conceptlists:
+    :param concepts:
+    :return:
+    """
+    if conceptlists:
+        return list(itertools.chain(*[cl.concepts.values() for cl in conceptlists]))
+
+    res = []
+    fields = Concept.public_fields()
+    for i, concept in enumerate(concepts, start=1):
+        kw, attrs = {}, {}
+        for k, v in concept.items():
+            if k.lower() in fields:
+                kw[k.lower()] = v
+            else:
+                attrs[k.lower()] = v
+
+        if not kw.get('id'):
+            kw['id'] = str(i)
+        if not kw.get('number'):
+            kw['number'] = str(i)
+        res.append(Concept(attributes=attrs, **kw))
+    return res
+
+
+def get_ids_and_attrs(concepts, fieldnames, id_factory, lookup_factory):
+    id_lookup, objs = OrderedDict(), []
+
+    for i, c in enumerate(concepts):
+        try:
+            # `id_factory` might expect a pyconcepticon.Concept instance as input:
+            id_ = id_factory(c) if callable(id_factory) else getattr(c, id_factory)
+        except AttributeError:
+            id_ = None
+        attrs = dict(
+            ID=id_,
+            Name=c.label,
+            Concepticon_ID=c.concepticon_id,
+            Concepticon_Gloss=c.concepticon_gloss)
+        for fl, f in fieldnames.items():
+            if f not in attrs:
+                if fl in c.attributes:
+                    attrs[f] = c.attributes[fl]
+                if hasattr(c, fl):
+                    attrs[f] = getattr(c, fl)
+        if attrs['ID'] is None:
+            attrs['ID'] = id_factory(attrs) if callable(id_factory) else attrs[id_factory]
+        if lookup_factory is None:
+            key = i
+        else:
+            try:
+                key = lookup_factory(attrs) if callable(lookup_factory) else attrs[lookup_factory]
+            except (KeyError, AttributeError):
+                key = lookup_factory(c) if callable(lookup_factory) else getattr(c, lookup_factory)
+        id_lookup[key] = attrs['ID']
+        objs.append(attrs)
+
+    return id_lookup, objs

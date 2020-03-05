@@ -16,7 +16,7 @@ from cldfbench.cldf import CLDFWriter
 from cldfbench.util import iter_requirements
 
 from pylexibank.transcription import Analysis, analyze
-from pylexibank.util import iter_repl
+from pylexibank.util import iter_repl, get_concepts, get_ids_and_attrs
 
 __all__ = ['LexibankWriter']
 log = logging.getLogger('pylexibank')
@@ -322,51 +322,15 @@ class LexibankWriter(CLDFWriter):
         """
         assert callable(id_factory) or isinstance(id_factory, str)
 
-        # Read pyconcepticon.Concept instances either from a conceptlist in Concepticon, or from
-        # etc/concepts.csv:
-        ids, concepts = OrderedDict(), []
-        if self.dataset.conceptlists:
-            for cl in self.dataset.conceptlists:
-                concepts.extend(cl.concepts.values())
-        else:
-            fields = Concept.public_fields()
-            for i, concept in enumerate(self.dataset.concepts, start=1):
-                kw, attrs = {}, {}
-                for k, v in concept.items():
-                    if k.lower() in fields:
-                        kw[k.lower()] = v
-                    else:
-                        attrs[k.lower()] = v
-
-                if not kw.get('id'):
-                    kw['id'] = str(i)
-                if not kw.get('number'):
-                    kw['number'] = str(i)
-                concepts.append(Concept(attributes=attrs, **kw))
-
-        # Now turn the concepts into `dict`s suitable to instantiate `self.dataset.concept_class`:
-        fieldnames = {f.lower(): f for f in self.dataset.concept_class.fieldnames()}
-        for i, c in enumerate(concepts):
-            try:
-                # `id_factory` might expect a pyconcepticon.Concept instance as input:
-                id_ = id_factory(c) if callable(id_factory) else getattr(c, id_factory)
-            except AttributeError:
-                id_ = None
-            attrs = dict(
-                ID=id_,
-                Name=c.label,
-                Concepticon_ID=c.concepticon_id,
-                Concepticon_Gloss=c.concepticon_gloss)
-            for fl, f in fieldnames.items():
-                if fl in c.attributes:
-                    attrs[f] = c.attributes[fl]
-            if attrs['ID'] is None:
-                attrs['ID'] = id_factory(attrs) if callable(id_factory) else attrs[id_factory]
-            if lookup_factory is None:
-                key = i
-            else:
-                key = lookup_factory(attrs) if callable(lookup_factory) else attrs[lookup_factory]
-            ids[key] = attrs['ID']
+        ids, attrss = get_ids_and_attrs(
+            # Read pyconcepticon.Concept instances either from a conceptlist in Concepticon, or from
+            # etc/concepts.csv:
+            get_concepts(self.dataset.conceptlists, self.dataset.concepts),
+            {f.lower(): f for f in self.dataset.concept_class.fieldnames()},
+            id_factory,
+            lookup_factory,
+        )
+        for attrs in attrss:
             self.add_concept(**attrs)
         return ids if lookup_factory else list(ids.values())
 
