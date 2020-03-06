@@ -5,11 +5,11 @@ Notes:
 - The names of the columns in the database are the names from the CSV files, not the
   preferred labels for the corresponding CLDF properties.
 """
-from collections import OrderedDict, defaultdict
+import json
+import pathlib
 import sqlite3
-from contextlib import closing
-from json import dumps
-from pathlib import Path
+import contextlib
+import collections
 
 import attr
 from csvw.datatypes import DATATYPES
@@ -60,8 +60,8 @@ BIBTEX_FIELDS = [
 ]
 
 
-PROPERTY_URL_TO_COL = defaultdict(dict)
-for table in load(Path(__file__).parent / 'cldf-metadata.json')['tables']:
+PROPERTY_URL_TO_COL = collections.defaultdict(dict)
+for table in load(pathlib.Path(__file__).parent / 'cldf-metadata.json')['tables']:
     for col in table['tableSchema']['columns']:
         if col.get('propertyUrl'):
             PROPERTY_URL_TO_COL[table['dc:conformsTo'].split('#')[1]][col['propertyUrl']] = \
@@ -213,7 +213,7 @@ def schema(ds):
         tables[spec.name] = spec
 
     # must determine the order in which tables must be created!
-    ordered = OrderedDict()
+    ordered = collections.OrderedDict()
     i = 0
     #
     # We loop through the tables repeatedly, and whenever we find one, which has all
@@ -239,14 +239,14 @@ class Database(object):
 
         :param fname: Path to a file in the file system where the db is to be stored.
         """
-        self.fname = Path(fname)
+        self.fname = pathlib.Path(fname)
 
     def drop(self):
         if self.fname.exists():
             self.fname.unlink()
 
     def connection(self):
-        return closing(sqlite3.connect(self.fname.as_posix()))
+        return contextlib.closing(sqlite3.connect(self.fname.as_posix()))
 
     def create(self, force=False, exists_ok=False):
         """
@@ -389,7 +389,7 @@ CREATE TABLE SourceTable (
                     ds.id,
                     '{0}'.format(dataset),
                     ds.repo.hash() if ds.repo else '',
-                    dumps(dataset.metadata_dict)))
+                    json.dumps(dataset.metadata_dict)))
             insert(
                 db,
                 'datasetmeta',
@@ -401,7 +401,7 @@ CREATE TABLE SourceTable (
             for src in dataset.sources.items():
                 values = [ds.id, src.id, src.genre] + [src.get(k) for k in BIBTEX_FIELDS]
                 values.append(
-                    dumps({k: v for k, v in src.items() if k not in BIBTEX_FIELDS}))
+                    json.dumps({k: v for k, v in src.items() if k not in BIBTEX_FIELDS}))
                 rows.append(tuple(values))
             insert(
                 db,
@@ -410,7 +410,7 @@ CREATE TABLE SourceTable (
                 *rows)
 
             # For regular tables, we extract and keep references to sources.
-            refs = defaultdict(list)
+            refs = collections.defaultdict(list)
 
             for t in tables:
                 # We want to lookup columns by the name used in the CLDF dataset.

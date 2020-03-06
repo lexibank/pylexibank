@@ -2,7 +2,9 @@
 Check lexibank plumbing for lexibank datasets
 """
 import functools
+
 from cldfbench.cli_util import with_datasets, add_catalog_spec
+
 from pylexibank.cli_util import add_dataset_spec, warning
 
 

@@ -1,6 +1,6 @@
 import re
-import unicodedata
 import logging
+import unicodedata
 
 import attr
 from clldutils import text

@@ -2,7 +2,7 @@
 Check language specifications of lexibank datasets
 """
 import functools
-from collections import Counter
+import collections
 
 from cldfbench.cli_util import with_datasets, add_catalog_spec
 from pylexibank.cli_util import add_dataset_spec, warning
@@ -32,7 +32,7 @@ def check(ds, args):
     bookkeeping = set(
         l.id for l in args.glottolog.api.languoids() if l.lineage and l.lineage[0][1] == 'book1242')
 
-    cols_with_values = Counter()  # used for check on empty columns
+    cols_with_values = collections.Counter()  # used for check on empty columns
     nlanguages = 0
     for nlanguages, row in enumerate(cldf['LanguageTable'], start=1):
         # no bookkeeping languages

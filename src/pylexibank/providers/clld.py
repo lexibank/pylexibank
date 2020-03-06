@@ -1,4 +1,4 @@
-from zipfile import ZipFile
+import zipfile
 
 from clldutils.misc import lazyproperty
 from pycldf import Wordlist
@@ -16,7 +16,7 @@ class CLLD(Dataset):
     def cmd_download(self, args):
         zname = '{0}.zip'.format(self.id)
         self.raw_dir.download(self.__cldf_url__, zname, log=args.log)
-        archive = ZipFile(str(self.raw_dir / zname))
+        archive = zipfile.ZipFile(str(self.raw_dir / zname))
         archive.extractall(str(self.raw_dir))
         (self.raw_dir / zname).unlink()
 

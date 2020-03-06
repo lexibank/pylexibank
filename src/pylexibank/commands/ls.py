@@ -1,8 +1,8 @@
 """
 List lexibank datasets - installed or loaded into the db.
 """
-import collections
 import textwrap
+import collections
 
 import termcolor
 from clldutils.markup import Table

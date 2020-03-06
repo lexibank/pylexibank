@@ -1,4 +1,4 @@
-from collections import Counter, defaultdict
+import collections
 
 import attr
 import pyclts
@@ -9,13 +9,13 @@ from clldutils.markup import Table
 @attr.s
 class Analysis(object):
     # map segments to frequency
-    segments = attr.ib(default=attr.Factory(Counter))
+    segments = attr.ib(default=attr.Factory(collections.Counter))
     # aggregate segments which are invalid for lingpy
     bipa_errors = attr.ib(default=attr.Factory(set))
     # aggregate segments which are invalid for clpa
     sclass_errors = attr.ib(default=attr.Factory(set))
     # map clpa-replaceable segments to their replacements
-    replacements = attr.ib(default=defaultdict(set))
+    replacements = attr.ib(default=collections.defaultdict(set))
     # count number of errors
     general_errors = attr.ib(default=0)
 

@@ -1,7 +1,7 @@
 import re
+import pathlib
 import itertools
-from collections import OrderedDict
-from pathlib import Path
+import collections
 
 from termcolor import colored
 from tqdm import tqdm
@@ -89,7 +89,7 @@ def get_badge(ratio, name):
 def sorted_obj(obj):
     res = obj
     if isinstance(obj, dict):
-        res = OrderedDict()
+        res = collections.OrderedDict()
         obj.pop(None, None)
         for k, v in sorted(obj.items()):
             res[k] = sorted_obj(v)
@@ -104,7 +104,7 @@ def log_dump(fname, log=None):
 
 
 def jsondump(obj, fname, log=None):
-    fname = Path(fname)
+    fname = pathlib.Path(fname)
     if fname.exists():
         d = jsonlib.load(fname)
         d.update(obj)
@@ -159,7 +159,7 @@ def get_concepts(conceptlists, concepts):
 
 
 def get_ids_and_attrs(concepts, fieldnames, id_factory, lookup_factory):
-    id_lookup, objs = OrderedDict(), []
+    id_lookup, objs = collections.OrderedDict(), []
 
     for i, c in enumerate(concepts):
         try:

@@ -1,10 +1,10 @@
 import re
-from collections import defaultdict, OrderedDict
-from collections.abc import Mapping
-from itertools import chain
-from pathlib import Path
-import pkg_resources
 import logging
+import pathlib
+import itertools
+import collections
+import collections.abc
+import pkg_resources
 
 import attr
 from csvw.metadata import Column
@@ -27,8 +27,8 @@ ID_PATTERN = re.compile('[A-Za-z0-9_\-]+$')
 class LexibankWriter(CLDFWriter):
     def __init__(self, **kw):
         super().__init__(**kw)
-        self._count = defaultdict(int)
-        self._cognate_count = defaultdict(int)
+        self._count = collections.defaultdict(int)
+        self._cognate_count = collections.defaultdict(int)
 
     def write(self, **kw):
         from pylexibank import ENTRY_POINT
@@ -45,7 +45,7 @@ class LexibankWriter(CLDFWriter):
 
     def __enter__(self):
         super().__enter__()
-        default_cldf = Wordlist.from_metadata(Path(__file__).parent / MD_NAME)
+        default_cldf = Wordlist.from_metadata(pathlib.Path(__file__).parent / MD_NAME)
 
         self._obj_index = {}
         for cls in [
@@ -135,7 +135,7 @@ class LexibankWriter(CLDFWriter):
         try:
             segments = kw['Segments']
             if with_morphemes:
-                segments = list(chain(*[s.split() for s in segments]))
+                segments = list(itertools.chain(*[s.split() for s in segments]))
             _, _bipa, _sc, _analysis = analyze(self.args.clts.api, segments, analysis)
 
             # update the list of `bad_words` if necessary; we precompute a
@@ -244,7 +244,7 @@ class LexibankWriter(CLDFWriter):
         :return: The (possibly augmented) instance data as `dict`.
         """
         if lexeme:
-            if not isinstance(lexeme, Mapping):  # pragma: no cover
+            if not isinstance(lexeme, collections.abc.Mapping):  # pragma: no cover
                 raise TypeError('lexeme must be a mapping (`dict`) of lexeme attributes')
             kw.setdefault('Form_ID', lexeme['ID'])
             kw.setdefault('Form', lexeme['Form'])
@@ -286,7 +286,7 @@ class LexibankWriter(CLDFWriter):
         passed, otherwise an `OrderedDict`, mapping lookup to ID.
         """
         assert callable(id_factory) or isinstance(id_factory, str)
-        ids = OrderedDict()
+        ids = collections.OrderedDict()
         for i, kw in enumerate(self.dataset.languages):
             if (not kw.get('Glottocode')) and kw.get('ISO639P3code'):
                 kw['Glottocode'] = self.dataset.glottolog.glottocode_by_iso.get(kw['ISO639P3code'])

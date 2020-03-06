@@ -1,5 +1,6 @@
-import attr
 import pkg_resources
+
+import attr
 from cldfbench.metadata import Metadata
 
 __all__ = ['LexibankMetadata']
