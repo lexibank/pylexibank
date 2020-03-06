@@ -13,8 +13,8 @@ def register(parser):
     add_catalog_spec(parser, 'glottolog')
 
 
-def check(ds, args):
-    warn = functools.partial(warning, args, dataset=ds)
+def check(ds, args, warnings=None):
+    warn = functools.partial(warning, args, dataset=ds, warnings=warnings)
 
     args.log.info('checking {0} - plumbing'.format(ds))
 

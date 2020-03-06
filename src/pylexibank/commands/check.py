@@ -17,8 +17,13 @@ def register(parser):
 
 def check(ds, args):
     for checker in CHECKERS:
-        checker(ds, args)
+        checker(ds, args, warnings=args.warnings)
 
 
 def run(args):
+    args.warnings = []
     with_datasets(args, check)
+    if args.warnings:
+        args.log.warning('{0} warnings issued'.format(len(args.warnings)))
+        return 2
+    args.log.info('OK')
