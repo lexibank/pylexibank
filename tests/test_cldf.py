@@ -38,6 +38,9 @@ def test_align_cognates(dataset, clts, mocker):
             ds.add_form(
                 Language_ID='l', Parameter_ID='p', Value='x', Form='x', Segments=['x'])
 
+        with pytest.raises(ValueError):
+            ds.add_concept(ID='1', Concepticon_ID='1', Concepticon_Gloss='xyz')
+
         ds.cldf['FormTable', 'Segments'].separator = '+'
         lex = ds.add_form_with_segments(
             Language_ID='l', Parameter_ID='p', Value='x', Form='x', Segments=['x', 'y'])

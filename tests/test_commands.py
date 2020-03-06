@@ -1,9 +1,21 @@
-import pathlib
 import shlex
+import logging
+import pathlib
+import argparse
 
 import pytest
 
 from cldfbench.__main__ import main
+from pylexibank import cli_util
+
+
+def test_warning(caplog):
+    cli_util.warning(
+        argparse.Namespace(log=logging.getLogger(__name__)),
+        'message in a bottle',
+        dataset=argparse.Namespace(id='abc')
+    )
+    assert caplog.records[-1].levelname == 'WARNING'
 
 
 def _main(cmd, **kw):
@@ -29,6 +41,13 @@ def test_makecldf(repos, dataset, dataset_cldf):
             str(dataset_cldf.dir / 'tdc.py'),
             str(repos),
         ))
+
+
+def test_check(dataset_cldf, repos):
+    _main('lexibank.check {0} --glottolog {1}'.format(
+        str(dataset_cldf.dir / 'tdc.py'),
+        str(repos),
+    ))
 
 
 def test_ls(repos, tmpdir, dataset):
