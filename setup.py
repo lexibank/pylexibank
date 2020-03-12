@@ -43,7 +43,6 @@ setup(
         'termcolor',
         'gitpython',
         'tqdm',
-        'xlrd',
         'bs4',
     ],
     extras_require={
