@@ -74,7 +74,7 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
         totals['cids'].update([row['Parameter_ID']])
         synonyms[row['Language_ID']].update([row['Parameter_ID']])
 
-    for row in cldf['CognateTable']:
+    for row in cldf.get('CognateTable') or []:
         totals['cognate_sets'].update([row['Cognateset_ID']])
 
     sindex = sum(

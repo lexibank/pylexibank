@@ -65,23 +65,29 @@ def clts(repos):
     return CLTSAPI(repos)
 
 
+def _get_dataset(repos, module, glottolog, concepticon):
+    d, _, module = module.partition('.')
+    with sys_path(repos / 'datasets' / d):
+        if module in sys.modules:
+            mod = importlib.reload(sys.modules[module])
+        else:
+            mod = importlib.import_module(module)
+    return mod.Test(glottolog=glottolog, concepticon=concepticon)
+
+
+
 @pytest.fixture
 def dataset_cldf(repos, glottolog, concepticon):
-    with sys_path(repos / 'datasets' / 'test_dataset_cldf'):
-        if 'tdc' in sys.modules:
-            mod = importlib.reload(sys.modules['tdc'])
-        else:
-            mod = importlib.import_module('tdc')
-    return mod.Test(glottolog=glottolog, concepticon=concepticon)
+    return _get_dataset(repos, 'test_dataset_cldf.tdc', glottolog, concepticon)
 
 
 @pytest.fixture
 def dataset(repos, glottolog, concepticon, clts, mocker):
-    with sys_path(repos / 'datasets' / 'test_dataset'):
-        if 'td' in sys.modules:
-            mod = importlib.reload(sys.modules['td'])
-        else:
-            mod = importlib.import_module('td')
-    ds = mod.Test(glottolog=glottolog, concepticon=concepticon)
+    ds = _get_dataset(repos, 'test_dataset.td', glottolog, concepticon)
     ds._cmd_makecldf(Namespace(log=mocker.Mock(), clts=mocker.Mock(api=clts), verbose=True))
     return ds
+
+
+@pytest.fixture
+def dataset_no_cognates(repos, glottolog, concepticon, clts):
+    return _get_dataset(repos, 'test_dataset_no_cognates.tdn', glottolog, concepticon)

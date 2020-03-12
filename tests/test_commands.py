@@ -22,7 +22,7 @@ def _main(cmd, **kw):
     main(['--no-config'] + shlex.split(cmd), **kw)
 
 
-def test_makecldf(repos, dataset, dataset_cldf):
+def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, tmpdir):
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset.dir / 'td.py'),
         str(repos),
@@ -41,6 +41,18 @@ def test_makecldf(repos, dataset, dataset_cldf):
             str(dataset_cldf.dir / 'tdc.py'),
             str(repos),
         ))
+
+    _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
+        str(dataset_no_cognates.dir / 'tdn.py'),
+        str(repos),
+    ))
+    assert not dataset_no_cognates.cldf_dir.joinpath('cognates.csv').exists()
+    _main('lexibank.load --db {3} {0} --glottolog {1} --concepticon {2}'.format(
+        str(dataset_no_cognates.dir / 'tdn.py'),
+        str(repos),
+        str(repos),
+        str(tmpdir.join('db')),
+    ))
 
 
 def test_check(dataset_cldf, repos):

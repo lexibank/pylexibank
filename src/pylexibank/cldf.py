@@ -82,8 +82,14 @@ class LexibankWriter(CLDFWriter):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        for table in ['FormTable', 'CognateTable', 'LanguageTable', 'ParameterTable']:
+        for table in ['FormTable', 'LanguageTable', 'ParameterTable']:
             self.objects.setdefault(table, [])
+        if not self.objects.get('CognateTable'):
+            self.cldf.tablegroup.tables = [
+                t for t in self.cldf.tables if str(t.url) != 'cognates.csv']
+            if 'CognateTable' in self.objects:
+                del self.objects['CognateTable']
+
         # We only add concepts and languages that are referenced by forms!
         for fk, table in [('Parameter_ID', 'ParameterTable'), ('Language_ID', 'LanguageTable')]:
             refs = set(obj[fk] for obj in self.objects['FormTable'])
