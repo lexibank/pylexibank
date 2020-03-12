@@ -10,7 +10,6 @@ from pylexibank.cli_util import add_dataset_spec, warning
 
 def register(parser):
     add_dataset_spec(parser, multiple=True)
-    add_catalog_spec(parser, 'glottolog')
 
 
 def check(ds, args, warnings=None):

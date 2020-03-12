@@ -55,11 +55,8 @@ def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, tmpdir):
     ))
 
 
-def test_check(dataset_cldf, repos):
-    _main('lexibank.check {0} --glottolog {1}'.format(
-        str(dataset_cldf.dir / 'tdc.py'),
-        str(repos),
-    ))
+def test_check(dataset_cldf):
+    _main('lexibank.check {0}'.format(str(dataset_cldf.dir / 'tdc.py')))
 
 
 def test_ls(repos, tmpdir, dataset):
