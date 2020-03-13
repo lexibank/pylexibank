@@ -27,7 +27,7 @@ def check(ds, args, warnings=None):
     if row:
         for col in row:
             if not cols_with_values.get(col):
-                warn('Column {0} is completely empty'.format(col))
+                warn('Column {0} in LanguageTable is completely empty'.format(col))
 
 
 def run(args):
