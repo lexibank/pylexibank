@@ -21,11 +21,6 @@ def check(ds, args, warnings=None):
     if (ds.dir / 'etc' / 'concepts.csv').exists():
         warn('Dataset uses a local ./etc/concepts.csv rather than a conceptlist from Concepticon')
 
-    # check for empty metadata fields:
-    for field in ['citation', 'title', 'license']:
-        if getattr(ds.metadata, field, None) in (None, ""):
-            warn("Dataset has an empty '{0}' in metadata file".format(field))
-
     # check lexemes.csv
     if (ds.dir / 'etc' / 'lexemes.csv').exists():
         cldf = ds.cldf_reader()
