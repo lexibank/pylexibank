@@ -32,8 +32,10 @@ def check(ds, args, warnings=None):
         try:
             values = set(f['Value'] for f in cldf['FormTable'])
             for r in ds.lexemes:
-                if r not in values:
-                    warn("lexemes.csv contains un-needed conversion '{0}'".format(r))
+                if ds.lexemes[r] and r not in values:  # replacement of form x -> y
+                    warn("lexemes.csv contains un-needed conversion '{0}' -> '{1}'".format(r, ds.lexemes[r]))
+                if not ds.lexemes[r] and r in values:  # removal of form x -> ""
+                    warn("lexemes.csv contains un-handled removal '{0}' -> '{1}'".format(r, ds.lexemes[r]))
         except KeyError:
             warn('Dataset does not seem to be a lexibank dataset - FormTable has no Value column!')
 
