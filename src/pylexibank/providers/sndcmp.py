@@ -3,8 +3,8 @@ import zipfile
 import attr
 import json
 import re
+import collections
 
-from collections import OrderedDict
 from clldutils.misc import slug
 from pylexibank import Concept, Language, Lexeme
 from pylexibank.dataset import Dataset
@@ -89,8 +89,6 @@ class SNDCMP(Dataset):
     )
 
     def __init__(self):
-        self.study_name = self.study_name
-        self.second_gloss_lang = self.second_gloss_lang
         self.data_file_name = '{0}.json'.format(self.study_name.lower())
         self.create_cognates = self.create_cognates
         super().__init__()
@@ -216,7 +214,7 @@ class SNDCMP(Dataset):
                    if re.split(r'_\d+_', json_cat[oid]['metadata']['name'])[0]
                    in language_FilePathParts}
         with open(self.raw_dir / self.catalog_file_name, 'w', encoding='utf-8') as f:
-            json.dump(OrderedDict(sorted(catalog.items())),
+            json.dump(collections.OrderedDict(sorted(catalog.items())),
                       f, ensure_ascii=False, indent=1)
 
     def cmd_makecldf(self, args):
