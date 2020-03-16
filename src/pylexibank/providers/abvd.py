@@ -164,6 +164,15 @@ class Wordlist(object):
 
         :return: A dataset object, ds.
         """
+        source = []
+        if self.language.source:
+            bib = parse_string(self.language.source, "bibtex")
+            try:
+                ds.add_sources(*[Source.from_entry(k, e) for k, e in bib.entries.items()])
+                source = bib.entries.keys()
+            except:  # noqa: E722
+                self.log.warn("Invalid citekey for %s" % self.language.id)
+
         ds.add_language(
             ID=self.language.id,
             Glottocode=self.language.glottocode,
@@ -174,16 +183,8 @@ class Wordlist(object):
             typedby=self.language.typedby,
             checkedby=self.language.checkedby,
             notes=self.language.notes,
+            source=";".join(source)
         )
-
-        source = []
-        if self.language.source:
-            bib = parse_string(self.language.source, "bibtex")
-            try:
-                ds.add_sources(*[Source.from_entry(k, e) for k, e in bib.entries.items()])
-                source = bib.entries.keys()
-            except:  # noqa: E722
-                self.log.warn("Invalid citekey for %s" % self.language.id)
 
         for entry in self.entries:
             if entry.name is None or len(entry.name) == 0:  # skip empty entries
@@ -209,7 +210,7 @@ class Wordlist(object):
                     Language_ID=self.language.id,
                     Parameter_ID=cid,
                     Value=entry.name,
-                    # set source tp entry-level sources if they exist, otherwise use
+                    # set source to entry-level sources if they exist, otherwise use
                     # the language level source.
                     Source=[entry.source] if entry.source else source,
                     Cognacy=entry.cognacy,
