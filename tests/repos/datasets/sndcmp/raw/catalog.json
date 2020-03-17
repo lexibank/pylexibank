@@ -1,0 +1,113 @@
+{
+ "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_001_one_wan": {
+  "bitstreams": [
+   {
+    "bitstreamid": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_001_one_wan.mp3",
+    "checksum": "2068eb42787a8975145a42587615201f",
+    "created": 1582310056047,
+    "checksum-algorithm": "MD5",
+    "last-modified": 1582310056070,
+    "filesize": 22861,
+    "content-type": "audio/mpeg"
+   },
+   {
+    "bitstreamid": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_001_one_wan.ogg",
+    "checksum": "09789adb701e6a6ebd30414aeb015f85",
+    "created": 1582310056253,
+    "checksum-algorithm": "MD5",
+    "last-modified": 1582310056265,
+    "filesize": 42275,
+    "content-type": "audio/ogg"
+   },
+   {
+    "bitstreamid": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_001_one_wan.wav",
+    "checksum": "f4e2160b0bd27746d6070ec5cd1127d7",
+    "created": 1582310056608,
+    "checksum-algorithm": "MD5",
+    "last-modified": 1582310056618,
+    "filesize": 178606,
+    "content-type": "audio/wav"
+   }
+  ],
+  "metadata": {
+   "collection": "soundcomparisons",
+   "name": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_001_one_wan",
+   "type": "soundfile"
+  },
+  "id": "EAEA0-2FDC-998F-511D-0"
+ },
+ "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_002_two_tu": {
+  "bitstreams": [
+   {
+    "bitstreamid": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_002_two_tu.mp3",
+    "checksum": "188e4e8722d6e46f2707ca31428fe040",
+    "created": 1582310057277,
+    "checksum-algorithm": "MD5",
+    "last-modified": 1582310057298,
+    "filesize": 14083,
+    "content-type": "audio/mpeg"
+   },
+   {
+    "bitstreamid": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_002_two_tu.ogg",
+    "checksum": "5a5ed4418e7bad6cc5c110362d273fe4",
+    "created": 1582310057504,
+    "checksum-algorithm": "MD5",
+    "last-modified": 1582310057511,
+    "filesize": 27172,
+    "content-type": "audio/ogg"
+   },
+   {
+    "bitstreamid": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_002_two_tu.wav",
+    "checksum": "5594f49e0ee20a92764d9e3ee9657baa",
+    "created": 1582310057726,
+    "checksum-algorithm": "MD5",
+    "last-modified": 1582310057740,
+    "filesize": 105444,
+    "content-type": "audio/wav"
+   }
+  ],
+  "metadata": {
+   "collection": "soundcomparisons",
+   "name": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_002_two_tu",
+   "type": "soundfile"
+  },
+  "id": "EAEA0-9E14-517B-D07E-0"
+ },
+ "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_003_three_tri": {
+  "bitstreams": [
+   {
+    "bitstreamid": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_003_three_tri.mp3",
+    "checksum": "e56a5fc78ae5a66e783c17bc30019568",
+    "created": 1582310058577,
+    "checksum-algorithm": "MD5",
+    "last-modified": 1582310058585,
+    "filesize": 22445,
+    "content-type": "audio/mpeg"
+   },
+   {
+    "bitstreamid": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_003_three_tri.ogg",
+    "checksum": "0636d60aba661ff94f8ad56a9c5e063e",
+    "created": 1582310058771,
+    "checksum-algorithm": "MD5",
+    "last-modified": 1582310058791,
+    "filesize": 42183,
+    "content-type": "audio/ogg"
+   },
+   {
+    "bitstreamid": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_003_three_tri.wav",
+    "checksum": "1a2c1b0166200a5ab8688b6c94426492",
+    "created": 1582310059225,
+    "checksum-algorithm": "MD5",
+    "last-modified": 1582310059235,
+    "filesize": 175962,
+    "content-type": "audio/wav"
+   }
+  ],
+  "metadata": {
+   "collection": "soundcomparisons",
+   "name": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_003_three_tri",
+   "type": "soundfile"
+  },
+  "id": "EAEA0-B35B-74CD-9F93-0"
+ }
+}

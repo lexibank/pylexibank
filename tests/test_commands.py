@@ -22,7 +22,7 @@ def _main(cmd, **kw):
     main(['--no-config'] + shlex.split(cmd), **kw)
 
 
-def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, tmpdir):
+def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmpdir):
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset.dir / 'td.py'),
         str(repos),
@@ -35,6 +35,13 @@ def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, tmpdir):
     ))
     assert 'Papunesia' not in dataset.cldf_dir.joinpath('languages.csv').read_text(encoding='utf8')
     assert '### Replacement' in dataset.dir.joinpath('FORMS.md').read_text(encoding='utf8')
+
+    _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
+        str(sndcmp.dir / 'ts.py'),
+        str(repos),
+    ))
+    assert 'Bislama_Gloss' in sndcmp.cldf_dir.joinpath('parameters.csv').read_text(encoding='utf8')
+    assert 'e56a5fc78ae5a66e783c17bc30019568' in sndcmp.cldf_dir.joinpath('media.csv').read_text(encoding='utf8')
 
     with pytest.raises(ValueError):
         _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(

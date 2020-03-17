@@ -88,10 +88,10 @@ class SNDCMP(Dataset):
         normalize_unicode='NFC',
     )
 
-    def __init__(self):
+    def __init__(self, concepticon=None, glottolog=None):
         self.data_file_name = '{0}.json'.format(self.study_name.lower())
         self.create_cognates = self.create_cognates
-        super().__init__()
+        super().__init__(concepticon=concepticon, glottolog=glottolog)
 
     def cmd_create_ref_etc_files(self, args):
         # Helper command to generate raw/concepts.csv and raw/languages.csv out of
