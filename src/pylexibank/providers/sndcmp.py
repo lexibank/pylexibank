@@ -201,7 +201,7 @@ class SNDCMP(Dataset):
         with self.raw_dir.temp_download(
                 'https://github.com/clld/soundcomparisons-data/raw/master/soundfiles/catalog.json.zip',
                 '_cat_temp.json.zip') as p:
-            with zipfile.ZipFile(p, 'r') as z:
+            with zipfile.ZipFile(str(p), 'r') as z:
                 for filename in z.namelist():
                     with z.open(filename) as f:
                         json_cat = json.loads(
@@ -213,7 +213,7 @@ class SNDCMP(Dataset):
                    for oid in json_cat
                    if re.split(r'_\d+_', json_cat[oid]['metadata']['name'])[0]
                    in language_FilePathParts}
-        with open(self.raw_dir / self.catalog_file_name, 'w', encoding='utf-8') as f:
+        with open(str(self.raw_dir / self.catalog_file_name), 'w', encoding='utf-8') as f:
             json.dump(collections.OrderedDict(sorted(catalog.items())),
                       f, ensure_ascii=False, indent=1)
 
