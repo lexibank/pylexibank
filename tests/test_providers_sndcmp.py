@@ -1,11 +1,18 @@
 import pytest
-import pathlib
 import attr
+import zipfile
+import io
 
 from csvw.dsv import reader
 from clldutils.path import copytree
 from pylexibank.providers.sndcmp import SNDCMP
 from pylexibank.providers.sndcmp import SNDCMPConcept
+
+
+JSONSTR = '{"languages":[{"FilePathPart": "Br_Tup_MaAwTG_Aweti_Aweti_Saitao_Dl"}]}'
+JSONZIP = '{"EAEA0-4DE0-B3E9-31CE-0":{"metadata":'\
+          '{"name":"Br_Tup_MaAwTG_Aweti_Aweti_Saitao_Dl_001_um_one"}}}'
+
 
 @pytest.fixture
 def sndcmp_dataset(repos, tmpdir, glottolog, concepticon):
@@ -26,6 +33,7 @@ def sndcmp_dataset(repos, tmpdir, glottolog, concepticon):
 
     return Dataset()
 
+
 @pytest.fixture
 def sndcmp_dl_dataset(repos, tmpdir, glottolog, concepticon):
 
@@ -41,6 +49,7 @@ def sndcmp_dl_dataset(repos, tmpdir, glottolog, concepticon):
 
     return Dataset()
 
+
 def test_sndcmp(sndcmp_dataset, mocker):
 
     sndcmp_dataset.cmd_create_ref_etc_files(mocker.MagicMock())
@@ -52,8 +61,25 @@ def test_sndcmp(sndcmp_dataset, mocker):
     assert 'Bislama_Gloss' in res[0]
     assert res[0]["IndexInSource"] == '1-0'
 
+
 def test_sndcmp_dl(sndcmp_dl_dataset, mocker):
 
-    sndcmp_dl_dataset.cmd_download(mocker.MagicMock())
-    sndcmp_dl_dataset.cmd_create_ref_etc_files(mocker.MagicMock())
+    class Requests(mocker.Mock):
+        def get(self, *args, **kw):
+            if 'zip' in args[0]:
+                s = io.BytesIO()
+                z = zipfile.ZipFile(s, 'w')
+                z.writestr('catalog.json', JSONZIP.encode('utf8'))
+                z.close()
+                return mocker.Mock(
+                    status_code=200,
+                    iter_content=mocker.Mock(return_value=[s.getvalue()]))
+            else:
+                return mocker.Mock(
+                    status_code=200,
+                    iter_content=mocker.Mock(return_value=[JSONSTR.encode('utf8')]))
+
+    mocker.patch('cldfbench.datadir.requests', Requests())
+
+    sndcmp_dl_dataset.cmd_download(mocker.Mock())
     assert (sndcmp_dl_dataset.raw_dir / 'brazil.json').exists()

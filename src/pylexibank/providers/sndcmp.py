@@ -266,11 +266,11 @@ class SNDCMP(Dataset):
             # Skip over entries with no phonetic transcription, empty
             # phonetic transicrption and from
             # different studies (missing language)
-            if 'Phonetic' not in lexeme: # pragma: no cover
+            if 'Phonetic' not in lexeme:  # pragma: no cover
                 continue
             if not lexeme['Phonetic']:
                 continue
-            if lexeme['LanguageIx'] not in languages: # pragma: no cover
+            if lexeme['LanguageIx'] not in languages:  # pragma: no cover
                 missing.add(lexeme['LanguageIx'])
                 continue
 
@@ -290,7 +290,7 @@ class SNDCMP(Dataset):
                 if not v or v in self.form_spec.missing_data:
                     continue
                 # Commas are not allowed!
-                if ',' in v: # pragma: no cover
+                if ',' in v:  # pragma: no cover
                     args.log.warn('Comma not allowed in /{0}/ for {1} - {2}'.format(
                         value, languages[lexeme['LanguageIx']], lexeme['IxElicitation']))
                 param_id = concepts['{0}-{1}'.format(
@@ -327,7 +327,7 @@ class SNDCMP(Dataset):
                                 'size': bs['filesize'],
                                 'Form_ID': new['ID']
                             })
-                    else: # pragma: no cover
+                    else:  # pragma: no cover
                         args.log.warn('Missing sound file name in catalog {0}.'.format(
                             lexeme['path'][i]))
 
@@ -352,5 +352,5 @@ class SNDCMP(Dataset):
             **{'media.csv': media}
         )
 
-        for m in sorted(missing): # pragma: no cover
+        for m in sorted(missing):  # pragma: no cover
             args.log.warn('Missing language with ID {0}.'.format(m))

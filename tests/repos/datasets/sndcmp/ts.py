@@ -4,6 +4,7 @@ import attr
 from pylexibank.providers.sndcmp import SNDCMP
 from pylexibank.providers.sndcmp import SNDCMPConcept
 
+
 @attr.s
 class TestConcept(SNDCMPConcept):
     Bislama_Gloss = attr.ib(default=None)
@@ -19,4 +20,3 @@ class Test(SNDCMP):
     create_cognates = True
 
     concept_class = TestConcept
-
