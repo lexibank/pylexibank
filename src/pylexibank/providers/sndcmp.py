@@ -1,4 +1,3 @@
-import pathlib
 import zipfile
 import attr
 import json
@@ -101,9 +100,9 @@ class SNDCMP(Dataset):
         # Load JSON data
         json_data = self.raw_dir.read_json(self.data_file_name)
 
-        longnames = {rl['LanguageIx']: \
-                        rl['RegionGpMemberLgNameLongInThisSubFamilyWebsite'].strip()\
-            for rl in json_data['regionLanguages']}
+        longnames = {rl['LanguageIx']:
+                     rl['RegionGpMemberLgNameLongInThisSubFamilyWebsite'].strip()
+                     for rl in json_data['regionLanguages']}
 
         # Create raw/languages.csv for usage as etc/languages.csv
         fname = self.raw_dir / 'languages.csv'
@@ -118,7 +117,7 @@ class SNDCMP(Dataset):
                 lang_id = slug(language['ShortName']).capitalize()
 
                 language['GlottoCode'] = language['GlottoCode'].strip()\
-                                            if language['GlottoCode'] else ''
+                    if language['GlottoCode'] else ''
                 # add to language map
                 if language['GlottoCode'] in seen_codes:
                     gldata = seen_codes[language['GlottoCode']]
@@ -126,12 +125,13 @@ class SNDCMP(Dataset):
                     gldata = args.glottolog.api.languoid(
                         language['GlottoCode'])
                     seen_codes[language['GlottoCode']] = gldata
-                
+
                 f.writerow([
                     lang_id,
                     language['ShortName'].strip(),
-                    longnames[language['LanguageIx']]\
-                        if longnames[language['LanguageIx']] != language['ShortName'].strip() else '',
+                    longnames[language['LanguageIx']]
+                    if longnames[language['LanguageIx']] != language['ShortName'].strip()
+                    else '',
                     language['GlottoCode'],
                     gldata.name if gldata else '',
                     language['ISOCode'].strip(),
@@ -266,11 +266,11 @@ class SNDCMP(Dataset):
             # Skip over entries with no phonetic transcription, empty
             # phonetic transicrption and from
             # different studies (missing language)
-            if 'Phonetic' not in lexeme:
+            if 'Phonetic' not in lexeme: # pragma: no cover
                 continue
             if not lexeme['Phonetic']:
                 continue
-            if lexeme['LanguageIx'] not in languages:
+            if lexeme['LanguageIx'] not in languages: # pragma: no cover
                 missing.add(lexeme['LanguageIx'])
                 continue
 
@@ -290,7 +290,7 @@ class SNDCMP(Dataset):
                 if not v or v in self.form_spec.missing_data:
                     continue
                 # Commas are not allowed!
-                if ',' in v:
+                if ',' in v: # pragma: no cover
                     args.log.warn('Comma not allowed in /{0}/ for {1} - {2}'.format(
                         value, languages[lexeme['LanguageIx']], lexeme['IxElicitation']))
                 param_id = concepts['{0}-{1}'.format(
@@ -299,9 +299,9 @@ class SNDCMP(Dataset):
                 new = args.writer.add_form(
                     Language_ID=languages[lexeme['LanguageIx']],
                     Local_ID='{0}-{1}-{2}'.format(
-                                lexeme['LanguageIx'],
-                                lexeme['IxElicitation'],
-                                lexeme['IxMorphologicalInstance']),
+                        lexeme['LanguageIx'],
+                        lexeme['IxElicitation'],
+                        lexeme['IxMorphologicalInstance']),
                     Parameter_ID=param_id,
                     Value=v,
                     Form=v,
@@ -327,7 +327,7 @@ class SNDCMP(Dataset):
                                 'size': bs['filesize'],
                                 'Form_ID': new['ID']
                             })
-                    else:
+                    else: # pragma: no cover
                         args.log.warn('Missing sound file name in catalog {0}.'.format(
                             lexeme['path'][i]))
 
@@ -352,6 +352,5 @@ class SNDCMP(Dataset):
             **{'media.csv': media}
         )
 
-        for m in sorted(missing):
+        for m in sorted(missing): # pragma: no cover
             args.log.warn('Missing language with ID {0}.'.format(m))
-
