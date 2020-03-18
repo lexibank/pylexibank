@@ -91,3 +91,8 @@ def dataset(repos, glottolog, concepticon, clts, mocker):
 @pytest.fixture
 def dataset_no_cognates(repos, glottolog, concepticon, clts):
     return _get_dataset(repos, 'test_dataset_no_cognates.tdn', glottolog, concepticon)
+
+
+@pytest.fixture
+def sndcmp(repos, glottolog, concepticon, clts):
+    return _get_dataset(repos, 'sndcmp.ts', glottolog, concepticon)
