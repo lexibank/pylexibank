@@ -205,8 +205,7 @@ class SNDCMP(Dataset):
             with zipfile.ZipFile(str(p), 'r') as z:
                 for filename in z.namelist():
                     with z.open(filename) as f:
-                        json_cat = json.loads(
-                            f.read().decode('utf-8'), encoding='utf-8')
+                        json_cat = json.loads(f.read().decode('utf-8'))
                     break
 
         # Prune catalog to used sound files only
