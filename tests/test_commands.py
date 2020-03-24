@@ -22,6 +22,13 @@ def _main(cmd, **kw):
     main(['--no-config'] + shlex.split(cmd), **kw)
 
 
+def test_makecldf_multi_profiles(repos):
+    _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
+        str(repos / 'datasets' / 'test_dataset_multi_profile' / 'tdmp.py'),
+        str(repos),
+    ))
+
+
 def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmpdir):
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset.dir / 'td.py'),
