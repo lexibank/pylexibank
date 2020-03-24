@@ -112,9 +112,9 @@ class LexibankWriter(CLDFWriter):
         self._cognate_count[kw['Form_ID']] += 1
         return '{0}-{1}'.format(kw['Form_ID'], self._cognate_count[kw['Form_ID']])
 
-    def tokenize(self, item, string):
+    def tokenize(self, item, string, **kw):
         if self.dataset.tokenizer:
-            return self.dataset.tokenizer(item, string)
+            return self.dataset.tokenizer(item, string, **kw)
 
     def add_form_with_segments(self, **kw):
         """
@@ -179,7 +179,10 @@ class LexibankWriter(CLDFWriter):
 
         if form:
             # try to segment the data now
-            kw.setdefault('Segments', self.tokenize(kw, form) or [])
+            profile = kw.pop('profile', None)
+            kw.setdefault(
+                'Segments',
+                self.tokenize(kw, form, **(dict(profile=profile) if profile else {})) or [])
             if kw['Segments']:
                 return self.add_form_with_segments(**kw)
 
