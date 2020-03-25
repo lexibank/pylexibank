@@ -17,12 +17,12 @@ Sometimes, even more flexibility is needed, e.g. when the orthographies used in 
 dataset vary per contributor and not per language. In this case, `etc/orthography`
 may hold any number of profile files named `<Profile_ID>.tsv`, and the profile
 selection **per form** is controlled by passing a keyword argument 
-`profile=<Profile_ID>` into calls of `LexibnkWriter.add_lexemes`.
+`profile=<Profile_ID>` into calls of `LexibankWriter.add_lexemes`.
 
 ### Preparing initial orthography profiles with LingPy
 
 In order to prepare an initial orthography profile from your data, you can use the `profile` command 
-of `lingpy`, which will be readily installed along with `pylexibank`. To do so, we assume that you have
+of `lingpy`, which will be installed along with `pylexibank`. To do so, we assume that you have
 already created a first cldf-version of your dataset, with `Value` and `Form`. In this case, creating an orthography profile is as easy as typing:
 
 ```
@@ -49,7 +49,7 @@ n̥	n̥
 ```
 The reason is that `lexibank` first converts the string into its context representation `^n̥ak$`. It will then search
 for the longest subsequence in the beginning of the sequence, where it finds `^n`. This will then be used as a first match, leaving the diacritic `◌̥` unmapped. 
-It is important to keep this in mind, since it can otherwise seem very surprising, as if the profile would not correctly work, if you do not take care. 
+Keep this in mind as it can otherwise seem very surprising, as if the profile would not correctly work.
 
 ### Testing orthography profiles interactively with SegmentsJS
 
