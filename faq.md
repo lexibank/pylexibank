@@ -19,17 +19,20 @@ may hold any number of profile files named `<Profile_ID>.tsv`, and the profile
 selection **per form** is controlled by passing a keyword argument 
 `profile=<Profile_ID>` into calls of `LexibankWriter.add_lexemes`.
 
+
 ### Preparing initial orthography profiles with LingPy
 
 In order to prepare an initial orthography profile from your data, you can use the `profile` command 
 of `lingpy`, which will be installed along with `pylexibank`. To do so, we assume that you have
-already created a first cldf-version of your dataset, with `Value` and `Form`. In this case, creating an orthography profile is as easy as typing:
+already created a first cldf-version of your dataset, with `Value` and `Form` columns
+in the `FormTable`. In this case, creating an orthography profile is as easy as typing:
 
-```
-$ lingpy profile --clts --cldf --column=form --context -i cldf/cldf-metadata.json -o etc/profile
+```shell script
+$ lingpy profile --clts --cldf --column=form --context -i cldf/cldf-metadata.json -o etc/orthography.tsv
 ```
 
 This profile will try to normalize your data following the [CLTS](https://clts.clld.org) system, it assumes that data is provided in CLDF format, it takes entries in the column `form`, and also distinguishes three different contexts in which graphemes may occur, namely the beginning of a word, marked by `^`, the end, marked by `$`, and the rest. 
+
 
 ### Caveats in the creation of orthography profiles with context
 
@@ -51,7 +54,7 @@ The reason is that `lexibank` first converts the string into its context represe
 for the longest subsequence in the beginning of the sequence, where it finds `^n`. This will then be used as a first match, leaving the diacritic `◌̥` unmapped. 
 Keep this in mind as it can otherwise seem very surprising, as if the profile would not correctly work.
 
+
 ### Testing orthography profiles interactively with SegmentsJS
 
 In order to test your profile interactively, you can check the interactive implementation of orthography profiles as they are provided in the [SegmentsJS](http://digling.org/calc/profile/) application. You can directly test the behavior by pasting above profile into the application and then pasting the word ``^n̥ak$``. Remember that you should always add the context markers when checking a given sequence that may be wrongly or surprisingly parsed in your lexibank dataset.
-
