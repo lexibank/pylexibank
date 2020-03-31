@@ -22,6 +22,16 @@ def _main(cmd, **kw):
     main(['--no-config'] + shlex.split(cmd), **kw)
 
 
+def test_makecldf_concepticon_concepts(repos, tmpdir):
+    d = repos / 'datasets' / 'test_dataset_concepticon_concepts'
+    _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
+        str(d / 'tdcc.py'),
+        str(repos),
+    ))
+    assert d.joinpath('cldf', 'parameters.csv').read_text(encoding='utf8').splitlines()[0] == \
+        'ID,Name,Concepticon_ID,Concepticon_Gloss,NUMBER,ENGLISH,CHINESE,PAGE'
+
+
 def test_makecldf_multi_profiles(repos):
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(repos / 'datasets' / 'test_dataset_multi_profile' / 'tdmp.py'),
