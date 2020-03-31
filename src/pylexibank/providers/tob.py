@@ -1,4 +1,5 @@
 import re
+from textwrap import dedent
 
 from bs4 import BeautifulSoup
 import bs4
@@ -6,10 +7,8 @@ from csvw.dsv import UnicodeWriter
 from clldutils.misc import slug
 
 from pylexibank.dataset import Dataset
-from pylexibank.util import getEvoBibAsBibtex
 from pylexibank.forms import FormSpec
-
-SOURCE = 'Starostin2011'
+from pylexibank.util import pb
 
 
 class TOB(Dataset):
@@ -25,14 +24,22 @@ class TOB(Dataset):
         strip_inside_brackets=True
     )
     
+    tob_sources = {
+        "Starostin2011": dedent("""
+        @misc{Starostin2011,
+            Year = {2011},
+            Editor = {Starostin, George S. and Krylov, Phil},
+            Title = {The Global Lexicostatistical Database}
+        }""")
+    }
+    
     def _url(self, page):
         return 'http://starling.rinet.ru/cgi-bin/response.cgi?' + \
             'root=new100&morpho=0&basename=new100' + \
             r'\{0}\{1}&first={2}'.format(self.dset, self.name, page)
 
     def cmd_download(self, args):
-        # download source
-        self.raw_dir.write('sources.bib', getEvoBibAsBibtex(SOURCE, **vars(args)))
+        self.raw_dir.write('sources.bib', "\n".join(self.tob_sources.values()))
 
         # download data
         all_records = []
@@ -65,16 +72,18 @@ class TOB(Dataset):
             id_factory=lambda c: c.id.split('-')[-1]+ '_' + slug(c.english),
             lookup_factory=lambda c: c.id.split('-')[-1]
         )
-        for cid, concept, lid, gc, form, cogid in self.raw_dir.read_csv('output.csv'):
-            args.writer.add_language(ID=lid.replace(' ', '_'), Name=lid, Glottocode=gc)
+        for cid, concept, lang, gc, form, cogid in self.raw_dir.read_csv('output.csv'):
+            lid = lang.replace(' ', '_')
+            args.writer.add_language(ID=lid, Name=lang, Glottocode=gc)
+            global_cog_id = "%s-%s" % (cid, cogid)
             for row in args.writer.add_forms_from_value(
-                Language_ID=lid.replace(' ', '_'),
+                Language_ID=lid,
                 Parameter_ID=concepts[cid],
                 Value=form,
-                Source=[SOURCE],
-                Cognacy=concept + '-' + cogid
+                Source=list(self.tob_sources),
+                Cognacy=global_cog_id
             ):
                 args.writer.add_cognate(
                     lexeme=row,
-                    Cognateset_ID="%s-%s" % (cid, cogid),
-                    Source=[SOURCE])
+                    Cognateset_ID=global_cog_id,
+                    Source=list(self.tob_sources))
