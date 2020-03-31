@@ -1,6 +1,9 @@
 import attr
 
-__all__ = ['Language', 'Lexeme', 'Concept', 'Cognate']
+__all__ = [
+    'Language', 'Lexeme', 'Concept', 'Cognate', 'CONCEPTICON_CONCEPTS', 'concepticon_concepts']
+
+CONCEPTICON_CONCEPTS = 1
 
 
 def non_empty(_, attribute, value):
@@ -42,6 +45,15 @@ class Concept(FieldnamesMixin):
     @classmethod
     def __cldf_table__(cls):
         return 'ParameterTable'
+
+
+def concepticon_concepts(concept_lists):
+    attrib = {}
+    for cl in concept_lists:
+        for col in cl.metadata.tableSchema.columns:
+            if col.name not in ['ID', 'CONCEPTICON_ID', 'CONCEPTICON_GLOSS']:
+                attrib[col.name] = attr.ib(default=None)
+    return attr.make_class("ConcepticonConcept", attrib, bases=(Concept,))
 
 
 @attr.s

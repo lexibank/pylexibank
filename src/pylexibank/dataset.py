@@ -191,6 +191,10 @@ class Dataset(BaseDataset):
             self.conceptlists = [
                 self.concepticon.conceptlists[key] for key in self.metadata.conceptlist]
 
+        if self.concept_class is models.CONCEPTICON_CONCEPTS:
+            assert self.conceptlists
+            self.concept_class = models.concepticon_concepts(self.conceptlists)
+
         super()._cmd_makecldf(args)
 
         if args.verbose:
