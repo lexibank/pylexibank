@@ -3,9 +3,11 @@ import re
 from bs4 import BeautifulSoup
 import bs4
 from csvw.dsv import UnicodeWriter
+from clldutils.misc import slug
 
 from pylexibank.dataset import Dataset
-from pylexibank.util import pb, getEvoBibAsBibtex
+from pylexibank.util import getEvoBibAsBibtex
+from pylexibank.forms import FormSpec
 
 SOURCE = 'Starostin2011'
 
@@ -16,6 +18,13 @@ class TOB(Dataset):
     pages = 1
     lexemes = {}
 
+    form_spec = FormSpec(
+        brackets={"(": ")"},
+        separators=";/,~",
+        missing_data=('?', '-', ''),
+        strip_inside_brackets=True
+    )
+    
     def _url(self, page):
         return 'http://starling.rinet.ru/cgi-bin/response.cgi?' + \
             'root=new100&morpho=0&basename=new100' + \
@@ -51,19 +60,21 @@ class TOB(Dataset):
             f.writerows(all_records)
 
     def cmd_makecldf(self, args):
-        ds = args.writer
-        ds.add_sources()
-        ds.add_concepts(id_factory=lambda c: c.number)
-        for cid, concept, lid, gc, form, cogid in pb(self.raw_dir.read_csv('output.csv')):
-            ds.add_language(ID=lid.replace(' ', '_'), Name=lid, Glottocode=gc)
-            for row in ds.add_lexemes(
+        args.writer.add_sources()
+        concepts = args.writer.add_concepts(
+            id_factory=lambda c: c.id.split('-')[-1]+ '_' + slug(c.english),
+            lookup_factory=lambda c: c.id.split('-')[-1]
+        )
+        for cid, concept, lid, gc, form, cogid in self.raw_dir.read_csv('output.csv'):
+            args.writer.add_language(ID=lid.replace(' ', '_'), Name=lid, Glottocode=gc)
+            for row in args.writer.add_forms_from_value(
                 Language_ID=lid.replace(' ', '_'),
-                Parameter_ID=cid,
+                Parameter_ID=concepts[cid],
                 Value=form,
                 Source=[SOURCE],
                 Cognacy=concept + '-' + cogid
             ):
-                ds.add_cognate(
+                args.writer.add_cognate(
                     lexeme=row,
-                    Cognateset_ID=cogid,
+                    Cognateset_ID="%s-%s" % (cid, cogid),
                     Source=[SOURCE])
