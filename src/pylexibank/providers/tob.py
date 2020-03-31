@@ -23,7 +23,7 @@ class TOB(Dataset):
         missing_data=('?', '-', ''),
         strip_inside_brackets=True
     )
-    
+
     tob_sources = {
         "Starostin2011": dedent("""
         @misc{Starostin2011,
@@ -32,7 +32,7 @@ class TOB(Dataset):
             Title = {The Global Lexicostatistical Database}
         }""")
     }
-    
+
     def _url(self, page):
         return 'http://starling.rinet.ru/cgi-bin/response.cgi?' + \
             'root=new100&morpho=0&basename=new100' + \
@@ -69,7 +69,7 @@ class TOB(Dataset):
     def cmd_makecldf(self, args):
         args.writer.add_sources()
         concepts = args.writer.add_concepts(
-            id_factory=lambda c: c.id.split('-')[-1]+ '_' + slug(c.english),
+            id_factory=lambda c: c.id.split('-')[-1] + '_' + slug(c.english),
             lookup_factory=lambda c: c.id.split('-')[-1]
         )
         for cid, concept, lang, gc, form, cogid in self.raw_dir.read_csv('output.csv'):
