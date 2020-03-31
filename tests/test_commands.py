@@ -73,6 +73,15 @@ def test_check(dataset_cldf):
     _main('lexibank.check {0}'.format(str(dataset_cldf.dir / 'tdc.py')))
 
 
+def test_check_lexibank(dataset_cldf, caplog):
+    _main(
+        'lexibank.check_lexibank {0}'.format(str(dataset_cldf.dir / 'tdc.py')),
+        log=logging.getLogger(__name__))
+    warnings = [r.message for r in caplog.records if r.levelname == 'WARNING']
+    print(warnings)
+    assert any('Cross-concept' in w for w in warnings)
+
+
 def test_ls(repos, tmpdir, dataset):
     _main('lexibank.load --db {3} {0} --glottolog {1} --concepticon {2}'.format(
         str(dataset.dir / 'td.py'),

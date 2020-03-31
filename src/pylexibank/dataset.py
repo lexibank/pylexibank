@@ -45,6 +45,10 @@ class Dataset(BaseDataset):
 
     form_spec = forms.FormSpec()
 
+    # If a dataset provides cross-concept cognate sets, it must declare this by setting the below
+    # flag to True.
+    cross_concept_cognates = False
+
     @property
     def stats(self):
         if self.dir.joinpath('README.json').exists():

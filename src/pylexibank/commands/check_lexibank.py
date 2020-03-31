@@ -2,6 +2,7 @@
 Check lexibank plumbing for lexibank datasets
 """
 import functools
+import collections
 
 from cldfbench.cli_util import with_datasets
 
@@ -21,9 +22,9 @@ def check(ds, args, warnings=None):
     if (ds.dir / 'etc' / 'concepts.csv').exists():
         warn('Dataset uses a local ./etc/concepts.csv rather than a conceptlist from Concepticon')
 
+    cldf = ds.cldf_reader()
     # check lexemes.csv
     if (ds.dir / 'etc' / 'lexemes.csv').exists():
-        cldf = ds.cldf_reader()
         try:
             values = set(f['Value'] for f in cldf['FormTable'])
             for r in ds.lexemes:
@@ -35,6 +36,24 @@ def check(ds, args, warnings=None):
                         r, ds.lexemes[r]))
         except KeyError:
             warn('Dataset does not seem to be a lexibank dataset - FormTable has no Value column!')
+
+    if cldf.get('CognateTable'):
+        # check that there are no cross-concept cognate sets:
+        id_col = cldf['FormTable', 'id'].name
+        pid_col = cldf['FormTable', 'parameterReference'].name
+        fid_col = cldf['CognateTable', 'formReference'].name
+        cogid_col = cldf['CognateTable', 'cognatesetReference'].name
+
+        form_to_concept = {form[id_col]: form[pid_col] for form in cldf['FormTable']}
+        cogset_to_concepts = collections.defaultdict(set)
+        for cog in cldf['CognateTable']:
+            cid = form_to_concept[cog[fid_col]]
+            cogid = cog[cogid_col]
+            if len(cogset_to_concepts[cogid]) == 1 \
+                    and cid not in cogset_to_concepts[cogid]:
+                # We warn when a second concept ID is detected for a cognateset.
+                warn('Cross-concept cognate set {0}'.format(cogid))
+            cogset_to_concepts[cogid].add(cid)
 
 
 def run(args):
