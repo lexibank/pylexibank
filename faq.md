@@ -1,5 +1,22 @@
 # Tackling common issues
 
+## Concepticon concept lists
+
+It is highly recommended that the concept list(s) used to collect a lexibank dataset are
+submitted to [Concepticon](https://concepticon.clld.org).
+If this is the case,
+- `metadata.json` should list the IDs of the concept lists using the `"conceptlist"` key
+- the content of the CLDF dataset's `ParameterTable` can be assembled easily, calling
+  ```python
+  args.writer.add_concepts()
+  ```
+- data in additional columns of the concept list can be copied into the `ParameterTable` by assigning a special value to the `Dataset`s `concept_class`
+  attribute:
+  ```python
+  concept_class = pylexibank.CONCEPTICON_CONCEPTS
+  ```
+
+
 ## Orthography profiles
 
 Data can be automatically segmented if a dataset provides an orthography profile 
