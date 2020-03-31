@@ -1,7 +1,7 @@
 from pathlib import Path
 import argparse
 
-from pylexibank.providers.tob import TOB, SOURCE
+from pylexibank.providers.tob import TOB
 
 HTML = '<div class="results_record">' \
        '<div><span></span><span>1</span></div>' \
@@ -32,9 +32,6 @@ def test_TOB(tmpdir, mocker, concepticon, glottolog):
                 iter_content=mocker.Mock(return_value=[HTML.encode('utf8')]))
 
     ds = DS(concepticon=concepticon, glottolog=glottolog)
-    mocker.patch(
-        'pylexibank.providers.tob.getEvoBibAsBibtex',
-        mocker.Mock(return_value='@misc{%s,\ntitle="abc"\n}' % SOURCE))
     mocker.patch('cldfbench.datadir.requests', Requests())
     ds._cmd_download(mocker.Mock())
     ds._cmd_makecldf(argparse.Namespace(verbose=False, log=None))
