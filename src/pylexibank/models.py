@@ -75,6 +75,8 @@ class Lexeme(FieldnamesMixin):
     Segments = attr.ib(
         default=attr.Factory(list),
         validator=attr.validators.instance_of(list))
+    Graphemes = attr.ib(default=None)
+    Profile = attr.ib(default=None)  # key of the profile used to create the segmentation
     Source = attr.ib(
         default=attr.Factory(list),
         validator=attr.validators.instance_of(list),

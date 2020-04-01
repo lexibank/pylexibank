@@ -9,8 +9,7 @@ from clldutils.misc import lazyproperty
 from clldutils import jsonlib
 from pyglottolog.languoids import Glottocode
 
-from segments import Tokenizer, Profile
-from segments.tree import Tree
+from segments import Tokenizer
 
 from cldfbench.dataset import Dataset as BaseDataset
 from cldfbench.cldf import CLDFSpec
@@ -22,6 +21,7 @@ from pylexibank import transcription
 from pylexibank import metadata
 from pylexibank import forms
 from pylexibank import report
+from pylexibank.profile import Profile
 
 __all__ = ['Dataset', 'ENTRY_POINT']
 ENTRY_POINT = 'lexibank.dataset'
@@ -128,6 +128,23 @@ class Dataset(BaseDataset):
     # handling of lexemes/forms/words
     # ---------------------------------------------------------------
     @lazyproperty
+    def orthography_profile_dict(self):
+        res = {}
+        profile = self.etc_dir / 'orthography.tsv'
+        profile_dir = self.etc_dir / 'orthography'
+        if profile.exists():
+            res[None] = profile
+        if profile_dir.exists() and profile_dir.is_dir():
+            for p in profile_dir.glob('*.tsv'):
+                res[p.stem] = p
+
+        return {k: Profile.from_file(str(p), form='NFC') for k, p in res.items()}
+
+    @staticmethod
+    def form_for_segmentation(form):
+        return unicodedata.normalize('NFC', '^' + form + '$')
+
+    @lazyproperty
     def tokenizer(self):
         """
         Datasets can provide support for segmentation (aka tokenization) in two ways:
@@ -146,38 +163,34 @@ class Dataset(BaseDataset):
         - `kw` may be used to pass any context info to the tokenizer, when called
           explicitly.
         """
-        def get_tokenizer(profile_):
-            profile_ = Profile.from_file(str(profile_), form='NFC')
-            default_spec = list(next(iter(profile_.graphemes.values())).keys())
-            for grapheme in ['^', '$']:
-                if grapheme not in profile_.graphemes:
-                    profile_.graphemes[grapheme] = {k: None for k in default_spec}
-            profile_.tree = Tree(list(profile_.graphemes.keys()))
-            return Tokenizer(profile=profile_, errors_replace=lambda c: '<{0}>'.format(c))
-
-        tokenizers = {}
-        profile = self.etc_dir / 'orthography.tsv'
-        profile_dir = self.etc_dir / 'orthography'
-        if profile.exists():
-            tokenizers[None] = get_tokenizer(profile)
-        if profile_dir.exists() and profile_dir.is_dir():
-            for profile in profile_dir.glob('*.tsv'):
-                tokenizers[profile.stem] = get_tokenizer(profile)
+        tokenizers = {
+            k: Tokenizer(profile=p, errors_replace=lambda c: '<{0}>'.format(c))
+            for k, p in self.orthography_profile_dict.items()}
 
         if tokenizers:
             def _tokenizer(item, string, **kw):
+                """
+                Adds `Profile` and `Graphemes` keys to `item`, returns `list` of segments.
+                """
                 kw.setdefault("column", "IPA")
                 kw.setdefault("separator", " + ")
                 profile = kw.pop('profile', None)
                 if profile:
                     tokenizer = tokenizers[profile]
+                    item['Profile'] = profile
                 elif isinstance(item, dict) \
                         and 'Language_ID' in item \
                         and item['Language_ID'] in tokenizers:
                     tokenizer = tokenizers[item['Language_ID']]
+                    item['Profile'] = item['Language_ID']
                 else:
                     tokenizer = tokenizers[None]
-                return tokenizer(unicodedata.normalize('NFC', '^' + string + '$'), **kw).split()
+                    item['Profile'] = 'default'
+                form = self.form_for_segmentation(string)
+                res = tokenizer(form, **kw).split()
+                kw['column'] = Profile.GRAPHEME_COL
+                item['Graphemes'] = tokenizer(form, **kw)
+                return res
             return _tokenizer
 
     def _cmd_makecldf(self, args):

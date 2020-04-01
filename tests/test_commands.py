@@ -5,6 +5,7 @@ import argparse
 
 import pytest
 
+from csvw import dsv
 from cldfbench.__main__ import main
 from pylexibank import cli_util
 
@@ -33,10 +34,13 @@ def test_makecldf_concepticon_concepts(repos, tmpdir):
 
 
 def test_makecldf_multi_profiles(repos):
+    d = repos / 'datasets' / 'test_dataset_multi_profile'
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
-        str(repos / 'datasets' / 'test_dataset_multi_profile' / 'tdmp.py'),
+        str(d / 'tdmp.py'),
         str(repos),
     ))
+    forms = list(dsv.reader(d / 'cldf' / 'forms.csv', dicts=True))
+    assert forms[0]['Profile'] == 'p1'
 
 
 def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmpdir):
