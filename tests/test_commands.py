@@ -42,6 +42,12 @@ def test_makecldf_multi_profiles(repos):
     forms = list(dsv.reader(d / 'cldf' / 'forms.csv', dicts=True))
     assert forms[0]['Profile'] == 'p1'
 
+    _main('lexibank.format_profile {0} --clts {1} --sort --trim --augment'.format(
+        str(d / 'tdmp.py'),
+        str(repos),
+    ))
+    assert 'FREQUENCY' in (d / 'etc' / 'orthography' / 'p1.tsv').read_text(encoding='utf8')
+
 
 def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmpdir):
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
