@@ -30,7 +30,7 @@ def test_trim():
     assert 'ab' not in prf.graphemes
 
 
-def test_augment():
+def test_augment(clts):
     prf = Profile(
         {'Grapheme': '^a', 'IPA': 'z'},
         {'Grapheme': 'a', 'IPA': 'x'},
@@ -39,6 +39,9 @@ def test_augment():
     prf.augment(['aab', 'ba', 'aba'])
     assert prf.graphemes['^a']['FREQUENCY'] == 2
     assert prf.graphemes['a']['FREQUENCY'] == 3
+
+    prf.augment(['aab', 'ba', 'aba'], clts=clts)
+    assert prf.graphemes['^a']['SCA'] == 'S'
 
 
 def test_write(tmpdir):

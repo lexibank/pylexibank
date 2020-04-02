@@ -120,11 +120,13 @@ class Profile(segments.Profile):
             form += '$'
         return form
 
-    def augment(self, forms):
+    def augment(self, forms, clts=None, ipa_col=IPA_COLUMN):
         """
         Applies a profile to a wordlist, returning new profile counts and segments.
         """
         self.column_labels.add('FREQUENCY')
+        if clts:
+            self.column_labels.add('SCA')
         self.column_labels.add('EXAMPLES')
         freqs = collections.Counter()
         ex = collections.defaultdict(list)
@@ -137,6 +139,8 @@ class Profile(segments.Profile):
         for g, spec in self.graphemes.items():
             spec['FREQUENCY'] = freqs.get(g, 0)
             spec['EXAMPLES'] = ";".join(ex.get(g, [])[:5])
+            if clts:
+                spec['SCA'] = ipa2sca(spec[ipa_col], clts)
 
     def clean(self, clts, ipa_col=IPA_COLUMN):
         """

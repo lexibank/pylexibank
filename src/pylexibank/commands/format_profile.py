@@ -66,7 +66,7 @@ def run(args):
                 args.log.info("%i superfluous rules were removed.", total_removed)
 
         if args.augment and forms[key]:
-            profile.augment(forms[key])
+            profile.augment(forms[key], clts=args.clts.api)
 
         if args.sort:
             profile.sort(clts=args.clts.api, ipa_col=args.ipa)
