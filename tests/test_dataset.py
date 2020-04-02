@@ -82,18 +82,20 @@ def test_BaseDataset(mocker, repos):
 
 
 @pytest.mark.parametrize(
-    'string,tokens',
+    'string,segments,graphemes',
     [
-        ('^b$', 'b'),  # context marker is stripped
-        ('aba', 'c b z'),  # "a" is treated differently depending on context
-        ('bab', 'b a b'),  # "a" is treated differently depending on context
+        ('^b$', 'b', '^ ^ b $ $'),  # context marker is stripped
+        ('aba', 'c b z', '^a b a$'),  # "a" is treated differently depending on context
+        ('bab', 'b a b', '^ b a b $'),  # "a" is treated differently depending on context
     ]
 )
-def test_tokenizer(repos, string, tokens):
+def test_tokenizer(repos, string, segments, graphemes):
     import warnings
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         mod = import_module(repos / 'datasets' / 'test_dataset_cldf' / 'tdc')
         dataset = mod.Test()
-        assert dataset.tokenizer(None, string) == tokens.split()
+        item = {}
+        assert dataset.tokenizer(item, string) == segments.split()
+        assert item['Graphemes'] == graphemes
