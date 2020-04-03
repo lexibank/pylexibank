@@ -1,3 +1,7 @@
+"""
+Orthography profiles in lexibank are based on the Profile class in the `segments` package, adding
+functionality to check and consistently format in a diff-friendly way.
+"""
 import re
 import copy
 import collections
@@ -7,6 +11,7 @@ import segments
 from segments.tree import Tree
 from clldutils.misc import log_or_raise
 from csvw import dsv
+from csvw.metadata import TableGroup, Column
 
 __all__ = ['Profile', 'IPA_COLUMN']
 
@@ -14,9 +19,6 @@ IPA_COLUMN = 'IPA'
 
 
 def unicode2codepointstr(text):
-    """
-    Returns a codepoint representation to an Unicode string.
-    """
     return " ".join(["U+{0:0{1}X}".format(ord(char), 4) for char in text])
 
 
@@ -38,6 +40,17 @@ class Profile(segments.Profile):
             if grapheme not in self.graphemes:
                 self.graphemes[grapheme] = {k: None for k in default_spec}
         self.recreate_tree()
+
+    def __str__(self):
+        # We overwrite the base class' method to fix the order of columns.
+        tg = TableGroup.fromvalue(self.MD)
+        for col in sorted(
+                self.column_labels, key=lambda t: (t == IPA_COLUMN, t.lower()), reverse=True):
+            if col != self.GRAPHEME_COL:
+                tg.tables[0].tableSchema.columns.append(
+                    Column.fromvalue({"name": col, "null": self.NULL}))
+
+        return tg.tables[0].write(self.iteritems(), fname=None).decode('utf8').strip()
 
     def write(self, fname=None):
         (fname or self.fname).write_text(str(self), encoding='utf8')

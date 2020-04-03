@@ -1,5 +1,5 @@
 """
-
+Format (and lint) the orthography profiles of a dataset.
 """
 import collections
 
@@ -19,7 +19,7 @@ def register(parser):
     )
     parser.add_argument(
         '--augment',
-        help="augment the profile with frequency counts and examples from the FormTable",
+        help="augment the profile with sca, and frequency counts and examples from the FormTable",
         default=False,
         action='store_true',
     )
@@ -47,7 +47,7 @@ def run(args):
     if ds.cldf_dir.joinpath('forms.csv').exists():
         for form in ds.cldf_reader()['FormTable']:
             forms[form.get('Profile')].append(ds.form_for_segmentation(form['Form']))
-    if list(forms.keys()) == [None]:
+    if list(forms.keys()) == [None]:  # pragma: no cover
         forms['default'] = forms[None]
 
     for key, profile in profiles.items():
@@ -62,8 +62,8 @@ def run(args):
                 total_removed += removed
                 if removed == 0:
                     break
-            if total_removed:
-                args.log.info("%i superfluous rules were removed.", total_removed)
+            if total_removed:  # pragma: no cover
+                args.log.info("{} superfluous rules were removed.".format(total_removed))
 
         if args.augment and forms[key]:
             profile.augment(forms[key], clts=args.clts.api)
