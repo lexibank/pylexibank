@@ -18,7 +18,7 @@ def run(args):
 def check_profile(dataset, args):
     problems, visited = set(), set()
     for row in dataset.cldf_dir.read_csv('forms.csv', dicts=True):
-        tokens = dataset.tokenizer(None, row['Form'], column='IPA') if \
+        tokens = dataset.tokenizer({}, row['Form'], column='IPA') if \
             dataset.tokenizer else row['Segments'].split()
         for tk in set(tokens):
             if tk not in visited:
