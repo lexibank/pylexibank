@@ -26,4 +26,5 @@ def test_invalid_standard_title(title):
 
 def test_valid_standard_title():
     assert check_standard_title(STANDARD_TITLE) is None
+    assert check_standard_title(STANDARD_TITLE.replace(" et al.'s", "brams'")) is None
 

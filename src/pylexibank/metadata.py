@@ -33,7 +33,7 @@ def check_standard_title(title):
     Note that this requires installing `pylexibank` for tests, also in .travis.yml.
     """
     match = STANDARD_TITLE_PATTERN.fullmatch(title)
-    assert match and match.group('authors').strip().endswith("'s")
+    assert match and match.group('authors').strip().endswith(("'s", "s'"))
 
 
 @attr.s
