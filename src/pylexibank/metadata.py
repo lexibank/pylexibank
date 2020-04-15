@@ -24,13 +24,13 @@ def check_standard_title(title):
 
     Usage: In a dataset's `test.py`:
     ```python
-    from pylexibank import check_standard_title
+    import os, pytest
 
+    @pytest.mark.skipif("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true")
     def test_valid_title(cldf_dataset, cldf_logger):
+        from pylexibank import check_standard_title
         check_standard_title(cldf_dataset.metadata_dict['dc:title'])
     ```
-
-    Note that this requires installing `pylexibank` for tests, also in .travis.yml.
     """
     match = STANDARD_TITLE_PATTERN.fullmatch(title)
     assert match and match.group('authors').strip().endswith(("'s", "s'"))
