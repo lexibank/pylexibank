@@ -18,6 +18,10 @@ def check(ds, args, warnings=None):
 
     args.log.info('checking {0} - plumbing'.format(ds))
 
+    # check that there's a description of contributions:
+    if not ds.contributors:
+        warn('Dataset does not describe contributions in {}'.format(ds.contributors_path))
+
     # check that there's no local concepts.csv:
     if (ds.dir / 'etc' / 'concepts.csv').exists():
         warn('Dataset uses a local ./etc/concepts.csv rather than a conceptlist from Concepticon')

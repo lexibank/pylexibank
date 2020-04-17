@@ -89,8 +89,10 @@ def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmp
     ))
 
 
-def test_check(dataset_cldf):
-    _main('lexibank.check {0}'.format(str(dataset_cldf.dir / 'tdc.py')))
+def test_check(dataset_cldf, caplog):
+    _main('lexibank.check {0}'.format(str(dataset_cldf.dir / 'tdc.py')),
+          log=logging.getLogger(__name__))
+    assert [r for r in caplog.records if 'CONTRIBUTORS.md' in r.message]
 
 
 def test_check_lexibank(dataset_cldf, caplog):
