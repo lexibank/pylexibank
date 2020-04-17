@@ -1,11 +1,39 @@
+import re
 import pkg_resources
 
 import attr
 from cldfbench.metadata import Metadata
 
-__all__ = ['LexibankMetadata']
+__all__ = ['LexibankMetadata', 'check_standard_title']
 
 version = pkg_resources.get_distribution('pylexibank').version
+
+STANDARD_TITLE_PATTERN = re.compile(
+    r'CLDF dataset derived from\s+'
+    r'(?P<authors>[^"]+)'
+    r'"(?P<title>[^"]+)"\s+from\s+'
+    r'(?P<year>[0-9]{4})'
+)
+
+
+def check_standard_title(title):
+    """
+    Assert a title conforms to the standard format.
+
+    > CLDF dataset derived from AUTHOR's "TITLE" from YEAR
+
+    Usage: In a dataset's `test.py`:
+    ```python
+    import os, pytest
+
+    @pytest.mark.skipif("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true")
+    def test_valid_title(cldf_dataset, cldf_logger):
+        from pylexibank import check_standard_title
+        check_standard_title(cldf_dataset.metadata_dict['dc:title'])
+    ```
+    """
+    match = STANDARD_TITLE_PATTERN.fullmatch(title)
+    assert match and match.group('authors').strip().endswith(("'s", "s'"))
 
 
 @attr.s
