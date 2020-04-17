@@ -1,6 +1,9 @@
 """
 Run makecldf command of a dataset
 """
+import html
+
+from clldutils import jsonlib
 from cldfbench.cli_util import with_dataset, get_dataset
 
 from pylexibank.cli_util import add_catalogs, add_dataset_spec
@@ -21,3 +24,26 @@ def run(args):
     if not dataset.cldf_dir.joinpath('sources.bib').exists():
         raise ValueError(
             'The dataset has no sources at {0}'.format(dataset.cldf_dir.joinpath('sources.bib')))
+    creators, contributors = dataset.get_creators_and_contributors(strict=False)
+
+    def contrib(d):
+        return {k: v for k, v in d.items() if k in {'name', 'affiliation', 'orcid', 'type'}}
+
+    with jsonlib.update_ordered(dataset.dir / '.zenodo.json', indent=4) as md:
+        md.update({
+            'title': dataset.metadata.title,
+            "access_right": "open",
+            "keywords": sorted(set(md.get('keywords', []) + ["linguistics", "cldf:Wordlist"])),
+            "creators": [contrib(p) for p in creators],
+            "contributors": [contrib(p) for p in contributors],
+            "communities": sorted(
+                md.get('communities', []) + [{"identifier": "lexibank"}],
+                key=lambda i: i['identifier']),
+            "upload_type": "dataset",
+        })
+        if dataset.metadata.citation:
+            md['description'] = "<p>Cite the source of the dataset as:</p>\n\n" \
+                                "<blockquote>\n<p>{}</p>\n</blockquote>".format(
+                html.escape(dataset.metadata.citation))
+        if dataset.metadata.zenodo_license:
+            md['license'] = {'id': dataset.metadata.zenodo_license}

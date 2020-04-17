@@ -102,5 +102,5 @@ def test_tokenizer(repos, string, segments, graphemes):
 
 
 def test_contributors(dataset, dataset_cldf):
-    assert len(dataset.contributors) == 1
-    assert len(dataset_cldf.contributors) == 0
+    assert len(dataset.get_creators_and_contributors()[0]) == 1
+    assert len(dataset_cldf.get_creators_and_contributors()[0]) == 0

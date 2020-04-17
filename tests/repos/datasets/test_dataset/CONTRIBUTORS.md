@@ -2,4 +2,4 @@
 
 name | role
 --- | ---
-the name | the role
+the name | author

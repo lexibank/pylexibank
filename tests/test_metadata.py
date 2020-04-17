@@ -29,10 +29,16 @@ def test_valid_standard_title():
     assert check_standard_title(STANDARD_TITLE.replace(" et al.'s", "brams'")) is None
 
 
-def test_iter_contributors():
-    assert len(list(iter_contributors([]))) == 0
-    assert len(list(iter_contributors(['a|b', '---|---', 'c|d']))) == 1
-    assert len(list(iter_contributors(['a|b', '---|---', 'c|d', 'a', 'e|f']))) == 1
+def test_get_creators_and_contributors():
+    assert len(get_creators_and_contributors([])[0]) == 0
+    cr, co = get_creators_and_contributors(['a|role', '---|---', 'c|staff'], strict=False)
+    assert len(cr) == 0 and len(co) == 1
+
+    with pytest.raises(KeyError):
+        get_creators_and_contributors(['a|role', '---|---', 'c|staff'], strict=True)
+
+    assert len(get_creators_and_contributors(['a|role', '---|---', 'c|author'])[0]) == 1
+    assert len(get_creators_and_contributors(['a|role', '---|---', 'c|author', 'a', 'e|f'])[0]) == 1
 
     with pytest.raises(AssertionError):
-        list(iter_contributors(['---|---', 'c|d']))
+        get_creators_and_contributors(['---|---', 'c|d'])

@@ -6,6 +6,7 @@ import argparse
 import pytest
 
 from csvw import dsv
+from clldutils import jsonlib
 from cldfbench.__main__ import main
 from pylexibank import cli_util
 
@@ -55,6 +56,8 @@ def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmp
         str(repos),
     ))
     assert 'Papunesia' in dataset.cldf_dir.joinpath('languages.csv').read_text(encoding='utf8')
+    # Metadata for Zenodo is merged if this makes sense:
+    assert len(jsonlib.load(dataset.dir / '.zenodo.json')['communities']) == 2
 
     _main('lexibank.makecldf {0} --dev --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset.dir / 'td.py'),

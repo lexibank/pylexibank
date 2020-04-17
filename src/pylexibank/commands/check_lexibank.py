@@ -19,8 +19,8 @@ def check(ds, args, warnings=None):
     args.log.info('checking {0} - plumbing'.format(ds))
 
     # check that there's a description of contributions:
-    if not ds.contributors:
-        warn('Dataset does not describe contributions in {}'.format(ds.contributors_path))
+    if not ds.get_creators_and_contributors(strict=True)[0]:
+        warn('Dataset does not describe creators in {}'.format(ds.contributors_path))
 
     # check that there's no local concepts.csv:
     if (ds.dir / 'etc' / 'concepts.csv').exists():

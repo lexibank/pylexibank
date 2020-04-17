@@ -94,11 +94,10 @@ class Dataset(BaseDataset):
     def write_json(self, obj):  # pragma: no cover
         jsondump(obj, self._json)
 
-    @property
-    def contributors(self):
+    def get_creators_and_contributors(self, strict=False):
         if self.contributors_path.exists():
-            return list(metadata.iter_contributors(self.contributors_path))
-        return []
+            return metadata.get_creators_and_contributors(self.contributors_path, strict=strict)
+        return [], []
 
     @lazyproperty
     def sources(self):
