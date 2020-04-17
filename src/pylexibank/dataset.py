@@ -62,7 +62,8 @@ class Dataset(BaseDataset):
                 raise ValueError(
                     "Dataset.id needs to be specified in subclass for %s!" % self.__class__)
         self.unmapped = Unmapped()
-        self._json = self.dir.joinpath('lexibank.json')
+        self._json = self.dir / 'lexibank.json'
+        self.contributors_path = self.dir / 'CONTRIBUTORS.md'
 
         self.conceptlists = []
         self.glottolog = glottolog
@@ -92,6 +93,12 @@ class Dataset(BaseDataset):
 
     def write_json(self, obj):  # pragma: no cover
         jsondump(obj, self._json)
+
+    @property
+    def contributors(self):
+        if self.contributors_path.exists():
+            return list(metadata.iter_contributors(self.contributors_path))
+        return []
 
     @lazyproperty
     def sources(self):
@@ -261,9 +268,8 @@ class Dataset(BaseDataset):
         tr = self.cldf_dir / '.transcription-report.json'
         tr = jsonlib.load(tr) if tr.exists() else None
         res += report.report(self, tr, getattr(args, 'glottolog', None), args.log)
-        if self.dir.joinpath('CONTRIBUTORS.md').exists():
-            res += '\n\n{0}\n\n'.format(
-                self.dir.joinpath('CONTRIBUTORS.md').read_text(encoding='utf8'))
+        if self.contributors_path.exists():
+            res += '\n\n{0}\n\n'.format(self.contributors_path.read_text(encoding='utf8'))
         self.dir.write('FORMS.md', self.form_spec.as_markdown(self))
         return res
 

@@ -99,3 +99,8 @@ def test_tokenizer(repos, string, segments, graphemes):
         item = {}
         assert dataset.tokenizer(item, string) == segments.split()
         assert item['Graphemes'] == graphemes
+
+
+def test_contributors(dataset, dataset_cldf):
+    assert len(dataset.contributors) == 1
+    assert len(dataset_cldf.contributors) == 0

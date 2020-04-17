@@ -1,10 +1,11 @@
 import re
+import collections
 import pkg_resources
 
 import attr
 from cldfbench.metadata import Metadata
 
-__all__ = ['LexibankMetadata', 'check_standard_title']
+__all__ = ['LexibankMetadata', 'check_standard_title', 'iter_contributors']
 
 version = pkg_resources.get_distribution('pylexibank').version
 
@@ -34,6 +35,26 @@ def check_standard_title(title):
     """
     match = STANDARD_TITLE_PATTERN.fullmatch(title)
     assert match and match.group('authors').strip().endswith(("'s", "s'"))
+
+
+def iter_contributors(fname_or_lines):
+    header, in_table = None, False
+
+    def row(line):
+        return [l.strip() for l in line.split('|')]
+
+    for line in (fname_or_lines if isinstance(fname_or_lines, list) else fname_or_lines.open()):
+        if in_table:
+            if '|' not in line:  # Last row of table was already read
+                break
+            yield collections.OrderedDict(zip(header, row(line)))
+        elif '|' in line:
+            r = row(line)
+            if not ''.join(r).replace('-', ''):  # a line like " --- | --- | --- "
+                assert header
+                in_table = True
+            else:
+                header = r
 
 
 @attr.s

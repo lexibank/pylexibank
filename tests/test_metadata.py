@@ -28,3 +28,11 @@ def test_valid_standard_title():
     assert check_standard_title(STANDARD_TITLE) is None
     assert check_standard_title(STANDARD_TITLE.replace(" et al.'s", "brams'")) is None
 
+
+def test_iter_contributors():
+    assert len(list(iter_contributors([]))) == 0
+    assert len(list(iter_contributors(['a|b', '---|---', 'c|d']))) == 1
+    assert len(list(iter_contributors(['a|b', '---|---', 'c|d', 'a', 'e|f']))) == 1
+
+    with pytest.raises(AssertionError):
+        list(iter_contributors(['---|---', 'c|d']))
