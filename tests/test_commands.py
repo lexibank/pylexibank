@@ -144,7 +144,8 @@ def test_init_profile(dataset, repos):
 
 
 def test_readme(dataset, repos):
-    _main('lexibank.readme {0} --glottolog {1}'.format(str(dataset.dir / 'td.py'), repos))
+    _main(
+        'lexibank.readme {0} --glottolog {1}'.format(str(dataset.dir / 'td.py'), repos))
     assert dataset.dir.joinpath('FORMS.md').exists()
     assert '# Contributors' in dataset.dir.joinpath('README.md').read_text(encoding='utf8')
 
