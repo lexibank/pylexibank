@@ -218,7 +218,8 @@ class Dataset(BaseDataset):
 
         if args.verbose:
             self.unmapped.pprint()
-        assert self.cldf_reader().validate(args.log)
+        if not args.dev:
+            assert self.cldf_reader().validate(args.log)
 
         stats = transcription.Stats(
             bad_words=sorted(self.tr_bad_words[:100], key=lambda x: x['ID']),
@@ -266,7 +267,12 @@ class Dataset(BaseDataset):
         res = self.metadata.markdown()
         tr = self.cldf_dir / '.transcription-report.json'
         tr = jsonlib.load(tr) if tr.exists() else None
-        res += report.report(self, tr, getattr(args, 'glottolog', None), args.log)
+        res += report.report(
+            self,
+            tr,
+            None if args.dev else getattr(args, 'glottolog', None),
+            args.log,
+        )
         if self.contributors_path.exists():
             res += '\n\n{0}\n\n'.format(self.contributors_path.read_text(encoding='utf8'))
         self.dir.write('FORMS.md', self.form_spec.as_markdown(self))
