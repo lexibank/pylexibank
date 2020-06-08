@@ -34,4 +34,4 @@ def test_TOB(tmpdir, mocker, concepticon, glottolog):
     ds = DS(concepticon=concepticon, glottolog=glottolog)
     mocker.patch('cldfbench.datadir.requests', Requests())
     ds._cmd_download(mocker.Mock())
-    ds._cmd_makecldf(argparse.Namespace(verbose=False, log=None))
+    ds._cmd_makecldf(argparse.Namespace(verbose=False, log=None, dev=False))

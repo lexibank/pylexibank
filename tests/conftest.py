@@ -84,7 +84,8 @@ def dataset_cldf(repos, glottolog, concepticon):
 @pytest.fixture
 def dataset(repos, glottolog, concepticon, clts, mocker):
     ds = _get_dataset(repos, 'test_dataset.td', glottolog, concepticon)
-    ds._cmd_makecldf(Namespace(log=mocker.Mock(), clts=mocker.Mock(api=clts), verbose=True))
+    ds._cmd_makecldf(
+        Namespace(log=mocker.Mock(), clts=mocker.Mock(api=clts), verbose=True, dev=False))
     return ds
 
 
