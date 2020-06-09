@@ -57,7 +57,7 @@ def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmp
     ))
     assert 'Papunesia' in dataset.cldf_dir.joinpath('languages.csv').read_text(encoding='utf8')
     # Metadata for Zenodo is merged if this makes sense:
-    assert len(jsonlib.load(dataset.dir / '.zenodo.json')['communities']) == 2
+    assert len(jsonlib.load(dataset.dir / '.zenodo.json')['communities']) == 3
 
     _main('lexibank.makecldf {0} --dev --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset.dir / 'td.py'),
