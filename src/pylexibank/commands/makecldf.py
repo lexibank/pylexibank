@@ -30,17 +30,22 @@ def run(args):
         return {k: v for k, v in d.items() if k in {'name', 'affiliation', 'orcid', 'type'}}
 
     with jsonlib.update_ordered(dataset.dir / '.zenodo.json', indent=4) as md:
-        md.update({
-            'title': dataset.metadata.title,
-            "access_right": "open",
-            "keywords": sorted(set(md.get('keywords', []) + ["linguistics", "cldf:Wordlist"])),
-            "creators": [contrib(p) for p in creators],
-            "contributors": [contrib(p) for p in contributors],
-            "communities": sorted(
-                md.get('communities', []) + [{"identifier": "lexibank"}],
-                key=lambda i: i['identifier']),
-            "upload_type": "dataset",
-        })
+        md.update(
+            {
+                "title": dataset.metadata.title,
+                "access_right": "open",
+                "keywords": sorted(set(md.get("keywords", []) + ["linguistics", "cldf:Wordlist"])),
+                "creators": [contrib(p) for p in creators],
+                "contributors": [contrib(p) for p in contributors],
+                "communities": [
+                    {"identifier": community_id}
+                    for community_id in sorted(
+                        set([r["identifier"] for r in md.get("communities", [])] + ["lexibank"])
+                    )
+                ],
+                "upload_type": "dataset",
+            }
+        )
         if dataset.metadata.citation:
             md['description'] = "<p>Cite the source of the dataset as:</p>\n\n" \
                                 "<blockquote>\n<p>{}</p>\n</blockquote>".format(
