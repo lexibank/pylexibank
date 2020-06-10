@@ -41,7 +41,7 @@ def check(ds, args, warnings=None):
         except KeyError:
             warn('Dataset does not seem to be a lexibank dataset - FormTable has no Value column!')
 
-    if cldf.get('CognateTable'):
+    if (not getattr(ds, 'cross_concept_cognates', False)) and cldf.get('CognateTable'):
         # check that there are no cross-concept cognate sets:
         id_col = cldf['FormTable', 'id'].name
         pid_col = cldf['FormTable', 'parameterReference'].name
