@@ -58,13 +58,14 @@ def test_db(tmpdir, dataset, mocker, capsys):
     db.load(dataset)
 
 
-def test_db_multiple_datasets(tmpdir, dataset, dataset_cldf, capsys):
+def test_db_multiple_datasets(tmpdir, dataset, dataset_cldf, dataset_cldf_capitalisation, capsys):
     db = Database(str(tmpdir.join('lexibank.sqlite')))
     db.load(dataset)
     db.load(dataset_cldf, verbose=True)
+    db.load(dataset_cldf_capitalisation, verbose=True)
     with db.connection() as conn:
         res = db.fetchall('select `id`, `name` from LanguageTable', conn=conn)
-        assert len(res) == 3
+        assert len(res) == 4
         assert ('1', 'Lang CLDF') in [(r[0], r[1]) for r in res]
         res = db.fetchall('select `id`, `value` from FormTable', conn=conn)
         assert ('1', 'abc') in [(r[0], r[1]) for r in res]
