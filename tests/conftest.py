@@ -75,10 +75,14 @@ def _get_dataset(repos, module, glottolog, concepticon):
     return mod.Test(glottolog=glottolog, concepticon=concepticon)
 
 
-
 @pytest.fixture
 def dataset_cldf(repos, glottolog, concepticon):
     return _get_dataset(repos, 'test_dataset_cldf.tdc', glottolog, concepticon)
+
+
+@pytest.fixture
+def dataset_cldf_capitalisation(repos, glottolog, concepticon):
+    return _get_dataset(repos, 'test_dataset_cldf_capitalisation.tdc', glottolog, concepticon)
 
 
 @pytest.fixture

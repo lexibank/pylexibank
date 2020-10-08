@@ -360,15 +360,15 @@ CREATE TABLE SourceTable (
         for t in tables:
             if self._create_table_if_not_exists(t):
                 continue
-            db_cols = self.tables[t.name]
+            db_cols = {k.lower(): v for k, v in self.tables[t.name].items()}
             for col in t.columns:
-                if col.name not in db_cols:
+                if col.name.lower() not in db_cols:
                     with self.connection() as conn:
                         conn.execute(
                             "ALTER TABLE {0} ADD COLUMN `{1.name}` {1.db_type}".format(
                                 t.name, col))
                 else:
-                    if db_cols[col.name] != col.db_type:
+                    if db_cols[col.name.lower()] != col.db_type:
                         raise ValueError(
                             'column {0}:{1} {2} redefined with new type {3}'.format(
                                 t.name, col.name, db_cols[col.name], col.db_type))
