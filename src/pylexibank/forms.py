@@ -128,12 +128,12 @@ as specified in this file.
         :return: None to skip the form, or the cleaned form as string.
         """
         if form not in self.missing_data:
-            if self.normalize_whitespace:
-                form = re.sub(r'\s+', ' ', form.strip())
             for source, target in self.replacements:
                 form = form.replace(source, target)
             if self.strip_inside_brackets:
-                return text.strip_brackets(form, brackets=self.brackets)
+                form = text.strip_brackets(form, brackets=self.brackets)
+            if self.normalize_whitespace:
+                return re.sub(r'\s+', ' ', form.strip())
             return form
 
     def split(self, item, value, lexemes=None):
