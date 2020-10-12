@@ -488,7 +488,7 @@ WHERE concepticon_id = ?""",
 
     def load_glottolog_data(self, glottolog):
         langs = []
-        languoids = {l.id: l for l in glottolog.languoids()}
+        languoids = {lang.id: lang for lang in glottolog.languoids()}
         for gc in self.fetchall("SELECT distinct glottocode FROM languagetable"):
             lang = languoids.get(gc[0])
             if lang:

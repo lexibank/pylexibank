@@ -169,7 +169,7 @@ class Wordlist(object):
             bib = parse_string(self.language.source, "bibtex")
             try:
                 ds.add_sources(*[Source.from_entry(k, e) for k, e in bib.entries.items()])
-                source = bib.entries.keys()
+                source = list(bib.entries.keys())
             except:  # noqa: E722
                 self.log.warn("Invalid citekey for %s" % self.language.id)
 

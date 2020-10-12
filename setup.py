@@ -33,7 +33,7 @@ setup(
         'cldfbench[excel]>=1.0',
         'csvw>=1.5.6',
         'clldutils>=2.8.0',
-        'pycldf>=1.7.0',
+        'pycldf>=1.15.2',
         'pyglottolog>=2.0',
         'pyconcepticon>=2.1.0',
         'pyclts>=2.0',

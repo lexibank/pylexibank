@@ -14,7 +14,7 @@ from pycldf.sources import Source, Reference
 from pyconcepticon.api import Concept
 
 __all__ = ['progressbar', 'getEvoBibAsBibtex', 'iter_repl']
-YEAR_PATTERN = re.compile('\s+\(?(?P<year>[1-9][0-9]{3}(-[0-9]+)?)(\)|\.)')
+YEAR_PATTERN = re.compile(r'\s+\(?(?P<year>[1-9][0-9]{3}(-[0-9]+)?)(\)|\.)')
 
 
 def progressbar(iterable=None, **kw):

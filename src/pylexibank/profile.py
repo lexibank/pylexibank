@@ -66,7 +66,7 @@ class Profile(segments.Profile):
                     e[0] not in ["^", "$"],
                     e[0] != "^",
                     e[1][ipa_col] != None,
-                    re.match("\^.*\$", e[0]) is None,
+                    re.match(r"\^.*\$", e[0]) is None,
                     len(ipa2sca(e[1][ipa_col], clts)) if clts else False,
                     ipa2sca(e[1][ipa_col], clts) if clts else False,
                     len(e[0]),

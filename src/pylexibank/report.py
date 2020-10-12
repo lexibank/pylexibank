@@ -156,9 +156,9 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
 
     bookkeeping_languoids_in_gl = set()
     if glottolog:
-        for l in glottolog.api.languoids():
-            if l.category == 'Bookkeeping':
-                bookkeeping_languoids_in_gl.add(l.id)  # pragma: no cover
+        for lang in glottolog.api.languoids():
+            if lang.category == 'Bookkeeping':
+                bookkeeping_languoids_in_gl.add(lang.id)  # pragma: no cover
 
     bookkeeping_languoids = []
     for lang in cldf['LanguageTable']:

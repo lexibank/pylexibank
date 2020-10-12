@@ -21,7 +21,7 @@ __all__ = ['LexibankWriter']
 log = logging.getLogger('pylexibank')
 
 MD_NAME = 'cldf-metadata.json'
-ID_PATTERN = re.compile('[A-Za-z0-9_\-]+$')
+ID_PATTERN = re.compile(r'[A-Za-z0-9_\-]+$')
 
 
 class LexibankWriter(CLDFWriter):

@@ -194,8 +194,8 @@ class SNDCMP(Dataset):
 
         # Get all FilePathParts from Languages
         json_data = self.raw_dir.read_json(self.data_file_name)
-        language_FilePathParts = [l['FilePathPart']
-                                  for l in json_data['languages']]
+        language_FilePathParts = [
+            lang['FilePathPart'] for lang in json_data['languages']]
 
         # download raw sound file catalog as JSON data
         with self.raw_dir.temp_download(
