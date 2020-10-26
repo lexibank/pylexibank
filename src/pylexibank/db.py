@@ -179,6 +179,7 @@ def schema(ds):
                     c.separator,
                     cname == spec.primary_key,
                     cldf_name=c.header))
+        listvalued = {c.name: bool(c.separator) for c in table.tableSchema.columns}
         for fk in table.tableSchema.foreignKeys:
             if fk.reference.schemaReference:
                 # We only support Foreign Key references between tables!
@@ -187,6 +188,9 @@ def schema(ds):
             ref_type = ds.get_tabletype(ref)
             if ref_type:
                 colRefs = sorted(fk.columnReference)
+                if any(c in listvalued for c in colRefs):
+                    # We drop list-valued foreign keys
+                    continue
                 if spec.name in PROPERTY_URL_TO_COL:
                     # Must map foreign keys
                     colRefs = []
