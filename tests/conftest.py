@@ -76,6 +76,13 @@ def _get_dataset(repos, module, glottolog, concepticon):
 
 
 @pytest.fixture
+def dataset_factory(repos, glottolog, concepticon):
+    def factory(module):
+        return _get_dataset(repos, module, glottolog, concepticon)
+    return factory
+
+
+@pytest.fixture
 def dataset_cldf(repos, glottolog, concepticon):
     return _get_dataset(repos, 'test_dataset_cldf.tdc', glottolog, concepticon)
 

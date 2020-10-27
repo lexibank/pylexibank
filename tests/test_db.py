@@ -69,3 +69,29 @@ def test_db_multiple_datasets(tmpdir, dataset, dataset_cldf, dataset_cldf_capita
         assert ('1', 'Lang CLDF') in [(r[0], r[1]) for r in res]
         res = db.fetchall('select `id`, `value` from FormTable', conn=conn)
         assert ('1', 'abc') in [(r[0], r[1]) for r in res]
+
+
+def test_db_multiple_datasets_error(tmpdir, dataset, dataset_factory):
+    import shutil
+    from clldutils.jsonlib import load, dump
+
+    db = Database(str(tmpdir.join('lexibank.sqlite')))
+    assert not db.fname.exists()
+    db.load(dataset)
+
+    ds_dir = dataset.dir.parent / 'dbtest'
+    shutil.copytree(str(dataset.dir), str(ds_dir))
+    # Now modify the CLDF data:
+    md = load(ds_dir / 'cldf' / 'cldf-metadata.json')
+    for t in md['tables']:
+        if t['url'] == 'parameters.csv':
+            for col in t['tableSchema']['columns']:
+                if col['name'] == 'Chinese':
+                    col['name'] = 'chinese'
+                    col['datatype'] = 'integer'
+    dump(md, ds_dir / 'cldf' / 'cldf-metadata.json')
+
+    ds2 = dataset_factory('dbtest.td')
+    with pytest.raises(ValueError) as e:
+        db.load(ds2)
+        assert 'redefined' in str(e)
