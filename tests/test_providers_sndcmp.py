@@ -30,6 +30,26 @@ def sndcmp_dataset(repos, tmpdir, glottolog, concepticon):
         source_id_array = ["Shimelman2019"]
         create_cognates = True
         concept_class = CustomConcept
+        form_placeholder = 'P'
+        only_proto_forms = True
+
+        def get_source_id_array(self, lexeme):
+            return ['ab']
+
+    return Dataset()
+
+
+@pytest.fixture
+def sndcmp2_dataset(repos, tmpdir, glottolog, concepticon):
+
+    copytree(repos / 'datasets' / 'sndcmp', str(tmpdir.join('sndcmp')))
+
+    class Dataset(SNDCMP):
+        dir = str(tmpdir.join('sndcmp'))
+        id = "sndcmpvanuatu"
+        study_name = "Vanuatu"
+        source_id_array = ["Shimelman2019"]
+        create_cognates = False
 
     return Dataset()
 
@@ -60,6 +80,19 @@ def test_sndcmp(sndcmp_dataset, mocker):
     assert len(res) == 3
     assert 'Bislama_Gloss' in res[0]
     assert res[0]["IndexInSource"] == '1-0'
+
+
+def test_sndcmp2(sndcmp2_dataset, mocker):
+
+    sndcmp2_dataset.cmd_create_ref_etc_files(mocker.MagicMock())
+    csv = sndcmp2_dataset.raw_dir / 'concepts.csv'
+    res = list(reader(csv, dicts=True))
+    assert len(res) == 3
+    assert 'Bislama_Gloss' not in res[0]
+
+
+def test_sndcmp_cldf(sndcmp_dataset, mocker):
+    sndcmp_dataset.cmd_makecldf(mocker.MagicMock())
 
 
 def test_sndcmp_dl(sndcmp_dl_dataset, mocker):
