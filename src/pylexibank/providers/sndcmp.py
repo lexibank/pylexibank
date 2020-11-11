@@ -39,6 +39,7 @@ class SNDCMPLanguage(Language):
     LongName = attr.ib(default=None)
     # Corresponds to LanguageIX in SndComp DB Langusages_*
     IndexInSource = attr.ib(default=None)
+    IsProto = attr.ib(default=None)
 
 
 @attr.s
@@ -59,9 +60,15 @@ class SNDCMP(Dataset):
         second_gloss_lang = 'Bislama'
         source_id_array = ['Shimelman2019']
         create_cognates = False
+
+        # optional:
+        form_placeholder = '►' # if one wants to import forms without transcriptions (only audio)
+        only_proto_forms = True # if one wants to import forms of 'proto'-languages
+                                  (special case for MixeZoque) - only vaid with given 'form_placeholder'
         ...
 
     If there is no corresponding gloss as second language then set
+        ...
         self.second_gloss_lang = None
 
 
@@ -82,7 +89,7 @@ class SNDCMP(Dataset):
         brackets={},
         replacements=[],
         separators='',
-        missing_data=('..', '--', '**', '-..', '...'),
+        missing_data=('..', '--', '**', '-..', '...', '÷'),
         strip_inside_brackets=False,
         normalize_unicode='NFC',
     )
@@ -92,10 +99,17 @@ class SNDCMP(Dataset):
         self.create_cognates = self.create_cognates
         super().__init__(concepticon=concepticon, glottolog=glottolog)
 
+    # subclass this method for study relevant exceptions
+    def get_source_id_array(self, lexeme):
+        return self.source_id_array
+
     def cmd_create_ref_etc_files(self, args):
         # Helper command to generate raw/concepts.csv and raw/languages.csv out of
         # the JSON data file which can be used to detect changes for the files
         # etc/concepts.csv and etc/langauges.csv
+
+        if not hasattr(self, 'second_gloss_lang'):
+            self.second_gloss_lang = None
 
         # Load JSON data
         json_data = self.raw_dir.read_json(self.data_file_name)
@@ -109,7 +123,7 @@ class SNDCMP(Dataset):
         seen_codes = {}
         with dsv.UnicodeWriter(fname) as f:
             f.writerow(['ID', 'Name', 'LongName', 'Glottocode', 'Glottolog_Name', 'ISO639P3code',
-                        'Macroarea', 'Latitude', 'Longitude', 'Family', 'IndexInSource'])
+                        'Macroarea', 'Latitude', 'Longitude', 'Family', 'IndexInSource', 'IsProto'])
             for language in sorted(json_data['languages'],
                                    key=lambda k: int(k['LanguageIx'])):
 
@@ -126,12 +140,19 @@ class SNDCMP(Dataset):
                         language['GlottoCode'])
                     seen_codes[language['GlottoCode']] = gldata
 
+                isProto = False
+                if language['isProtoLanguage'] == '1':
+                    isProto = True
+
+                lngName = ''
+                if longnames.get(language['LanguageIx'], ''):
+                    if longnames[language['LanguageIx']] != language['ShortName'].strip():
+                        lngName = longnames[language['LanguageIx']].strip()
+
                 f.writerow([
                     lang_id,
                     language['ShortName'].strip(),
-                    longnames[language['LanguageIx']]
-                    if longnames[language['LanguageIx']] != language['ShortName'].strip()
-                    else '',
+                    lngName,
                     language['GlottoCode'],
                     gldata.name if gldata else '',
                     language['ISOCode'].strip(),
@@ -140,6 +161,7 @@ class SNDCMP(Dataset):
                     language['Longtitude'].strip() if language['Longtitude'] else '',
                     gldata.family.name if gldata and gldata.family else '',
                     language['LanguageIx'].strip(),
+                    isProto
                 ])
 
         # Create raw/concepts.csv to compare it against etc/concepts.csv
@@ -157,7 +179,7 @@ class SNDCMP(Dataset):
                     int(k['IxMorphologicalInstance'])))):
                 # Build ID
                 concept_id = '%i_%s' % (
-                    c_idx, slug(concept['FullRfcModernLg01']))
+                    c_idx + 1, slug(concept['FullRfcModernLg01']))
 
                 # Unmapped concepts are reported with int(ID)<1 in source
                 if int(concept['StudyDefaultConcepticonID']) > 0:
@@ -219,6 +241,11 @@ class SNDCMP(Dataset):
 
     def cmd_makecldf(self, args):
 
+        if not hasattr(self, 'form_placeholder'):
+            self.form_placeholder = None
+        if not hasattr(self, 'only_proto_forms'):  # special case for MixeZoque
+            self.only_proto_forms = False
+
         sound_cat = self.raw_dir.read_json(self.catalog_file_name)
 
         # add sources
@@ -230,15 +257,20 @@ class SNDCMP(Dataset):
             args.writer.add_concept(**concept)
             concepts[concept['IndexInSource']] = concept['ID']
         languages = {}
+        proto_lgs = []
         for language in self.languages:
             args.writer.add_language(**language)
             languages[language['IndexInSource']] = language['ID']
+            if language.get('IsProto', '') == 'True':
+                proto_lgs.append(language['IndexInSource'])
 
         # Load JSON data
         json_data = self.raw_dir.read_json(self.data_file_name)
 
         # collect missing languages
         missing = set()
+        # collect lexemes with no transcription but with audio
+        only_snd = []
 
         media = []
         args.writer.cldf.add_table(
@@ -263,24 +295,49 @@ class SNDCMP(Dataset):
         )), desc='makecldf'):
             lexeme = json_data['transcriptions'][idx]
 
-            # Skip over entries with no phonetic transcription, empty
-            # phonetic transicrption and from
-            # different studies (missing language)
-            if 'Phonetic' not in lexeme:  # pragma: no cover
-                continue
-            if not lexeme['Phonetic']:
-                continue
             if lexeme['LanguageIx'] not in languages:  # pragma: no cover
                 missing.add(lexeme['LanguageIx'])
                 continue
 
+            # If entry is marked as 'isDummy' => it only has audio
+            if 'isDummy' in lexeme:
+                if self.form_placeholder:
+                    if isinstance(lexeme['soundPaths'], list) and isinstance(lexeme['soundPaths'][0], list):
+                        lexeme['Phonetic'] = [self.form_placeholder] * len(lexeme['soundPaths'])
+                        lexeme['AlternativePhoneticRealisationIx'] = ['0'] * len(lexeme['soundPaths'])
+                        lexeme['WCogID'] = [''] * len(lexeme['soundPaths'])
+                    else:
+                        lexeme['Phonetic'] = self.form_placeholder
+                        lexeme['AlternativePhoneticRealisationIx'] = '0'
+                        lexeme['WCogID'] = ''
+                lexeme['path'] = lexeme['soundPaths'][0].split('/')[-1].split('.')[0]
+                lexeme['AlternativeLexemIx'] = '0'
+                lexeme['RootIsLoanWordFromKnownDonor'] = '0'
+
+            # Replace all forms by 'form_placeholder' if language is not a propto language
+            # Special case for MixeZoque
+            if self.form_placeholder and self.only_proto_forms and lexeme['LanguageIx'] not in proto_lgs:
+                if isinstance(lexeme['Phonetic'], list):
+                    lexeme['Phonetic'] = [self.form_placeholder] * len(lexeme['soundPaths'])
+                else:
+                    if not lexeme['Phonetic'].strip()\
+                            or lexeme['Phonetic'].strip() in self.form_spec.missing_data:
+                        continue
+                    lexeme['Phonetic'] = self.form_placeholder
+
+            if 'Phonetic' not in lexeme:
+                if 'isDummy' in lexeme:
+                    only_snd.append(lexeme)
+                continue
+
             # If there is only one elictation for a meaning
             # it comes as plain string (otherwise as list).
-            # Turn this string into a list as well.
+            # Turn relevant items into a list as well.
             if isinstance(lexeme['Phonetic'], str):
                 lexeme['Phonetic'] = [lexeme['Phonetic']]
                 lexeme['path'] = [lexeme['path']]
                 lexeme['soundPaths'] = [lexeme['soundPaths']]
+                lexeme['WCogID'] = [lexeme['WCogID']]
 
             ref_id = None
             last_altlex = None
@@ -306,15 +363,13 @@ class SNDCMP(Dataset):
                     Value=v,
                     Form=v,
                     Loan=(lexeme['RootIsLoanWordFromKnownDonor'] == '1'),
-                    Source=self.source_id_array,
+                    Source=self.get_source_id_array(lexeme),
                     Variant_Of=ref_id if int(
                         lexeme['AlternativePhoneticRealisationIx'][i]) > 0 else None,
                 )
 
                 # add media
-                if isinstance(lexeme['soundPaths'], list)\
-                        and len(lexeme['soundPaths'][0]) > 0\
-                        and len(lexeme['soundPaths'][i][0]) > 0:
+                if len(lexeme['soundPaths'][0]) > 0 and len(lexeme['soundPaths'][i][0]) > 0:
                     if lexeme['path'][i] in sound_cat:
                         for bs in sorted(sound_cat[lexeme['path'][i]]['bitstreams'],
                                          key=lambda x: x['content-type']):
@@ -340,13 +395,20 @@ class SNDCMP(Dataset):
 
                 # add cognate if desired
                 if self.create_cognates:
-                    wcogid = '{0}-{1}'.format(param_id, lexeme['WCogID'][i] if lexeme['WCogID'][i]
-                                              and int(lexeme['WCogID'][i]) > 1 else '1')
-                    args.writer.add_cognate(
-                        lexeme=new,
-                        Cognateset_ID=wcogid,
-                        Source=self.source_id_array,
-                    )
+                    wcogid = None
+                    if lexeme['WCogID'][i].strip():
+                        try:
+                            wid = int(lexeme['WCogID'][i])
+                            if wid > 0:
+                                wcogid = '{0}-{1}'.format(param_id, wid)
+                        except ValueError:
+                            wcogid = '{0}-{1}'.format(param_id, lexeme['WCogID'][i])
+                    if wcogid:
+                        args.writer.add_cognate(
+                            lexeme=new,
+                            Cognateset_ID=wcogid,
+                            Source=self.source_id_array,
+                        )
 
         args.writer.write(
             **{'media.csv': media}
@@ -354,3 +416,9 @@ class SNDCMP(Dataset):
 
         for m in sorted(missing):  # pragma: no cover
             args.log.warn('Missing language with ID {0}.'.format(m))
+
+        if len(only_snd):
+            args.log.info('Consider to use "form_placeholder" to import lexemes without transcription but with audio:')
+        for m in only_snd:  # pragma: no cover
+            args.log.warn('Missing transcription for {0}-{1}-{2}.'.format(
+                m['LanguageIx'], m['IxElicitation'], m['IxMorphologicalInstance']))
