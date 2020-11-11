@@ -64,7 +64,8 @@ class SNDCMP(Dataset):
         # optional:
         form_placeholder = '►' # if one wants to import forms without transcriptions (only audio)
         only_proto_forms = True # if one wants to import forms of 'proto'-languages
-                                  (special case for MixeZoque) - only vaid with given 'form_placeholder'
+                                  (special case for MixeZoque) - only vaid with given
+                                  'form_placeholder'
         ...
 
     If there is no corresponding gloss as second language then set
@@ -302,9 +303,11 @@ class SNDCMP(Dataset):
             # If entry is marked as 'isDummy' => it only has audio
             if 'isDummy' in lexeme:
                 if self.form_placeholder:
-                    if isinstance(lexeme['soundPaths'], list) and isinstance(lexeme['soundPaths'][0], list):
+                    if isinstance(lexeme['soundPaths'], list) and isinstance(
+                            lexeme['soundPaths'][0], list):
                         lexeme['Phonetic'] = [self.form_placeholder] * len(lexeme['soundPaths'])
-                        lexeme['AlternativePhoneticRealisationIx'] = ['0'] * len(lexeme['soundPaths'])
+                        lexeme['AlternativePhoneticRealisationIx'] = \
+                            ['0'] * len(lexeme['soundPaths'])
                         lexeme['WCogID'] = [''] * len(lexeme['soundPaths'])
                     else:
                         lexeme['Phonetic'] = self.form_placeholder
@@ -316,7 +319,8 @@ class SNDCMP(Dataset):
 
             # Replace all forms by 'form_placeholder' if language is not a propto language
             # Special case for MixeZoque
-            if self.form_placeholder and self.only_proto_forms and lexeme['LanguageIx'] not in proto_lgs:
+            if self.form_placeholder and \
+                    self.only_proto_forms and lexeme['LanguageIx'] not in proto_lgs:
                 if isinstance(lexeme['Phonetic'], list):
                     lexeme['Phonetic'] = [self.form_placeholder] * len(lexeme['soundPaths'])
                 else:
@@ -418,7 +422,8 @@ class SNDCMP(Dataset):
             args.log.warn('Missing language with ID {0}.'.format(m))
 
         if len(only_snd):
-            args.log.info('Consider to use "form_placeholder" to import lexemes without transcription but with audio:')
+            args.log.info('Consider to use "form_placeholder" to import lexemes without '
+                          'transcription but with audio:')
         for m in only_snd:  # pragma: no cover
-            args.log.warn('Missing transcription for {0}-{1}-{2}.'.format(
+            args.log.warning('Missing transcription for {0}-{1}-{2}.'.format(
                 m['LanguageIx'], m['IxElicitation'], m['IxMorphologicalInstance']))
