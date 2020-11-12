@@ -275,12 +275,21 @@ class SNDCMP(Dataset):
         media = []
         args.writer.cldf.add_table(
             'media.csv',
-            'ID',
-            'Description',
-            'URL',
+            {
+                'name': 'ID',
+                'propertyUrl': 'http://cldf.clld.org/v1.0/terms.rdf#id',
+                'valueUrl': 'https://cdstar.shh.mpg.de/bitstreams/{objid}/{fname}',
+            },
+            'objid',
+            'fname',
             'mimetype',
             {'name': 'size', 'datatype': 'integer'},
-            'Form_ID',
+            {
+                "name": "Form_ID",
+                "required": True,
+                "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#formReference",
+                "datatype": "string"
+            },
             primaryKey=['ID']
         )
 
@@ -375,9 +384,8 @@ class SNDCMP(Dataset):
                                          key=lambda x: x['content-type']):
                             media.append({
                                 'ID': bs['checksum'],
-                                'Description': lexeme['path'][i],
-                                'URL': 'https://cdstar.shh.mpg.de/bitstreams/{0}/{1}'.format(
-                                    sound_cat[lexeme['path'][i]]['id'], bs['bitstreamid']),
+                                'fname': bs['bitstreamid'],
+                                'objid': sound_cat[lexeme['path'][i]]['id'],
                                 'mimetype': bs['content-type'],
                                 'size': bs['filesize'],
                                 'Form_ID': new['ID']
