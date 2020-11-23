@@ -26,4 +26,11 @@ def check_profile(dataset, args):
                 if args.clts.api.bipa[tk].type == 'unknownsound':
                     problems.add(tk)
                     print('{0:5}\t{1:20}\t{2}'.format(tk, ' '.join(tokens), row['Form']))
+    for row in dataset.cldf_dir.read_csv('forms.csv', dicts=True):
+        tokens = row['Segments']
+        tkl = row['Segments'].split()
+
+        if tkl[0] == '+' or tkl[-1] == '+' or '+ +' in tokens:
+            print(row['ID'], '\t', row['Graphemes'], '\t', row['Segments'])
     print('Found {0} errors in {1} segments.'.format(len(problems), len(visited)))
+
