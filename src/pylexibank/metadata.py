@@ -386,7 +386,7 @@ def iter_rows(fname_or_lines):
     header, in_table = None, False
 
     def row(line):
-        return [l.strip() for l in line.split('|')]
+        return [li.strip() for li in line.split('|')]
 
     for line in (fname_or_lines if isinstance(fname_or_lines, list) else fname_or_lines.open()):
         if in_table:

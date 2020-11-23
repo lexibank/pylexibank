@@ -203,12 +203,23 @@
       "ReconstructedOrHistQuestionable": null,
       "ReconstructedOrHistQuestionableNote": null,
       "RecordingMissing": "0",
-      "WCogID": "0",
+      "WCogID": "2",
       "WCogIDFine": "0",
       "path": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_002_two_tu",
       "soundPaths": [
         "https://cdstar.shh.mpg.de/bitstreams/EAEA0-9E14-517B-D07E-0/Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_002_two_tu.ogg",
         "https://cdstar.shh.mpg.de/bitstreams/EAEA0-9E14-517B-D07E-0/Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_002_two_tu.mp3"
+      ],
+      "transStudy": "Vanuatu"
+    },
+    "4876850200910": {
+      "isDummy": true,
+      "LanguageIx": "48732707509",
+      "IxElicitation": "1",
+      "IxMorphologicalInstance": "0",
+      "soundPaths": [
+        "https://cdstar.shh.mpg.de/bitstreams/EAEA0-FEAD-3051-AFF9-0/Oce_Van_Pent_South_Sa_F_Rangusuksu_Dl_001_one_wan.mp3",
+        "https://cdstar.shh.mpg.de/bitstreams/EAEA0-FEAD-3051-AFF9-0/Oce_Van_Pent_South_Sa_F_Rangusuksu_Dl_001_one_wan.ogg"
       ],
       "transStudy": "Vanuatu"
     },
@@ -239,7 +250,7 @@
       "ReconstructedOrHistQuestionable": null,
       "ReconstructedOrHistQuestionableNote": null,
       "RecordingMissing": "0",
-      "WCogID": "0",
+      "WCogID": "2",
       "WCogIDFine": "0",
       "path": "Oce_Van_Maewo_Sth_SungagageAsanvari_Dl_003_three_tri",
       "soundPaths": [

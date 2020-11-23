@@ -121,7 +121,7 @@ class TableSpec(object):
 
     @property
     def sql(self):
-        clauses = [col.sql for col in self.columns]
+        clauses = [col.sql for col in self.columns]  # limit to non-local columns!
         clauses.append('`dataset_ID` TEXT NOT NULL')
         if self.primary_key:
             clauses.append('PRIMARY KEY(`dataset_ID`, `{0}`)'.format(self.primary_key))
@@ -179,6 +179,7 @@ def schema(ds):
                     c.separator,
                     cname == spec.primary_key,
                     cldf_name=c.header))
+        listvalued = set(c.name for c in table.tableSchema.columns if c.separator)
         for fk in table.tableSchema.foreignKeys:
             if fk.reference.schemaReference:
                 # We only support Foreign Key references between tables!
@@ -187,7 +188,10 @@ def schema(ds):
             ref_type = ds.get_tabletype(ref)
             if ref_type:
                 colRefs = sorted(fk.columnReference)
-                if spec.name in PROPERTY_URL_TO_COL:
+                if any(c in listvalued for c in colRefs):
+                    # We drop list-valued foreign keys
+                    continue  # pragma: no cover
+                if spec.name in PROPERTY_URL_TO_COL:  # Current table is a standard CLDF component.
                     # Must map foreign keys
                     colRefs = []
                     for c in sorted(fk.columnReference):
@@ -360,18 +364,18 @@ CREATE TABLE SourceTable (
         for t in tables:
             if self._create_table_if_not_exists(t):
                 continue
-            db_cols = self.tables[t.name]
+            db_cols = {k.lower(): v for k, v in self.tables[t.name].items()}
             for col in t.columns:
-                if col.name not in db_cols:
+                if col.name.lower() not in db_cols:
                     with self.connection() as conn:
                         conn.execute(
                             "ALTER TABLE {0} ADD COLUMN `{1.name}` {1.db_type}".format(
                                 t.name, col))
                 else:
-                    if db_cols[col.name] != col.db_type:
+                    if db_cols[col.name.lower()] != col.db_type:
                         raise ValueError(
                             'column {0}:{1} {2} redefined with new type {3}'.format(
-                                t.name, col.name, db_cols[col.name], col.db_type))
+                                t.name, col.name, db_cols[col.name.lower()], col.db_type))
 
         for t in ref_tables.values():
             self._create_table_if_not_exists(t)
@@ -434,12 +438,13 @@ CREATE TABLE SourceTable (
                                         nfilter(col.convert(vv) for vv in v))
                                 else:
                                     v = col.convert(v)
+                                # FIXME: only if non-local!
                                 keys.append("`{0}`".format(col.name))
                                 values.append(v)
                         keys, values = self.update_row(t.name, keys, values)
                         rows.append(tuple(values))
                     insert(db, t.name, keys, *rows, **{'verbose': verbose})
-                except FileNotFoundError:
+                except FileNotFoundError:  # pragma: no cover
                     if t.name != 'CognateTable':  # An empty CognateTable is allowed.
                         raise  # pragma: no cover
 
@@ -488,7 +493,7 @@ WHERE concepticon_id = ?""",
 
     def load_glottolog_data(self, glottolog):
         langs = []
-        languoids = {l.id: l for l in glottolog.languoids()}
+        languoids = {lang.id: lang for lang in glottolog.languoids()}
         for gc in self.fetchall("SELECT distinct glottocode FROM languagetable"):
             lang = languoids.get(gc[0])
             if lang:

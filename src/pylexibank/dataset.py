@@ -216,6 +216,14 @@ class Dataset(BaseDataset):
 
         super()._cmd_makecldf(args)
 
+        #
+        # make sure properties have the appropriate datatypes:
+        #
+        ds = self.cldf_reader()
+        for col in ds['LanguageTable'].tableSchema.columns:
+            if col.name.lower() == 'population':
+                assert col.datatype.base == 'integer', 'population must be integer!'
+
         if args.verbose:
             self.unmapped.pprint()
         if not args.dev:

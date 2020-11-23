@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pylexibank',
-    version='2.7.1.dev0',
+    version='2.8.2.dev0',
     author='Robert Forkel',
     author_email='forkel@shh.mpg.de',
     description='Python library implementing the lexibank workbench',
@@ -33,7 +33,7 @@ setup(
         'cldfbench[excel]>=1.0',
         'csvw>=1.5.6',
         'clldutils>=2.8.0',
-        'pycldf>=1.7.0',
+        'pycldf>=1.15.2',
         'pyglottolog>=2.0',
         'pyconcepticon>=2.1.0',
         'pyclts>=2.0',
@@ -48,7 +48,6 @@ setup(
     extras_require={
         'dev': ['flake8', 'wheel', 'twine'],
         'test': [
-            'mock',
             'pytest>=5',
             'pytest-mock',
             'pytest-cov',
