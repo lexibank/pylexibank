@@ -14,7 +14,7 @@ import pyclts.models
 from cldfbench.cldf import CLDFWriter
 from cldfbench.util import iter_requirements
 
-from pylexibank.transcription import Analysis, analyze
+from pylexibank.transcription import Analysis, analyze, valid_sequence
 from pylexibank.util import iter_repl, get_concepts, get_ids_and_attrs
 
 __all__ = ['LexibankWriter']
@@ -142,13 +142,14 @@ class LexibankWriter(CLDFWriter):
             segments = kw['Segments']
             if with_morphemes:
                 segments = list(itertools.chain(*[s.split() for s in segments]))
+            valid = valid_sequence(segments)
             _, _bipa, _sc, _analysis = analyze(self.args.clts.api, segments, analysis)
 
             # update the list of `bad_words` if necessary; we precompute a
             # list of data types in `_bipa` just to make the conditional
             # checking easier
             _bipa_types = [type(s) for s in _bipa]
-            if pyclts.models.UnknownSound in _bipa_types or '?' in _sc:
+            if (pyclts.models.UnknownSound in _bipa_types) or '?' in _sc or not valid:
                 self.dataset.tr_bad_words.append(kw)
         except ValueError:  # pragma: no cover
             self.dataset.tr_invalid_words.append(kw)

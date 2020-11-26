@@ -36,7 +36,7 @@ setup(
         'pycldf>=1.15.2',
         'pyglottolog>=2.0',
         'pyconcepticon>=2.1.0',
-        'pyclts>=2.0',
+        'pyclts>=2.0,<3.0',
         'lingpy>=2.6.5',
         'appdirs',
         'requests',

@@ -27,4 +27,3 @@ def check_profile(dataset, args):
                     problems.add(tk)
                     print('{0:5}\t{1:20}\t{2}'.format(tk, ' '.join(tokens), row['Form']))
     print('Found {0} errors in {1} segments.'.format(len(problems), len(visited)))
-
