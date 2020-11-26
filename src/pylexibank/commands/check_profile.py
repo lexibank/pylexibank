@@ -33,4 +33,3 @@ def check_profile(dataset, args):
         if tkl[0] == '+' or tkl[-1] == '+' or '+ +' in tokens:
             print(row['ID'], '\t', row['Graphemes'], '\t', row['Segments'])
     print('Found {0} errors in {1} segments.'.format(len(problems), len(visited)))
-

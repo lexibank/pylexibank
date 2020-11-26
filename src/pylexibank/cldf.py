@@ -149,11 +149,7 @@ class LexibankWriter(CLDFWriter):
             # list of data types in `_bipa` just to make the conditional
             # checking easier
             _bipa_types = [type(s) for s in _bipa]
-            if (
-                    pyclts.models.UnknownSound in _bipa_types or 
-                    '?' in _sc or 
-                    not valid
-                    ):
+            if (pyclts.models.UnknownSound in _bipa_types) or '?' in _sc or not valid:
                 self.dataset.tr_bad_words.append(kw)
         except ValueError:  # pragma: no cover
             self.dataset.tr_invalid_words.append(kw)
