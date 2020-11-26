@@ -29,6 +29,27 @@ class Stats(Analysis):
     bad_words_count = attr.ib(default=0)
 
 
+def valid_sequence(segments):
+    """
+    Make sure that a list of segments does not have any wrong segmentations.
+    """
+    if not ''.join(segments).strip():
+        return False
+    elif (
+            '_' in segments or 
+            '#' in segments or
+            segments[0] == "+" or
+            segments[-1] == "+" or
+            (
+                "+" in segments and 
+                segments[segments.index("+")+1] == "+"
+                )
+            ):
+        return False
+    return segments
+
+
+
 # Note: We use a mutable default argument intentionally to serve as a cache.
 def analyze(clts, segments, analysis, lookup=dict(bipa={}, dolgo={})):
     """
@@ -48,6 +69,7 @@ def analyze(clts, segments, analysis, lookup=dict(bipa={}, dolgo={})):
     # build the phonologic and sound class analyses
     try:
         bipa_analysis, sc_analysis = [], []
+        
         for s in segments:
             a = lookup['bipa'].get(s)
             if a is None:
