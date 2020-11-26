@@ -178,7 +178,7 @@ class LexibankWriter(CLDFWriter):
         if form != value:
             log.debug('iter_forms split: "{0}" -> "{1}"'.format(value, form))
 
-        if form:
+        if form and form not in self.dataset.form_spec.missing_data:
             # try to segment the data now
             profile = kw.pop('profile', None)
             kw.setdefault(
