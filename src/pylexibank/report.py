@@ -6,9 +6,16 @@ from pylexibank.util import get_badge
 
 
 def build_status_badge(dataset):
-    if dataset.dir.joinpath('.travis.yml').exists() and dataset.repo and dataset.repo.github_repo:
-        return "[![Build Status](https://travis-ci.org/{0}.svg?branch=master)]" \
-               "(https://travis-ci.org/{0})".format(dataset.repo.github_repo)
+    if dataset.repo and dataset.repo.github_repo:
+        if dataset.dir.joinpath('.travis.yml').exists():
+            return "[![Build Status](https://travis-ci.org/{0}.svg?branch=master)]" \
+                   "(https://travis-ci.org/{0})".format(dataset.repo.github_repo)
+        if dataset.dir.joinpath('.github/workflows').exists():
+            return "[![CLDF validation]" \
+                   "(https://github.com/{0}/workflows/CLDF-validation/badge.svg)]" \
+                   "(https://github.com/{0}/actions?query=workflow%3ACLDF-validation)".format(
+                dataset.repo.github_repo
+            )
     return ''
 
 
