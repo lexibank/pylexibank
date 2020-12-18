@@ -50,7 +50,7 @@ def test_makecldf_multi_profiles(repos):
     assert 'FREQUENCY' in (d / 'etc' / 'orthography' / 'p1.tsv').read_text(encoding='utf8')
 
 
-def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmpdir):
+def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmpdir, capsys):
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset.dir / 'td.py'),
         str(repos),
@@ -73,11 +73,12 @@ def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmp
     assert 'Bislama_Gloss' in sndcmp.cldf_dir.joinpath('parameters.csv').read_text(encoding='utf8')
     assert 'e56a5fc78ae5a66e783c17bc30019568' in sndcmp.cldf_dir.joinpath('media.csv').read_text(encoding='utf8')
 
-    with pytest.raises(ValueError):
-        _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
-            str(dataset_cldf.dir / 'tdc.py'),
-            str(repos),
-        ))
+    _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
+        str(dataset_cldf.dir / 'tdc.py'),
+        str(repos),
+    ))
+    capout = capsys.readouterr().out
+    assert 'The dataset has no sources' not in capout
 
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset_no_cognates.dir / 'tdn.py'),
