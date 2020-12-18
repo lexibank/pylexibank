@@ -223,6 +223,23 @@
       ],
       "transStudy": "Vanuatu"
     },
+    "4876850200910": {
+      "isDummy": true,
+      "LanguageIx": "48732707509",
+      "IxElicitation": "2",
+      "IxMorphologicalInstance": "1",
+      "soundPaths": [
+        [
+          "https://cdstar.shh.mpg.de/bitstreams/EAEA0-47B6-635F-AC8C-0/Oce_Van_Ambae_Nth_Leonda_Dl_006_six_sikis.mp3",
+          "https://cdstar.shh.mpg.de/bitstreams/EAEA0-47B6-635F-AC8C-0/Oce_Van_Ambae_Nth_Leonda_Dl_006_six_sikis.ogg"
+        ],
+        [
+          "https://cdstar.shh.mpg.de/bitstreams/EAEA0-47B6-635F-AC8C-0/Oce_Van_Ambae_Nth_Leonda_Dl_006_six_sikis_l2.mp3",
+          "https://cdstar.shh.mpg.de/bitstreams/EAEA0-47B6-635F-AC8C-0/Oce_Van_Ambae_Nth_Leonda_Dl_006_six_sikis_l2.ogg"
+        ]
+      ],
+      "transStudy": "Vanuatu"
+    },
     "4873270750930": {
       "StudyIx": "4",
       "FamilyIx": "8",

@@ -322,21 +322,29 @@ class SNDCMP(Dataset):
                         lexeme['Phonetic'] = self.form_placeholder
                         lexeme['AlternativePhoneticRealisationIx'] = '0'
                         lexeme['WCogID'] = ''
-                lexeme['path'] = lexeme['soundPaths'][0].split('/')[-1].split('.')[0]
-                lexeme['AlternativeLexemIx'] = '0'
-                lexeme['RootIsLoanWordFromKnownDonor'] = '0'
+                    try:
+                        lexeme['path'] = lexeme['soundPaths'][0].split('/')[-1].split('.')[0]
+                    except AttributeError:
+                        lexeme['path'] = lexeme['soundPaths'][0][0].split('/')[-1].split('.')[0]
+                    lexeme['AlternativeLexemIx'] = '0'
+                    lexeme['RootIsLoanWordFromKnownDonor'] = '0'
 
             # Replace all forms by 'form_placeholder' if language is not a propto language
-            # Special case for MixeZoque
-            if self.form_placeholder and \
-                    self.only_proto_forms and lexeme['LanguageIx'] not in proto_lgs:
-                if isinstance(lexeme['Phonetic'], list):
-                    lexeme['Phonetic'] = [self.form_placeholder] * len(lexeme['soundPaths'])
-                else:
-                    if not lexeme['Phonetic'].strip()\
-                            or lexeme['Phonetic'].strip() in self.form_spec.missing_data:
-                        continue
-                    lexeme['Phonetic'] = self.form_placeholder
+            # - a special case for MixeZoque only
+            if self.only_proto_forms and self.form_placeholder and lexeme['LanguageIx'] not in proto_lgs:
+                if isinstance(lexeme['Phonetic'], str):
+                    lexeme['Phonetic'] = [lexeme['Phonetic']]
+                    lexeme['path'] = [lexeme['path']]
+                    lexeme['soundPaths'] = [lexeme['soundPaths']]
+                    lexeme['WCogID'] = [lexeme['WCogID']]
+                for i, v in enumerate(lexeme['Phonetic']):
+                    if len(lexeme['soundPaths'][0]) > 0 and len(lexeme['soundPaths'][i][0]) > 0:
+                        if lexeme['path'][i] in sound_cat:
+                            lexeme['Phonetic'][i] = self.form_placeholder
+                        else:
+                            lexeme['Phonetic'][i] = ''
+                    else:
+                        lexeme['Phonetic'][i] = ''
 
             if 'Phonetic' not in lexeme:
                 if 'isDummy' in lexeme:
@@ -425,6 +433,10 @@ class SNDCMP(Dataset):
         args.writer.write(
             **{'media.csv': media}
         )
+
+        if self.form_placeholder:
+            args.writer.cldf['FormTable', 'Value'].common_props['dc:description'] = '► := no value, but audio'
+            args.writer.cldf['FormTable', 'Form'].common_props['dc:description'] = '► := no form, but audio'
 
         for m in sorted(missing):  # pragma: no cover
             args.log.warn('Missing language with ID {0}.'.format(m))
