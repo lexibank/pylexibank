@@ -331,7 +331,9 @@ class SNDCMP(Dataset):
 
             # Replace all forms by 'form_placeholder' if language is not a propto language
             # - a special case for MixeZoque only
-            if self.only_proto_forms and self.form_placeholder and lexeme['LanguageIx'] not in proto_lgs:
+            if self.only_proto_forms \
+                    and self.form_placeholder \
+                    and lexeme['LanguageIx'] not in proto_lgs:
                 if isinstance(lexeme['Phonetic'], str):
                     lexeme['Phonetic'] = [lexeme['Phonetic']]
                     lexeme['path'] = [lexeme['path']]
@@ -435,8 +437,10 @@ class SNDCMP(Dataset):
         )
 
         if self.form_placeholder:
-            args.writer.cldf['FormTable', 'Value'].common_props['dc:description'] = '► := no value, but audio'
-            args.writer.cldf['FormTable', 'Form'].common_props['dc:description'] = '► := no form, but audio'
+            args.writer.cldf['FormTable', 'Value'].common_props['dc:description'] = \
+                '► := no value, but audio'
+            args.writer.cldf['FormTable', 'Form'].common_props['dc:description'] = \
+                '► := no form, but audio'
 
         for m in sorted(missing):  # pragma: no cover
             args.log.warn('Missing language with ID {0}.'.format(m))

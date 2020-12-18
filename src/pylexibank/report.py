@@ -13,9 +13,8 @@ def build_status_badge(dataset):
         if dataset.dir.joinpath('.github/workflows').exists():
             return "[![CLDF validation]" \
                    "(https://github.com/{0}/workflows/CLDF-validation/badge.svg)]" \
-                   "(https://github.com/{0}/actions?query=workflow%3ACLDF-validation)".format(
-                dataset.repo.github_repo
-            )
+                   "(https://github.com/{0}/actions?query=workflow%3ACLDF-validation)" \
+                   "".format(dataset.repo.github_repo)
     return ''
 
 
