@@ -435,7 +435,6 @@ class SNDCMP(Dataset):
         )
 
         if self.form_placeholder:
-            print((args.writer.cldf['FormTable','Value'].common_props))
             args.writer.cldf['FormTable', 'Value'].common_props['dc:description'] = '► := no value, but audio'
             args.writer.cldf['FormTable', 'Form'].common_props['dc:description'] = '► := no form, but audio'
 
