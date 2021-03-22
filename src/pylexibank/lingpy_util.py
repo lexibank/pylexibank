@@ -16,10 +16,18 @@ def wordlist2cognates(wordlist, source, expert='expert', ref='cogid'):
             Source=source)
 
 
+def _get_forms(dataset):
+    """
+    Return the list of Form `dict`'s for a `cldfbench.CLDFWriter` or a `pycldf.Dataset`.
+    """
+    return dataset.objects['FormTable'] \
+        if (hasattr(dataset, 'objects') and isinstance(dataset.objects, dict)) \
+        else list(dataset['FormTable'])
+
+
 def _cldf2wld(dataset):
     """Make lingpy-compatible dictionary out of cldf main data."""
-    forms = dataset.objects['FormTable'] \
-        if hasattr(dataset, 'objects') else list(dataset['FormTable'])
+    forms = _get_forms(dataset)
     if not forms:
         raise ValueError('No forms')
 
@@ -53,8 +61,7 @@ def iter_cognates(dataset, column='Segments', method='turchin', threshold=0.5, *
 
     :param dataset: Either a `LexibankWriter` instance or a `pycldf.Dataset`.
     """
-    forms = dataset.objects['FormTable'] \
-        if hasattr(dataset, 'objects') else list(dataset['FormTable'])
+    forms = _get_forms(dataset)
 
     if method == 'turchin':
         for row in forms:
