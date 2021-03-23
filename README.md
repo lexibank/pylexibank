@@ -8,6 +8,20 @@
 [Lexibank](https://github.com/lexibank/lexibank) datasets.
 
 
+## Compatibility
+
+At the core of the curation functionality provided by `pylexibank` lies integration
+with the metadata catalogs [Glottolog](https://glottolog.org), 
+[Concepticon](https://concepticon.clld.org) and [CLTS](https://clts.clld.org).
+Not all releases of these catalogs are compatibly with all versions of 
+`pylexibank`.
+
+pylexibank | Glottolog | Concepticon | CLTS
+--- | --- | --- | ---
+2.x | \>=4.x | \>=2.x | **1.x**
+3.x | \>=4.x | \>=2.x | **\>=2.x**
+
+
 ## Install
 
 Since `pylexibank` has quite a few dependencies, installing it will result in installing
