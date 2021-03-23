@@ -5,10 +5,10 @@ from pylexibank.report import build_status_badge, report
 
 
 @pytest.fixture
-def ds(tmppath, git_repo_factory):
-    git_repo_factory(tmppath)
+def ds(tmp_path, git_repo_factory):
+    git_repo_factory(tmp_path)
     ds_ = Dataset()
-    ds_.dir = tmppath
+    ds_.dir = tmp_path
     ds_.dir.joinpath('.travis.yml').write_text('#', encoding='utf8')
     ds_.dir.joinpath('NOTES.md').write_text('#', encoding='utf8')
     return ds_
