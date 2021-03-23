@@ -22,7 +22,7 @@ def run(args):
     dataset.glottolog = args.glottolog.api
     with_dataset(args, 'makecldf', dataset=dataset)
     if not dataset.cldf_dir.joinpath('sources.bib').exists():
-        args.log.warn(
+        args.log.warning(
             'The dataset has no sources at {0}'.format(dataset.cldf_dir.joinpath('sources.bib')))
     creators, contributors = dataset.get_creators_and_contributors(strict=False)
 

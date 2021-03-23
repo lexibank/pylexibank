@@ -40,11 +40,11 @@ class BVD(Dataset):
 
         for lid in range(1, self.max_language_id + 1):
             if lid in self.invalid_ids:
-                args.log.warn("Skipping %s %d - invalid ID" % (self.SECTION, lid))
+                args.log.warning("Skipping %s %d - invalid ID" % (self.SECTION, lid))
                 continue
 
             if not self.get_data(lid):
-                args.log.warn("No content for %s %d. Ending." % (self.SECTION, lid))
+                args.log.warning("No content for %s %d. Ending." % (self.SECTION, lid))
                 break
             else:
                 args.log.info("Downloaded %s %4d." % (self.SECTION, lid))
@@ -171,7 +171,7 @@ class Wordlist(object):
                 ds.add_sources(*[Source.from_entry(k, e) for k, e in bib.entries.items()])
                 source = list(bib.entries.keys())
             except:  # noqa: E722
-                self.log.warn("Invalid citekey for %s" % self.language.id)
+                self.log.warning("Invalid citekey for %s" % self.language.id)
 
         ds.add_language(
             ID=self.language.id,
@@ -225,7 +225,7 @@ class Wordlist(object):
                 for cognate_set_id in entry.cognates:
                     match = self.dataset.cognate_pattern.match(cognate_set_id)
                     if not match:  # pragma: no cover
-                        self.log.warn('Invalid cognateset ID for entry {0}: {1}'.format(
+                        self.log.warning('Invalid cognateset ID for entry {0}: {1}'.format(
                             entry.id, cognate_set_id))
                     else:
                         # make global cognate set id

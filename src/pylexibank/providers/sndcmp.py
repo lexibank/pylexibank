@@ -371,7 +371,7 @@ class SNDCMP(Dataset):
                     continue
                 # Commas are not allowed!
                 if ',' in v:  # pragma: no cover
-                    args.log.warn('Comma not allowed in /{0}/ for {1} - {2}'.format(
+                    args.log.warning('Comma not allowed in /{0}/ for {1} - {2}'.format(
                         value, languages[lexeme['LanguageIx']], lexeme['IxElicitation']))
                 param_id = concepts['{0}-{1}'.format(
                     lexeme['IxElicitation'], lexeme['IxMorphologicalInstance'])]
@@ -405,7 +405,7 @@ class SNDCMP(Dataset):
                                 'Form_ID': new['ID']
                             })
                     else:  # pragma: no cover
-                        args.log.warn('Missing sound file name in catalog {0}.'.format(
+                        args.log.warning('Missing sound file name in catalog {0}.'.format(
                             lexeme['path'][i]))
 
                 # Remember last inserted ID for alternative pronounciations to insert 'Variant_Of'.
@@ -443,7 +443,7 @@ class SNDCMP(Dataset):
                 '► := no form, but audio'
 
         for m in sorted(missing):  # pragma: no cover
-            args.log.warn('Missing language with ID {0}.'.format(m))
+            args.log.warning('Missing language with ID {0}.'.format(m))
 
         if len(only_snd):
             args.log.info('Consider to use "form_placeholder" to import lexemes without '
