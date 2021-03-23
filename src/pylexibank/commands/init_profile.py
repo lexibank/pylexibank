@@ -24,13 +24,33 @@ def register(parser):
         action='store_true',
         help='Overwrite existing profile',
         default=False)
+    parser.add_argument(
+        '--semi-diacritics',
+        default='hsʃ̢ɕʂʐʑʒw',
+        help='Indicate characters which can occur both as "diacritics" (second part in a sound) '
+             'or alone.')
+    parser.add_argument(
+        '--merge-vowels',
+        action='store_true',
+        help='Indicate whether consecutive vowels should be merged.',
+        default=False)
+    parser.add_argument(
+        '--dont-merge-geminates',
+        action='store_true',
+        default=False)
 
 
 def run(args):
     bipa = args.clts.api.bipa
     func = profile.simple_profile
     cols = ['Grapheme', 'IPA', 'Frequence', 'Codepoints']
-    kw = {'ref': 'form', 'clts': bipa}
+    kw = {
+        'ref': 'form',
+        'clts': bipa,
+        'semi_diacritics': args.semi_diacritics,
+        'merge_vowels': args.merge_vowels,
+        'merge_geminates': not args.dont_merge_geminates,
+    }
     if args.context:
         func = profile.context_profile
         cols = ['Grapheme', 'IPA', 'Examples', 'Languages', 'Frequence', 'Codepoints']
