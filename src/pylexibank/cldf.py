@@ -75,7 +75,10 @@ class LexibankWriter(CLDFWriter):
                         self.cldf[cls.__cldf_table__(), field].propertyUrl = col.propertyUrl
                         self.cldf[cls.__cldf_table__(), field].datatype = col.datatype
                 except KeyError:
-                    col = Column(name=field, datatype="string")
+                    kw = {k: v for k, v in attr.fields_dict(cls)[field].metadata.items()}
+                    kw.setdefault('datatype', 'string')
+                    kw.setdefault('name', field)
+                    col = Column.fromvalue(kw)
                 if (col.propertyUrl and col.propertyUrl.uri not in properties) or \
                         ((not col.propertyUrl) and (field not in cols)):
                     self.cldf[cls.__cldf_table__()].tableSchema.columns.append(col)
