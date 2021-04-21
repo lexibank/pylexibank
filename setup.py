@@ -3,9 +3,9 @@ from setuptools import setup, find_packages
 
 setup(
     name='pylexibank',
-    version='3.0.1.dev0',
+    version='3.1.0',
     author='Robert Forkel',
-    author_email='forkel@shh.mpg.de',
+    author_email='dlce.rdm@eva.mpg.de',
     description='Python library implementing the lexibank workbench',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
