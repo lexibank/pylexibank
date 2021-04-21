@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pylexibank',
-    version='3.1.0',
+    version='3.1.1.dev0',
     author='Robert Forkel',
     author_email='dlce.rdm@eva.mpg.de',
     description='Python library implementing the lexibank workbench',
