@@ -16,8 +16,8 @@ import pylexibank
 
 
 @pytest.fixture
-def git_repo(tmpdir):
-    return get_test_repo(str(tmpdir), remote_url='https://github.com/lexibank/dataset.git')
+def git_repo(tmp_path):
+    return get_test_repo(tmp_path, remote_url='https://github.com/lexibank/dataset.git')
 
 
 @pytest.fixture

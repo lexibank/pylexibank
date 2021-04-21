@@ -44,8 +44,8 @@ def test_augment(clts):
     assert prf.graphemes['^a']['SCA'] == 'S'
 
 
-def test_write(tmpdir):
-    fname = pathlib.Path(str(tmpdir)) / 'profile.tsv'
+def test_write(tmp_path):
+    fname = tmp_path / 'profile.tsv'
     prf = Profile({'Grapheme': 'ab', 'IPA': 'z'}, {'Grapheme': 'x', 'IPA': 'y'})
     prf.write(fname)
     assert Profile.from_file(fname).graphemes == prf.graphemes
@@ -62,8 +62,8 @@ def test_clean(clts):
     assert prf.graphemes['b']['IPA'] == 'b/tɬ'
 
 
-def test_check(caplog, tmpdir, clts):
-    prf_path = pathlib.Path(str(tmpdir)) / 'profile.tsv'
+def test_check(caplog, tmp_path, clts):
+    prf_path = tmp_path / 'profile.tsv'
 
     prf_path.write_text('Grapheme\tIPA\na\tx\na\tx\n')
     prf = Profile.from_file(prf_path)

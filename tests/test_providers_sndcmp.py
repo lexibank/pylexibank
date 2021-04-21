@@ -15,15 +15,18 @@ JSONZIP = '{"EAEA0-4DE0-B3E9-31CE-0":{"metadata":'\
 
 
 @pytest.fixture
-def sndcmp_dataset(repos, tmpdir, glottolog, concepticon):
+def sndcmp_dir(tmp_path, repos):
+    copytree(repos / 'datasets' / 'sndcmp', tmp_path / 'sndcmp')
+    return tmp_path / 'sndcmp'
 
-    copytree(repos / 'datasets' / 'sndcmp', str(tmpdir.join('sndcmp')))
 
+@pytest.fixture
+def sndcmp_dataset(repos, glottolog, concepticon, sndcmp_dir):
     class CustomConcept(SNDCMPConcept):
         Bislama_Gloss = attr.ib(default=None)
 
     class Dataset(SNDCMP):
-        dir = str(tmpdir.join('sndcmp'))
+        dir = sndcmp_dir
         id = "sndcmpvanuatu"
         study_name = "Vanuatu"
         second_gloss_lang = "Bislama"
@@ -40,12 +43,9 @@ def sndcmp_dataset(repos, tmpdir, glottolog, concepticon):
 
 
 @pytest.fixture
-def sndcmp2_dataset(repos, tmpdir, glottolog, concepticon):
-
-    copytree(repos / 'datasets' / 'sndcmp', str(tmpdir.join('sndcmp')))
-
+def sndcmp2_dataset(repos, glottolog, concepticon, sndcmp_dir):
     class Dataset(SNDCMP):
-        dir = str(tmpdir.join('sndcmp'))
+        dir = sndcmp_dir
         id = "sndcmpvanuatu"
         study_name = "Vanuatu"
         source_id_array = ["Shimelman2019"]
@@ -55,12 +55,9 @@ def sndcmp2_dataset(repos, tmpdir, glottolog, concepticon):
 
 
 @pytest.fixture
-def sndcmp_dl_dataset(repos, tmpdir, glottolog, concepticon):
-
-    copytree(repos / 'datasets' / 'sndcmp', str(tmpdir.join('sndcmp')))
-
+def sndcmp_dl_dataset(repos, glottolog, concepticon, sndcmp_dir):
     class Dataset(SNDCMP):
-        dir = str(tmpdir.join('sndcmp'))
+        dir = sndcmp_dir
         id = "sndcmpbrazil"
         study_name = "Brazil"
         second_gloss_lang = None
@@ -71,7 +68,6 @@ def sndcmp_dl_dataset(repos, tmpdir, glottolog, concepticon):
 
 
 def test_sndcmp(sndcmp_dataset, mocker):
-
     sndcmp_dataset.cmd_create_ref_etc_files(mocker.MagicMock())
     assert (sndcmp_dataset.raw_dir / 'languages.csv').exists()
     assert (sndcmp_dataset.raw_dir / 'concepts.csv').exists()
@@ -83,7 +79,6 @@ def test_sndcmp(sndcmp_dataset, mocker):
 
 
 def test_sndcmp2(sndcmp2_dataset, mocker):
-
     sndcmp2_dataset.cmd_create_ref_etc_files(mocker.MagicMock())
     csv = sndcmp2_dataset.raw_dir / 'concepts.csv'
     res = list(reader(csv, dicts=True))
@@ -96,7 +91,6 @@ def test_sndcmp_cldf(sndcmp_dataset, mocker):
 
 
 def test_sndcmp_dl(sndcmp_dl_dataset, mocker):
-
     class Requests(mocker.Mock):
         def get(self, *args, **kw):
             if 'zip' in args[0]:

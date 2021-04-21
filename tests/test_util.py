@@ -18,8 +18,8 @@ def test_iter_repl(seq, subseq, repl, out):
     assert list(util.iter_repl(seq, subseq, repl)) == out
 
 
-def test_jsondump(tmpdir):
-    fname = str(tmpdir.join('dump.json'))
+def test_jsondump(tmp_path):
+    fname = tmp_path / 'dump.json'
     res = util.jsondump({'a': 2}, fname)
     assert 'a' in res
     res = util.jsondump({'b': 3}, fname)

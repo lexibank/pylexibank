@@ -4,6 +4,11 @@ from csvw.metadata import Column
 from pylexibank.db import Database, ColSpec, schema
 
 
+@pytest.fixture
+def db(tmp_path):
+    return Database(tmp_path / 'lexibank.sqlite')
+
+
 def test_ColSpec():
     col = ColSpec(name='c', csvw_type='float')
     assert col.convert(5) == '5'
@@ -24,8 +29,7 @@ def test_schema(cldf_dataset):
         assert False
 
 
-def test_db(tmpdir, dataset, mocker, capsys):
-    db = Database(str(tmpdir.join('lexibank.sqlite')))
+def test_db(dataset, mocker, capsys, db):
     db.load(dataset)
     db.create(exists_ok=True)
     with pytest.raises(ValueError):
@@ -58,8 +62,7 @@ def test_db(tmpdir, dataset, mocker, capsys):
     db.load(dataset)
 
 
-def test_db_multiple_datasets(tmpdir, dataset, dataset_cldf, dataset_cldf_capitalisation, capsys):
-    db = Database(str(tmpdir.join('lexibank.sqlite')))
+def test_db_multiple_datasets(dataset, dataset_cldf, dataset_cldf_capitalisation, capsys, db):
     db.load(dataset)
     db.load(dataset_cldf, verbose=True)
     db.load(dataset_cldf_capitalisation, verbose=True)
@@ -71,11 +74,10 @@ def test_db_multiple_datasets(tmpdir, dataset, dataset_cldf, dataset_cldf_capita
         assert ('1', 'abc') in [(r[0], r[1]) for r in res]
 
 
-def test_db_multiple_datasets_error(tmpdir, dataset, dataset_factory):
+def test_db_multiple_datasets_error(dataset, dataset_factory, db):
     import shutil
     from clldutils.jsonlib import load, dump
 
-    db = Database(str(tmpdir.join('lexibank.sqlite')))
     assert not db.fname.exists()
     db.load(dataset)
 

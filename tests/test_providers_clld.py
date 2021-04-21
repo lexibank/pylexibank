@@ -1,9 +1,7 @@
-import pathlib
-
 from pylexibank.providers.clld import CLLD
 
 
-def test_CLLD(mocker, repos, tmpdir):
+def test_CLLD(mocker, repos, tmp_path):
     class Response(mocker.Mock):
         def iter_content(self, *args, **kw):
             print(repos.joinpath('wold_dataset.cldf.zip'))
@@ -12,7 +10,7 @@ def test_CLLD(mocker, repos, tmpdir):
 
     class WOLD(CLLD):
         id = 'wold'
-        dir = pathlib.Path(str(tmpdir))
+        dir = tmp_path
 
     ds = WOLD()
     assert ds.url()

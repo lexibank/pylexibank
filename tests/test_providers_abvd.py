@@ -1,20 +1,18 @@
 import pytest
-from pathlib import Path
 
 from clldutils.path import copytree
-from pycldf.sources import Source
 
 from pylexibank.providers import abvd
 
 
 @pytest.fixture
-def abvd_dataset(repos, tmpdir, glottolog, concepticon):
-    copytree(repos / 'datasets' / 'abvd', str(tmpdir.join('abvd')))
+def abvd_dataset(repos, tmp_path, glottolog, concepticon):
+    copytree(repos / 'datasets' / 'abvd', tmp_path / 'abvd')
 
     class Dataset(abvd.BVD):
         id = 'x'
         SECTION = 'y'
-        dir = Path(str(tmpdir.join('abvd')))
+        dir = tmp_path / 'abvd'
 
     return Dataset(glottolog=glottolog, concepticon=concepticon)
 

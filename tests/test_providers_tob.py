@@ -16,14 +16,14 @@ HTML = '<div class="results_record">' \
        '</div>'
 
 
-def test_TOB(tmpdir, mocker, concepticon, glottolog):
+def test_TOB(tmp_path, mocker, concepticon, glottolog):
     class DS(TOB):
-        dir = Path(str(tmpdir))
+        dir = tmp_path
         id = 'test'
         name = 'name'
         dset = 'dset'
 
-    tmpdir.join('metadata.json').write_text('{"conceptlist": "Wang-2004-471"}', encoding='utf8')
+    tmp_path.joinpath('metadata.json').write_text('{"conceptlist": "Wang-2004-471"}', encoding='utf8')
 
     class Requests(mocker.Mock):
         def get(self, *args, **kw):

@@ -1,7 +1,6 @@
 import sys
 import json
 import importlib
-import pathlib
 
 import pytest
 from clldutils.path import sys_path
@@ -43,8 +42,8 @@ def test_invalid_dataset():
         Test()
 
 
-def test_Dataset_tokenizer(tmpdir):
-    etc = pathlib.Path(str(tmpdir)).joinpath('etc')
+def test_Dataset_tokenizer(tmp_path):
+    etc = tmp_path / 'etc'
     etc.mkdir()
     orth_dir = etc.joinpath('orthography')
     orth_dir.mkdir()

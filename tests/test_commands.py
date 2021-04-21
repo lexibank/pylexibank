@@ -1,6 +1,5 @@
 import shlex
 import logging
-import pathlib
 import argparse
 
 import pytest
@@ -24,12 +23,10 @@ def _main(cmd, **kw):
     main(['--no-config'] + shlex.split(cmd), **kw)
 
 
-def test_makecldf_concepticon_concepts(repos, tmpdir):
+def test_makecldf_concepticon_concepts(repos):
     d = repos / 'datasets' / 'test_dataset_concepticon_concepts'
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
-        str(d / 'tdcc.py'),
-        str(repos),
-    ))
+        d / 'tdcc.py', repos))
     assert d.joinpath('cldf', 'parameters.csv').read_text(encoding='utf8').splitlines()[0] == \
         'ID,Name,Concepticon_ID,Concepticon_Gloss,NUMBER,ENGLISH,CHINESE,PAGE'
 
@@ -50,7 +47,7 @@ def test_makecldf_multi_profiles(repos):
     assert 'FREQUENCY' in (d / 'etc' / 'orthography' / 'p1.tsv').read_text(encoding='utf8')
 
 
-def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmpdir, capsys):
+def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, capsys, tmp_path):
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset.dir / 'td.py'),
         str(repos),
@@ -89,7 +86,7 @@ def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, tmp
         str(dataset_no_cognates.dir / 'tdn.py'),
         str(repos),
         str(repos),
-        str(tmpdir.join('db')),
+        str(tmp_path / 'db'),
     ))
 
 
@@ -108,25 +105,16 @@ def test_check_lexibank(dataset_cldf, caplog):
     assert any('Cross-concept' in w for w in warnings)
 
 
-def test_ls(repos, tmpdir, dataset):
+def test_ls(repos, tmp_path, dataset):
     _main('lexibank.load --db {3} {0} --glottolog {1} --concepticon {2}'.format(
-        str(dataset.dir / 'td.py'),
-        str(repos),
-        str(repos),
-        str(tmpdir.join('db')),
-    ))
-    _main('lexibank.ls {0} --all --db {1}'.format(
-        str(dataset.dir / 'td.py'),
-        str(tmpdir.join('db'))))
-    _main('lexibank.unload --db {1} {0}'.format(
-        str(dataset.dir / 'td.py'),
-        str(tmpdir.join('db')),
-    ))
+        dataset.dir / 'td.py', repos, repos, tmp_path / 'db'))
+    _main('lexibank.ls {0} --all --db {1}'.format(dataset.dir / 'td.py', tmp_path / 'db'))
+    _main('lexibank.unload --db {1} {0}'.format(dataset.dir / 'td.py', tmp_path / 'db'))
 
 
-def test_db(tmpdir, mocker):
+def test_db(tmp_path, mocker):
     mocker.patch('pylexibank.commands.db.subprocess', mocker.Mock(return_value=0))
-    _main('lexibank.db --db {0}'.format(str(tmpdir.join('db'))))
+    _main('lexibank.db --db {0}'.format(tmp_path / 'db'))
 
 
 def test_check_phonotactics(dataset):
@@ -151,13 +139,12 @@ def test_readme(dataset, repos):
     assert '# Contributors' in dataset.dir.joinpath('README.md').read_text(encoding='utf8')
 
 
-def test_new(tmpdir, mocker):
+def test_new(tmp_path, mocker):
     mocker.patch('cldfbench.metadata.input', mocker.Mock(return_value='abc'))
-    _main('new --template lexibank_simple --out ' + str(tmpdir))
-    assert pathlib.Path(str(tmpdir)).joinpath('abc', 'CONTRIBUTORS.md').exists()
+    _main('new --template lexibank_simple --out ' + str(tmp_path))
+    assert tmp_path.joinpath('abc', 'CONTRIBUTORS.md').exists()
 
     mocker.patch('cldfbench.metadata.input', mocker.Mock(return_value='cde'))
-    _main('new --template lexibank_combined --out ' + str(tmpdir))
-    assert '{{' not in pathlib.Path(str(tmpdir)).joinpath(
-        'cde', 'lexibank_cde.py').read_text(encoding='utf8')
+    _main('new --template lexibank_combined --out ' + str(tmp_path))
+    assert '{{' not in tmp_path.joinpath('cde', 'lexibank_cde.py').read_text(encoding='utf8')
 
