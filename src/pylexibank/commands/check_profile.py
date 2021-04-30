@@ -10,6 +10,10 @@ def register(parser):
     add_format(parser, default="pipe")
     add_dataset_spec(parser)
     add_catalog_spec(parser, "clts")
+    parser.add_argument(
+            '--language',
+            help="Select a language",
+            default=None)
 
 
 def run(args):
@@ -20,39 +24,40 @@ def check_profile(dataset, args):
     visited = {}
     missing, unknown, modified, generated = {}, {}, {}, {}
     for row in dataset.cldf_dir.read_csv("forms.csv", dicts=True):
-        tokens = (
-            dataset.tokenizer(row, row["Form"], column="IPA")
-            if dataset.tokenizer
-            else row["Segments"].split()
-        )
-        for tk in set(tokens):
-            if tk not in visited:
-                sound = args.clts.api.bipa[tk]
-                if tk.startswith("<<") and tk.endswith(">>"):
-                    visited[tk] = "missing"
-                    missing[tk[2:-2]] = [
-                        (" ".join(tokens), row["Form"], row["Graphemes"])
-                    ]
-                elif sound.type == "unknownsound":
-                    visited[tk] = "unknown"
-                    unknown[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
-                elif sound.generated:
-                    visited[tk] = "generated"
-                    generated[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
-                elif str(sound) != tk:
-                    visited[tk] = "modified"
-                    modified[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
-            else:
-                if visited[tk] == "missing":
-                    missing[tk[2:-2]] += [
-                        (" ".join(tokens), row["Form"], row["Graphemes"])
-                    ]
-                elif visited[tk] == "unknown":
-                    unknown[tk] += [(" ".join(tokens), row["Form"], row["Graphemes"])]
-                elif visited[tk] == "modified":
-                    modified[tk] += [(" ".join(tokens), row["Form"], row["Graphemes"])]
-                elif visited[tk] == "generated":
-                    generated[tk] += [(" ".join(tokens), row["Form"], row["Graphemes"])]
+        if not args.language or args.language == row["Language_ID"]:
+            tokens = (
+                dataset.tokenizer(row, row["Form"], column="IPA")
+                if dataset.tokenizer
+                else row["Segments"].split()
+            )
+            for tk in set(tokens):
+                if tk not in visited:
+                    sound = args.clts.api.bipa[tk]
+                    if tk.startswith("<<") and tk.endswith(">>"):
+                        visited[tk] = "missing"
+                        missing[tk[2:-2]] = [
+                            (" ".join(tokens), row["Form"], row["Graphemes"])
+                        ]
+                    elif sound.type == "unknownsound":
+                        visited[tk] = "unknown"
+                        unknown[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
+                    elif sound.generated:
+                        visited[tk] = "generated"
+                        generated[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
+                    elif str(sound) != tk:
+                        visited[tk] = "modified"
+                        modified[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
+                else:
+                    if visited[tk] == "missing":
+                        missing[tk[2:-2]] += [
+                            (" ".join(tokens), row["Form"], row["Graphemes"])
+                        ]
+                    elif visited[tk] == "unknown":
+                        unknown[tk] += [(" ".join(tokens), row["Form"], row["Graphemes"])]
+                    elif visited[tk] == "modified":
+                        modified[tk] += [(" ".join(tokens), row["Form"], row["Graphemes"])]
+                    elif visited[tk] == "generated":
+                        generated[tk] += [(" ".join(tokens), row["Form"], row["Graphemes"])]
 
     if generated:
         print("# Found {0} generated graphemes".format(len(generated)))
