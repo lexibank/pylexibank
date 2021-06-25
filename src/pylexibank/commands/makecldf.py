@@ -5,6 +5,7 @@ import html
 
 from clldutils import jsonlib
 from cldfbench.cli_util import with_dataset, get_dataset
+from cldfbench.commands import cldfreadme
 
 from pylexibank.cli_util import add_catalogs, add_dataset_spec
 
@@ -52,3 +53,4 @@ def run(args):
                 html.escape(dataset.metadata.citation))
         if dataset.metadata.zenodo_license:
             md['license'] = {'id': dataset.metadata.zenodo_license}
+    cldfreadme.run(args)

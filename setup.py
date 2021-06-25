@@ -31,7 +31,7 @@ setup(
         'pyclts>=3',
         'attrs>=19.2',
         'segments>=2.1.1',
-        'cldfbench[excel]>=1.0',
+        'cldfbench[excel]>=1.6.0',
         'csvw>=1.5.6',
         'clldutils>=2.8.0',
         'pycldf>=1.15.2',
