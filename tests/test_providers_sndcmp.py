@@ -1,10 +1,11 @@
-import pytest
-import attr
-import zipfile
 import io
+import shutil
+import zipfile
 
+import pytest
+
+import attr
 from csvw.dsv import reader
-from clldutils.path import copytree
 from pylexibank.providers.sndcmp import SNDCMP
 from pylexibank.providers.sndcmp import SNDCMPConcept
 
@@ -16,7 +17,7 @@ JSONZIP = '{"EAEA0-4DE0-B3E9-31CE-0":{"metadata":'\
 
 @pytest.fixture
 def sndcmp_dir(tmp_path, repos):
-    copytree(repos / 'datasets' / 'sndcmp', tmp_path / 'sndcmp')
+    shutil.copytree(repos / 'datasets' / 'sndcmp', tmp_path / 'sndcmp')
     return tmp_path / 'sndcmp'
 
 
