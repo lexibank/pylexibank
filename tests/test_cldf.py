@@ -72,6 +72,9 @@ def test_reqs(tmp_path, mocker, clts):
 def test_custom_columns(tmp_path, clts, mocker):
     @attr.s
     class Variety(Language):
+        """
+        abcdefg
+        """
         x = attr.ib(
             default=None,
             metadata={'separator': ';', 'dc:description': "-+-+-"},
@@ -90,4 +93,6 @@ def test_custom_columns(tmp_path, clts, mocker):
     D()._cmd_makecldf(Namespace(
         log=mocker.Mock(), dev=False, verbose=False, clts=mocker.Mock(api=clts)))
     assert 'x;y' in tmp_path.joinpath('cldf', 'languages.csv').read_text(encoding='utf8')
-    assert '-+-+-' in tmp_path.joinpath('cldf', 'cldf-metadata.json').read_text(encoding='utf8')
+    md = tmp_path.joinpath('cldf', 'cldf-metadata.json').read_text(encoding='utf8')
+    assert '-+-+-' in md
+    assert 'abcdefg' in md
