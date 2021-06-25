@@ -60,7 +60,8 @@ class LexibankWriter(CLDFWriter):
             self.dataset.cognate_class,
         ]:
             if cls.__doc__:
-                self.cldf[cls.__cldf_table__()].common_props['dc:description'] = textwrap.dedent(cls.__doc__)
+                self.cldf[cls.__cldf_table__()].common_props['dc:description'] = \
+                    textwrap.dedent(cls.__doc__)
 
             self.objects[cls.__cldf_table__()] = []
             self._obj_index[cls.__cldf_table__()] = set()
