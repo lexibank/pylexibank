@@ -22,6 +22,7 @@ from pylexibank import metadata
 from pylexibank import forms
 from pylexibank import report
 from pylexibank.profile import Profile
+from pylexibank.lingpy_util import settings
 
 __all__ = ['Dataset', 'ENTRY_POINT']
 ENTRY_POINT = 'lexibank.dataset'
@@ -270,6 +271,8 @@ class Dataset(BaseDataset):
         self._cmd_readme(args)
         (self.dir / 'TRANSCRIPTION.md').write_text(transcription.report(tr), encoding='utf8')
         log_dump(self.dir / 'TRANSCRIPTION.md', args.log)
+
+        jsondump(settings(), self.cldf_dir / 'lingpy-rcParams.json', log=args.log)
 
     def cmd_readme(self, args):
         res = self.metadata.markdown()

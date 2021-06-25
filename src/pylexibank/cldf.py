@@ -33,6 +33,10 @@ class LexibankWriter(CLDFWriter):
     def write(self, **kw):
         from pylexibank import ENTRY_POINT
 
+        self.cldf.add_provenance(wasGeneratedBy=[
+            collections.OrderedDict([
+                ('dc:title', "lingpy-rcParams"), ('dc:relation', 'lingpy-rcParams.json')])])
+
         super().write(**kw)
         # We rewrite requirements.txt, excluding all lexibank dataset modules:
         exclude = {'egg=' + ep.module_name for ep in pkg_resources.iter_entry_points(ENTRY_POINT)}
