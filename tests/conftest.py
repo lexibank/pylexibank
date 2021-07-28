@@ -7,7 +7,7 @@ import shutil
 
 import pytest
 
-from clldutils.path import copytree, copy, sys_path
+from clldutils.path import sys_path
 from pycldf import Dataset
 from cldfbench.catalogs import CachingConcepticonAPI, CachingGlottologAPI, CLTSAPI
 from cldfcatalog.repository import get_test_repo
@@ -37,11 +37,11 @@ def git_repo_factory(git_repo):
 @pytest.fixture
 def repos(tmp_path, git_repo_factory):
     repos = tmp_path / 'lexibank-data'
-    copytree(Path(__file__).parent.joinpath('repos'), repos)
+    shutil.copytree(Path(__file__).parent.joinpath('repos'), repos)
     git_repo_factory(repos)
     git_repo_factory(repos / 'datasets' / 'test_dataset')
     git_repo_factory(repos / 'datasets' / 'test_dataset_cldf')
-    copy(Path(pylexibank.__file__).parent.joinpath('cldf-metadata.json'), repos)
+    shutil.copy(Path(pylexibank.__file__).parent.joinpath('cldf-metadata.json'), repos)
     yield repos
 
 

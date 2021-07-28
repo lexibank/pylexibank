@@ -1,6 +1,14 @@
+import collections
+
 import lingpy
 from clldutils.misc import slug
 import pycldf
+
+
+def settings():
+    return collections.OrderedDict([
+        (k, str(v) if isinstance(v, lingpy.Model) else v)
+        for k, v in sorted(lingpy.settings.rcParams.items(), key=lambda i: i[0])])
 
 
 def wordlist2cognates(wordlist, source, expert='expert', ref='cogid'):

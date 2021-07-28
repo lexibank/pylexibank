@@ -16,9 +16,9 @@ def register(parser):
     add_dataset_spec(parser)
     add_catalog_spec(parser, "clts")
     parser.add_argument(
-            '--language',
-            help="Select a language",
-            default=None)
+        '--language',
+        help="Select a language",
+        default=None)
 
 
 def run(args):

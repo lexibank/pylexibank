@@ -1,6 +1,7 @@
 import re
 import logging
 import pathlib
+import textwrap
 import itertools
 import collections
 import collections.abc
@@ -33,6 +34,10 @@ class LexibankWriter(CLDFWriter):
     def write(self, **kw):
         from pylexibank import ENTRY_POINT
 
+        self.cldf.add_provenance(wasGeneratedBy=[
+            collections.OrderedDict([
+                ('dc:title', "lingpy-rcParams"), ('dc:relation', 'lingpy-rcParams.json')])])
+
         super().write(**kw)
         # We rewrite requirements.txt, excluding all lexibank dataset modules:
         exclude = {'egg=' + ep.module_name for ep in pkg_resources.iter_entry_points(ENTRY_POINT)}
@@ -54,6 +59,10 @@ class LexibankWriter(CLDFWriter):
             self.dataset.concept_class,
             self.dataset.cognate_class,
         ]:
+            if cls.__doc__:
+                self.cldf[cls.__cldf_table__()].common_props['dc:description'] = \
+                    textwrap.dedent(cls.__doc__)
+
             self.objects[cls.__cldf_table__()] = []
             self._obj_index[cls.__cldf_table__()] = set()
 
