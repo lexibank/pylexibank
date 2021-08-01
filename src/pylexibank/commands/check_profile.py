@@ -19,6 +19,10 @@ def register(parser):
         '--language',
         help="Select a language",
         default=None)
+    parser.add_argument(
+        "--noprofile",
+        help="Ignore profile use segments",
+        action="store_true")
 
 
 def run(args):
@@ -32,7 +36,7 @@ def check_profile(dataset, args):
         if not args.language or args.language == row["Language_ID"]:
             tokens = [normalized(t) for t in (
                 dataset.tokenizer(row, row["Form"], column="IPA")
-                if dataset.tokenizer
+                if dataset.tokenizer and not args.noprofile
                 else row["Segments"].split()
             )]
             for tk in set(tokens):
