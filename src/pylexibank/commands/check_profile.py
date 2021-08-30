@@ -4,6 +4,11 @@ Check forms against a dataset's orthography profile.
 from cldfbench.cli_util import with_dataset, add_catalog_spec
 from clldutils.clilib import Table, add_format
 from pylexibank.cli_util import add_dataset_spec
+from unicodedata import normalize
+
+
+def normalized(string):
+    return normalize("NFD", string)
 
 
 def register(parser):
@@ -14,6 +19,10 @@ def register(parser):
         '--language',
         help="Select a language",
         default=None)
+    parser.add_argument(
+        "--noprofile",
+        help="Ignore profile use segments",
+        action="store_true")
 
 
 def run(args):
@@ -25,11 +34,11 @@ def check_profile(dataset, args):
     missing, unknown, modified, generated = {}, {}, {}, {}
     for row in dataset.cldf_dir.read_csv("forms.csv", dicts=True):
         if not args.language or args.language == row["Language_ID"]:
-            tokens = (
+            tokens = [normalized(t) for t in (
                 dataset.tokenizer(row, row["Form"], column="IPA")
-                if dataset.tokenizer
+                if dataset.tokenizer and not args.noprofile
                 else row["Segments"].split()
-            )
+            )]
             for tk in set(tokens):
                 if tk not in visited:
                     sound = args.clts.api.bipa[tk]
