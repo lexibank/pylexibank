@@ -21,7 +21,7 @@ def codepoints(string):
     out = []
     for char in string:
         out += [hex(ord(char))[2:]]
-    return " ".join(["U+"+x for x in out])
+    return " ".join(["U+"+x.rjust(4, "0") for x in out])
 
 
 def run(args):
@@ -145,7 +145,7 @@ def check_profile(dataset, args):
                     ]
                 )
     if missing:
-        print("# Found {0} graphemes missing in profile".format(len(unknown)))
+        print("# Found {0} graphemes missing in profile".format(len(missing)))
         with Table(
             args,
             *["Grapheme", "Diacritics", "Unicode", "Segments", "Graphemes", "Count"]
