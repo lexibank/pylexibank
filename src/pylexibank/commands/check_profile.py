@@ -4,6 +4,7 @@ Check forms against a dataset's orthography profile.
 from cldfbench.cli_util import with_dataset, add_catalog_spec
 from clldutils.clilib import Table, add_format
 from pylexibank.cli_util import add_dataset_spec
+from unicodedata import normalize
 
 
 def register(parser):
@@ -16,13 +17,20 @@ def register(parser):
         default=None)
 
 
+def codepoints(string):
+    out = []
+    for char in string:
+        out += [hex(ord(char))[:2]]
+    return " ".join(["U+"+x for x in out])
+
+
 def run(args):
     with_dataset(args, check_profile)
 
 
 def check_profile(dataset, args):
     visited = {}
-    missing, unknown, modified, generated = {}, {}, {}, {}
+    missing, unknown, modified, generated, slashed = {}, {}, {}, {}, {}
     for row in dataset.cldf_dir.read_csv("forms.csv", dicts=True):
         if not args.language or args.language == row["Language_ID"]:
             tokens = (
@@ -44,9 +52,16 @@ def check_profile(dataset, args):
                     elif sound.generated:
                         visited[tk] = "generated"
                         generated[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
-                    elif str(sound) != tk:
-                        visited[tk] = "modified"
-                        modified[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
+                    elif str(sound) != tk and str(sound) != normalize(
+                            tk, "NFD"):
+                        if "/" in tk and str(sound) == tk.split('/'):
+                            visited[tk] = "slashed"
+                            slashed[tk] = [
+                                    (" ".join(tokens), row["Form"], row["Graphemes"])]
+                        else:
+                            visited[tk] = "modified"
+                            modified[tk] = [
+                                    (" ".join(tokens), row["Form"], row["Graphemes"])]
                 else:
                     if visited[tk] == "missing":
                         missing[tk[2:-2]] += [
@@ -62,13 +77,15 @@ def check_profile(dataset, args):
     if generated:
         print("# Found {0} generated graphemes".format(len(generated)))
         with Table(
-            args, *["Grapheme", "BIPA", "Modified", "Segments", "Graphemes", "Count"]
+            args, *["Grapheme", "Grapheme-UC", "BIPA", "BIPA-UC", "Modified", "Segments", "Graphemes", "Count"]
         ) as table:
             for tk, values in sorted(generated.items(), key=lambda x: len(x[1])):
                 table.append(
                     [
                         tk,
+                        codepoints(tk),
                         str(args.clts.api.bipa[tk]),
+                        args.clts.api.bipa[tk].codepoints,
                         "*" if tk != str(args.clts.api.bipa[tk]) else "",
                         values[0][0],
                         values[0][1],
@@ -78,18 +95,38 @@ def check_profile(dataset, args):
     if modified:
         print("# Found {0} modified graphemes".format(len(modified)))
         with Table(
-            args, *["Grapheme", "BIPA", "Segments", "Graphemes", "Count"]
+            args, *["Grapheme", "Grapheme-UC", "BIPA", "BIPA-UC", "Segments", "Graphemes", "Count"]
         ) as table:
             for tk, values in sorted(modified.items(), key=lambda x: len(x[1])):
                 table.append(
                     [
                         tk,
+                        codepoints(tk)
                         str(args.clts.api.bipa[tk]),
+                        args.clts.api.bipa[tk].codepoints,
                         values[0][0],
                         values[0][1],
                         len(values),
                     ]
                 )
+    if slashed:
+        print("# Found {0} slashed graphemes".format(len(slashed)))
+        with Table(
+            args, *["Grapheme", "Grapheme-UC", "BIPA", "BIPA-UC", "Segments", "Graphemes", "Count"]
+        ) as table:
+            for tk, values in sorted(slashed.items(), key=lambda x: len(x[1])):
+                table.append(
+                    [
+                        tk,
+                        codepoints(tk)
+                        str(args.clts.api.bipa[tk]),
+                        args.clts.api.bipa[tk].codepoints,
+                        values[0][0],
+                        values[0][1],
+                        len(values),
+                    ]
+                )
+
     if unknown:
         print("# Found {0} unknown graphemes".format(len(unknown)))
         with Table(
