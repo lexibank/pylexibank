@@ -20,7 +20,7 @@ def register(parser):
 def codepoints(string):
     out = []
     for char in string:
-        out += [hex(ord(char))[:2]]
+        out += [hex(ord(char))[2:]]
     return " ".join(["U+"+x for x in out])
 
 
@@ -53,8 +53,8 @@ def check_profile(dataset, args):
                         visited[tk] = "generated"
                         generated[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
                     elif str(sound) != tk and str(sound) != normalize(
-                            tk, "NFD"):
-                        if "/" in tk and str(sound) == tk.split('/'):
+                            "NFD", tk):
+                        if "/" in tk and str(sound) == tk.split('/')[1]:
                             visited[tk] = "slashed"
                             slashed[tk] = [
                                     (" ".join(tokens), row["Form"], row["Graphemes"])]
@@ -101,7 +101,7 @@ def check_profile(dataset, args):
                 table.append(
                     [
                         tk,
-                        codepoints(tk)
+                        codepoints(tk),
                         str(args.clts.api.bipa[tk]),
                         args.clts.api.bipa[tk].codepoints,
                         values[0][0],
@@ -118,7 +118,7 @@ def check_profile(dataset, args):
                 table.append(
                     [
                         tk,
-                        codepoints(tk)
+                        codepoints(tk.split('/')[0]),
                         str(args.clts.api.bipa[tk]),
                         args.clts.api.bipa[tk].codepoints,
                         values[0][0],
