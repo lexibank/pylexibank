@@ -25,13 +25,20 @@ def register(parser):
         action="store_true")
 
 
+def codepoints(string):
+    out = []
+    for char in string:
+        out += [hex(ord(char))[2:]]
+    return " ".join(["U+"+x.rjust(4, "0") for x in out])
+
+
 def run(args):
     with_dataset(args, check_profile)
 
 
 def check_profile(dataset, args):
     visited = {}
-    missing, unknown, modified, generated = {}, {}, {}, {}
+    missing, unknown, modified, generated, slashed = {}, {}, {}, {}, {}
     for row in dataset.cldf_dir.read_csv("forms.csv", dicts=True):
         if not args.language or args.language == row["Language_ID"]:
             tokens = [normalized(t) for t in (
@@ -53,9 +60,15 @@ def check_profile(dataset, args):
                     elif sound.generated:
                         visited[tk] = "generated"
                         generated[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
-                    elif str(sound) != tk:
-                        visited[tk] = "modified"
-                        modified[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
+                    elif str(sound) != tk and str(sound) != normalized(tk):
+                        if "/" in tk and str(sound) == tk.split('/')[1]:
+                            visited[tk] = "slashed"
+                            slashed[tk] = [
+                                    (" ".join(tokens), row["Form"], row["Graphemes"])]
+                        else:
+                            visited[tk] = "modified"
+                            modified[tk] = [
+                                    (" ".join(tokens), row["Form"], row["Graphemes"])]
                 else:
                     if visited[tk] == "missing":
                         missing[tk[2:-2]] += [
@@ -71,13 +84,15 @@ def check_profile(dataset, args):
     if generated:
         print("# Found {0} generated graphemes".format(len(generated)))
         with Table(
-            args, *["Grapheme", "BIPA", "Modified", "Segments", "Graphemes", "Count"]
+            args, *["Grapheme", "Grapheme-UC", "BIPA", "BIPA-UC", "Modified", "Segments", "Graphemes", "Count"]
         ) as table:
             for tk, values in sorted(generated.items(), key=lambda x: len(x[1])):
                 table.append(
                     [
                         tk,
+                        codepoints(tk),
                         str(args.clts.api.bipa[tk]),
+                        args.clts.api.bipa[tk].codepoints,
                         "*" if tk != str(args.clts.api.bipa[tk]) else "",
                         values[0][0],
                         values[0][1],
@@ -87,18 +102,38 @@ def check_profile(dataset, args):
     if modified:
         print("# Found {0} modified graphemes".format(len(modified)))
         with Table(
-            args, *["Grapheme", "BIPA", "Segments", "Graphemes", "Count"]
+            args, *["Grapheme", "Grapheme-UC", "BIPA", "BIPA-UC", "Segments", "Graphemes", "Count"]
         ) as table:
             for tk, values in sorted(modified.items(), key=lambda x: len(x[1])):
                 table.append(
                     [
                         tk,
+                        codepoints(tk),
                         str(args.clts.api.bipa[tk]),
+                        args.clts.api.bipa[tk].codepoints,
                         values[0][0],
                         values[0][1],
                         len(values),
                     ]
                 )
+    if slashed:
+        print("# Found {0} slashed graphemes".format(len(slashed)))
+        with Table(
+            args, *["Grapheme", "Grapheme-UC", "BIPA", "BIPA-UC", "Segments", "Graphemes", "Count"]
+        ) as table:
+            for tk, values in sorted(slashed.items(), key=lambda x: len(x[1])):
+                table.append(
+                    [
+                        tk,
+                        codepoints(tk.split('/')[0]),
+                        str(args.clts.api.bipa[tk]),
+                        args.clts.api.bipa[tk].codepoints,
+                        values[0][0],
+                        values[0][1],
+                        len(values),
+                    ]
+                )
+
     if unknown:
         print("# Found {0} unknown graphemes".format(len(unknown)))
         with Table(
@@ -117,7 +152,7 @@ def check_profile(dataset, args):
                     ]
                 )
     if missing:
-        print("# Found {0} graphemes missing in profile".format(len(unknown)))
+        print("# Found {0} graphemes missing in profile".format(len(missing)))
         with Table(
             args,
             *["Grapheme", "Diacritics", "Unicode", "Segments", "Graphemes", "Count"]
