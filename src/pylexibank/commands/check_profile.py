@@ -29,7 +29,7 @@ def codepoints(string):
     out = []
     for char in string:
         out += [hex(ord(char))[2:]]
-    return " ".join(["U+"+x.rjust(4, "0") for x in out])
+    return " ".join(["U+" + x.rjust(4, "0") for x in out])
 
 
 def run(args):
@@ -64,11 +64,11 @@ def check_profile(dataset, args):
                         if "/" in tk and str(sound) == tk.split('/')[1]:
                             visited[tk] = "slashed"
                             slashed[tk] = [
-                                    (" ".join(tokens), row["Form"], row["Graphemes"])]
+                                (" ".join(tokens), row["Form"], row["Graphemes"])]
                         else:
                             visited[tk] = "modified"
                             modified[tk] = [
-                                    (" ".join(tokens), row["Form"], row["Graphemes"])]
+                                (" ".join(tokens), row["Form"], row["Graphemes"])]
                 else:
                     if visited[tk] == "missing":
                         missing[tk[2:-2]] += [
@@ -84,7 +84,8 @@ def check_profile(dataset, args):
     if generated:
         print("# Found {0} generated graphemes".format(len(generated)))
         with Table(
-            args, *["Grapheme", "Grapheme-UC", "BIPA", "BIPA-UC", "Modified", "Segments", "Graphemes", "Count"]
+            args, *["Grapheme", "Grapheme-UC", "BIPA", "BIPA-UC", "Modified",
+                    "Segments", "Graphemes", "Count"]
         ) as table:
             for tk, values in sorted(generated.items(), key=lambda x: len(x[1])):
                 table.append(
