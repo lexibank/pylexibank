@@ -23,7 +23,7 @@ class BVDLanguage(Language):
 class BVD(Dataset):
     SECTION = None
     invalid_ids = []
-    max_language_id = 50  # maximum language id to look for.
+    language_ids = list(range(1, 50)) # list of language ids to look for.
     language_class = BVDLanguage
     cognate_pattern = re.compile(r'''\s*(?P<id>([A-z]?[0-9]+|[A-Z]))\s*(?P<doubt>\?+)?\s*$''')
 
@@ -38,7 +38,7 @@ class BVD(Dataset):
         for fname in self.raw_dir.iterdir():
             fname.unlink()
 
-        for lid in range(1, self.max_language_id + 1):
+        for lid in self.language_ids:
             if lid in self.invalid_ids:
                 args.log.warning("Skipping %s %d - invalid ID" % (self.SECTION, lid))
                 continue
