@@ -145,7 +145,7 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
         stats_lines.extend([
             '- **Invalid lexemes:** {0:,}'.format(stats['invalid_words_count']),
             '- **Tokens:** {0:,}'.format(sum(stats['segments'].values())),
-            '- **Segments:** {0:,} ({1} BIPA errors, {2} CTLS sound class errors, '
+            '- **Segments:** {0:,} ({1} BIPA errors, {2} CLTS sound class errors, '
             '{3} CLTS modified)'
             .format(lsegments, lbipapyerr, lsclasserr, len(stats['replacements'])),
             '- **Inventory size (avg):** {:0.2f}'.format(stats['inventory_size']),
