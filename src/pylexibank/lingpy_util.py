@@ -112,9 +112,10 @@ def iter_alignments(dataset, cognate_sets, column='Segments', method='library', 
             return
         cognates = {r['Form_ID']: r for r in cognate_sets}
         wordlist.add_entries(
-            'cogid',
+            'cog',
             'lid',
             lambda x: cognates[x]['Cognateset_ID'] if x in cognates else 0)
+        wordlist.renumber("cog")
         alm = lingpy.Alignments(
             wordlist,
             ref='cogid',
