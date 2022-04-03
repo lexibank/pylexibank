@@ -39,7 +39,7 @@ def run(args):
             desc="creating profiles"):
         data = defaultdict(int)
         for form in language.forms:
-            for grapheme in form.data["Graphemes"]:
+            for grapheme in form.data["Graphemes"].split():
                 data[grapheme, profile.get(grapheme, "?")] += 1
         new_path = ds.etc_dir / "orthography" / "{0}.tsv".format(language.id)
         if new_path.exists() and not args.force:
