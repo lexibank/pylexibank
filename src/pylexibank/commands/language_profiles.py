@@ -28,19 +28,23 @@ def run(args):
     p = ds.etc_dir / "orthography.tsv"
     if not p.exists():
         raise ParserError("profile does not exist but is needed for creation")
+    if not ds.etc_dir.joinpath("orthography").exists():
+        ds.etc_dir.joinpath("orthography").mkdir(parents=True, exist_ok=True)
     with UnicodeDictReader(p, delimiter="\t") as reader:
         profile = {}
         for row in reader:
             profile[row["Grapheme"]] = row["IPA"]
-
     
     for language in progressbar(
             wordlist.objects("LanguageTable"), 
             desc="creating profiles"):
         data = defaultdict(int)
         for form in language.forms:
-            for grapheme in form.data["Graphemes"].split():
-                data[grapheme, profile.get(grapheme, "?")] += 1
+            if form.data.get("Graphemes"):
+                for grapheme in form.data["Graphemes"].split():
+                    data[grapheme, profile.get(grapheme, "?")] += 1
+            else:
+                raise ValueError("Grapheme information missing in CLDF data")
         new_path = ds.etc_dir / "orthography" / "{0}.tsv".format(language.id)
         if new_path.exists() and not args.force:
             raise ParserError("Orthography profile exists, use --force to override")
