@@ -80,6 +80,9 @@ def check_profile(dataset, args):
                         modified[tk] += [(" ".join(tokens), row["Form"], row["Graphemes"])]
                     elif visited[tk] == "generated":
                         generated[tk] += [(" ".join(tokens), row["Form"], row["Graphemes"])]
+                    elif visited[tk] == "slashed":
+                        slashed[tk] += [(" ".join(tokens), row["Form"],
+                        row["Graphemes"])]
 
     if generated:
         print("# Found {0} generated graphemes".format(len(generated)))
