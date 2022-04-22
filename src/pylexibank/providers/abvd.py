@@ -6,7 +6,7 @@ from pycldf.sources import Source
 from pybtex.database import parse_string  # dependency of pycldf, so should be installed.
 from pylexibank import Dataset, Language
 
-BASE_URL = "https://abvd.shh.mpg.de"
+BASE_URL = "https://abvd.eva.mpg.de"
 URL = BASE_URL + "/utils/save/?type=xml&section=%s&language=%d"
 
 
