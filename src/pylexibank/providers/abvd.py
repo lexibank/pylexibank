@@ -23,7 +23,7 @@ class BVDLanguage(Language):
 class BVD(Dataset):
     SECTION = None
     invalid_ids = []
-    language_ids = list(range(1, 50)) # list of language ids to look for.
+    language_ids = list(range(1, 50))  # list of language ids to look for.
     language_class = BVDLanguage
     cognate_pattern = re.compile(r'''\s*(?P<id>([A-z]?[0-9]+|[A-Z]))\s*(?P<doubt>\?+)?\s*$''')
 

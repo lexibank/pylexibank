@@ -1,10 +1,11 @@
 """
 Check forms against a dataset's orthography profile.
 """
+from unicodedata import normalize
+
 from cldfbench.cli_util import with_dataset, add_catalog_spec
 from clldutils.clilib import Table, add_format
 from pylexibank.cli_util import add_dataset_spec
-from unicodedata import normalize
 
 
 def normalized(string):
@@ -81,8 +82,7 @@ def check_profile(dataset, args):
                     elif visited[tk] == "generated":
                         generated[tk] += [(" ".join(tokens), row["Form"], row["Graphemes"])]
                     elif visited[tk] == "slashed":
-                        slashed[tk] += [(" ".join(tokens), row["Form"],
-                        row["Graphemes"])]
+                        slashed[tk] += [(" ".join(tokens), row["Form"], row["Graphemes"])]
 
     if generated:
         print("# Found {0} generated graphemes".format(len(generated)))
