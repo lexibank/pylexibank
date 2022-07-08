@@ -109,7 +109,7 @@
           {
             "name": "Glottocode",
             "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#glottocode",
-            "valueUrl": "http://glottolog.org/resource/languoid/id/{glottolog_id}",
+            "valueUrl": "http://glottolog.org/resource/languoid/id/{Glottocode}",
             "datatype": "string"
           },
           {
@@ -172,7 +172,7 @@
           {
             "name": "Concepticon_ID",
             "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#concepticonReference",
-            "valueUrl": "http://concepticon.clld.org/parameters/{concepticon_id}",
+            "valueUrl": "http://concepticon.clld.org/parameters/{Concepticon_ID}",
             "datatype": "string"
           },
           {
