@@ -23,6 +23,7 @@ def _main(cmd, **kw):
     main(['--no-config'] + shlex.split(cmd), **kw)
 
 
+@pytest.mark.filterwarnings("ignore:distutils Version:DeprecationWarning")
 def test_makecldf_concepticon_concepts(repos):
     d = repos / 'datasets' / 'test_dataset_concepticon_concepts'
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(

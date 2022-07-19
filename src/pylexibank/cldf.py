@@ -5,7 +5,6 @@ import textwrap
 import itertools
 import collections
 import collections.abc
-import pkg_resources
 
 import attr
 from csvw.metadata import Column
@@ -13,7 +12,7 @@ from pycldf.dataset import Wordlist
 import pyclts.models
 
 from cldfbench.cldf import CLDFWriter
-from cldfbench.util import iter_requirements
+from cldfbench.util import iter_requirements, get_entrypoints
 
 from pylexibank.transcription import Analysis, analyze, valid_sequence
 from pylexibank.util import iter_repl, get_concepts, get_ids_and_attrs
@@ -40,7 +39,7 @@ class LexibankWriter(CLDFWriter):
 
         super().write(**kw)
         # We rewrite requirements.txt, excluding all lexibank dataset modules:
-        exclude = {'egg=' + ep.module_name for ep in pkg_resources.iter_entry_points(ENTRY_POINT)}
+        exclude = {'egg=' + ep.load().__module__ for ep in get_entrypoints(ENTRY_POINT)}
         reqs = []
         for req in iter_requirements():
             if not any(mod in req for mod in exclude):

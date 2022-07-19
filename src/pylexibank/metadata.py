@@ -1,14 +1,11 @@
 import re
 import collections
-import pkg_resources
 
 import attr
 from clldutils.misc import nfilter
 from cldfbench.metadata import Metadata
 
 __all__ = ['LexibankMetadata', 'check_standard_title', 'get_creators_and_contributors']
-
-version = pkg_resources.get_distribution('pylexibank').version
 
 STANDARD_TITLE_PATTERN = re.compile(
     r'CLDF dataset derived from\s+'
@@ -413,7 +410,12 @@ class LexibankMetadata(Metadata):
     related = attr.ib(default=None)
     source = attr.ib(default=None)
     patron = attr.ib(default=None)
-    version = attr.ib(default=version)
+    version = attr.ib(default=None)
+
+    def __attrs_post_init__(self):
+        import pylexibank
+
+        self.version = self.version or pylexibank.__version__
 
     @property
     def zenodo_license(self):
