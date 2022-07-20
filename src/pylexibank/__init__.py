@@ -6,4 +6,4 @@ from pylexibank.metadata import *  # noqa: F401, F403
 from pylexibank.util import *  # noqa: F401, F403
 from pylexibank.cldf import *  # noqa: F401, F403
 
-__version__ = '3.3.1.dev0'
+__version__ = '3.4.0'
