@@ -60,7 +60,7 @@ class Dataset(pylexibank.Dataset):
         #for language in self.languages:
         #    args.writer.add_language(
         #        ID=language['ID'],
-        #        Glottolog=language['Glottolog']
+        #        Glottocode=language['Glottocode']
         #    )
 
         # add data
