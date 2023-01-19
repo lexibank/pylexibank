@@ -20,6 +20,7 @@ def test_warning(caplog):
 
 
 def _main(cmd, **kw):
+    kw.setdefault('log', logging.getLogger(__name__))
     main(['--no-config'] + shlex.split(cmd), **kw)
 
 
@@ -124,6 +125,12 @@ def test_check_phonotactics(dataset):
 
 def test_check_profile(dataset, repos):
     _main('lexibank.check_profile {0} --clts {1}'.format(str(dataset.dir / 'td.py'), repos))
+    d = repos / 'datasets' / 'test_dataset_multi_profile'
+    _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
+        str(d / 'tdmp.py'),
+        str(repos),
+    ))
+    _main('lexibank.check_profile {0} --clts {1}'.format(str(d / 'tdmp.py'), repos))
 
 
 def test_init_profile(dataset, repos):

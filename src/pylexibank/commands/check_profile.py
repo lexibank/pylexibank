@@ -42,8 +42,11 @@ def check_profile(dataset, args):
     missing, unknown, modified, generated, slashed = {}, {}, {}, {}, {}
     for row in dataset.cldf_dir.read_csv("forms.csv", dicts=True):
         if not args.language or args.language == row["Language_ID"]:
+            kw = dict(column="IPA")
+            if 'Profile' in row:  # A multi-profile dataset.
+                kw['profile'] = row['Profile']
             tokens = [normalized(t) for t in (
-                dataset.tokenizer(row, row["Form"], column="IPA")
+                dataset.tokenizer(row, row["Form"], **kw)
                 if dataset.tokenizer and not args.noprofile
                 else row["Segments"].split()
             )]
