@@ -104,7 +104,7 @@ class SNDCMP(Dataset):
     def get_source_id_array(self, lexeme):
         return self.source_id_array
 
-    def cmd_create_ref_etc_files(self, args):
+    def cmd_create_ref_etc_files(self, args):  # pragma: no cover
         # Helper command to generate raw/concepts.csv and raw/languages.csv out of
         # the JSON data file which can be used to detect changes for the files
         # etc/concepts.csv and etc/langauges.csv
@@ -240,7 +240,7 @@ class SNDCMP(Dataset):
             json.dump(collections.OrderedDict(sorted(catalog.items())),
                       f, ensure_ascii=False, indent=1)
 
-    def cmd_makecldf(self, args):
+    def cmd_makecldf(self, args):  # pragma: no cover
 
         if not hasattr(self, 'form_placeholder'):
             self.form_placeholder = None

@@ -10,7 +10,7 @@ def build_status_badge(dataset):
         if dataset.dir.joinpath('.travis.yml').exists():
             return "[![Build Status](https://travis-ci.org/{0}.svg?branch=master)]" \
                    "(https://travis-ci.org/{0})".format(dataset.repo.github_repo)
-        if dataset.dir.joinpath('.github/workflows').exists():
+        if dataset.dir.joinpath('.github/workflows').exists():  # pragma: no cover
             return "[![CLDF validation]" \
                    "(https://github.com/{0}/workflows/CLDF-validation/badge.svg)]" \
                    "(https://github.com/{0}/actions?query=workflow%3ACLDF-validation)" \
@@ -128,8 +128,10 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
         ])
     lines.extend(['## Statistics', '\n', '\n'.join(badges), ''])
     stats_lines = [
-        '- **Varieties:** {0:,}'.format(len(totals['lids'])),
-        '- **Concepts:** {0:,}'.format(len(totals['cids'])),
+        '- **Varieties:** {0:,} (linked to {1:,} different Glottocodes)'.format(
+            len(totals['lids']), sum(1 if gc else 0 for gc in totals['languages'])),
+        '- **Concepts:** {0:,} (linked to {1:,} different Concepticon concept sets)'.format(
+            len(totals['cids']), sum(1 if csid else 0 for csid in totals['concepts'])),
         '- **Lexemes:** {0:,}'.format(totals['lexemes']),
         '- **Sources:** {0:,}'.format(len(totals['sids'])),
         '- **Synonymy:** {:0.2f}'.format(totals['SI']),

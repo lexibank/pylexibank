@@ -225,7 +225,7 @@ class Dataset(BaseDataset):
         #
         ds = self.cldf_reader()
         for col in ds['LanguageTable'].tableSchema.columns:
-            if col.name.lower() == 'population':
+            if col.name.lower() == 'population':  # pragma: no cover
                 assert col.datatype.base == 'integer', 'population must be integer!'
 
         if args.verbose:

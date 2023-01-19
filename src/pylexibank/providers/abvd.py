@@ -170,7 +170,7 @@ class Wordlist(object):
             try:
                 ds.add_sources(*[Source.from_entry(k, e) for k, e in bib.entries.items()])
                 source = list(bib.entries.keys())
-            except:  # noqa: E722
+            except:  # pragma: no cover # noqa: E722
                 self.log.warning("Invalid citekey for %s" % self.language.id)
 
         ds.add_language(
