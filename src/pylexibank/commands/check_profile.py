@@ -8,8 +8,8 @@ from clldutils.clilib import Table, add_format
 from pylexibank.cli_util import add_dataset_spec
 
 
-def normalized(string):
-    return normalize("NFD", string)
+def normalized(string, mode="NFD"):
+    return normalize(mode, string)
 
 
 def register(parser):
@@ -64,7 +64,7 @@ def check_profile(dataset, args):
                     elif sound.generated:
                         visited[tk] = "generated"
                         generated[tk] = [(" ".join(tokens), row["Form"], row["Graphemes"])]
-                    elif str(sound) != tk and str(sound) != normalized(tk):
+                    elif str(sound) not in {tk, normalized(tk), normalized(tk, mode='NFC')}:
                         if "/" in tk and str(sound) == tk.split('/')[1]:
                             visited[tk] = "slashed"
                             slashed[tk] = [
