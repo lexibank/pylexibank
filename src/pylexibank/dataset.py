@@ -38,6 +38,9 @@ class Dataset(BaseDataset):
     - concepticon concept-list ID as attribute `conceptlist`
     """
     metadata_cls = metadata.LexibankMetadata
+    # The CLDFWriter can be instructed to keep objects which are not referenced from FormTable by
+    # setting the following options to `True`.
+    writer_options = dict(keep_languages=False, keep_parameters=False)
 
     lexeme_class = models.Lexeme
     cognate_class = models.Cognate

@@ -48,4 +48,3 @@ git push --tags
 git commit -a -m "bump version for development"
 git push origin
 ```
-

@@ -24,11 +24,18 @@ MD_NAME = 'cldf-metadata.json'
 ID_PATTERN = re.compile(r'[A-Za-z0-9_\-]+$')
 
 
+@attr.s
+class Options:
+    keep_languages = attr.ib(default=False, validator=attr.validators.instance_of(bool))
+    keep_parameters = attr.ib(default=False, validator=attr.validators.instance_of(bool))
+
+
 class LexibankWriter(CLDFWriter):
-    def __init__(self, **kw):
-        super().__init__(**kw)
+    def __init__(self, dataset=None, **kw):
+        super().__init__(dataset=dataset, **kw)
         self._count = collections.defaultdict(int)
         self._cognate_count = collections.defaultdict(int)
+        self.options = Options(**getattr(dataset, 'writer_options', {}))
 
     def write(self, **kw):
         from pylexibank import ENTRY_POINT
@@ -103,6 +110,9 @@ class LexibankWriter(CLDFWriter):
 
         # We only add concepts and languages that are referenced by forms!
         for fk, table in [('Parameter_ID', 'ParameterTable'), ('Language_ID', 'LanguageTable')]:
+            if (table == 'Parameter_ID' and self.options.keep_parameters) or \
+                    (table == 'LanguageTable' and self.options.keep_languages):
+                continue
             refs = set(obj[fk] for obj in self.objects['FormTable'])
             self.objects[table] = [obj for obj in self.objects[table] if obj['ID'] in refs]
         super().__exit__(exc_type, exc_val, exc_tb)

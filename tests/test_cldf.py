@@ -75,24 +75,26 @@ def test_custom_columns(tmp_path, clts, mocker):
         """
         abcdefg
         """
-        x = attr.ib(
-            default=None,
-            metadata={'separator': ';', 'dc:description': "-+-+-"},
-        )
+        x = attr.ib(default=None, metadata={'separator': ';', 'dc:description': "-+-+-"})
+
     class D(Dataset):
         dir = tmp_path
         id = 'x'
         language_class = Variety
+        writer_options = dict(keep_languages=True)
 
         def cmd_makecldf(self, args):
             args.writer.add_language(ID='l', x=['x', 'y'])
+            args.writer.add_language(ID='l2', x=['x', 'y'])
             args.writer.add_concept(ID='c')
             args.writer.add_form_with_segments(
                 Language_ID='l', Parameter_ID='c', Value='x', Form='x', Segments=['x', 'y'])
 
     D()._cmd_makecldf(Namespace(
         log=mocker.Mock(), dev=False, verbose=False, clts=mocker.Mock(api=clts)))
-    assert 'x;y' in tmp_path.joinpath('cldf', 'languages.csv').read_text(encoding='utf8')
+    langs = tmp_path.joinpath('cldf', 'languages.csv').read_text(encoding='utf8')
+    assert 'x;y' in langs
+    assert 'l2' in langs
     md = tmp_path.joinpath('cldf', 'cldf-metadata.json').read_text(encoding='utf8')
     assert '-+-+-' in md
     assert 'abcdefg' in md
