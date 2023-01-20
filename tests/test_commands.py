@@ -119,8 +119,13 @@ def test_db(tmp_path, mocker):
     _main('lexibank.db --db {0}'.format(tmp_path / 'db'))
 
 
-def test_check_phonotactics(dataset):
+def test_check_phonotactics(dataset, capsys):
     _main('lexibank.check_phonotactics {0}'.format(str(dataset.dir / 'td.py')))
+    out, _ = capsys.readouterr()
+    assert out.strip() == """| Type | ID | Value | Form | Graphemes | Segments |
+|-------:|:---------------|:--------|:-------|:------------|:------------|
+| 1 | lang1-param1-1 | a b; c | a b | | a _ b |
+| 1 | lang2-param2-2 | a~b-c | ab | | + a + + b + |"""
 
 
 def test_check_profile(dataset, repos):
@@ -138,6 +143,11 @@ def test_init_profile(dataset, repos):
         str(dataset.dir / 'td.py'), repos))
     with pytest.raises(SystemExit):
         _main('lexibank.init_profile {0} --clts {1}'.format(str(dataset.dir / 'td.py'), repos))
+
+
+def test_language_profiles(dataset_cldf, repos):
+    with pytest.raises(ValueError):
+        _main('lexibank.language_profiles {0}'.format(str(dataset_cldf.dir / 'tdc.py')))
 
 
 def test_readme(dataset, repos):

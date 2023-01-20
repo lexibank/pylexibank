@@ -70,6 +70,10 @@
                     {
                         "name": "Loan",
                         "datatype": "boolean"
+                    },
+                    {
+                        "name": "Value",
+                        "propertyUrl": "http://cldf.clld.org/v1.0/terms.rdf#value"
                     }
                 ],
                 "foreignKeys": [

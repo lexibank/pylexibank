@@ -29,7 +29,7 @@ def run(args):
         raise ParserError("profile does not exist but is needed for creation")
     if not ds.etc_dir.joinpath("orthography").exists():
         ds.etc_dir.joinpath("orthography").mkdir(parents=True, exist_ok=True)
-    profile = {row["Grapheme"]: row["IPA"] for row in reader(p, delimiter='\t')}
+    profile = {row["Grapheme"]: row["IPA"] for row in reader(p, dicts=True, delimiter='\t')}
 
     for language in progressbar(
             wordlist.objects("LanguageTable"),

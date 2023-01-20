@@ -31,4 +31,4 @@ def check(ds, args, warnings=None):
 
 
 def run(args):
-    with_datasets(args, check)
+    with_datasets(args, check)  # pragma: no cover

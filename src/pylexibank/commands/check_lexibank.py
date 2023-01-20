@@ -23,7 +23,7 @@ def check(ds, args, warnings=None):
         warn('Dataset does not describe creators in {}'.format(ds.contributors_path))
 
     # check that there's no local concepts.csv:
-    if (ds.dir / 'etc' / 'concepts.csv').exists():
+    if (ds.dir / 'etc' / 'concepts.csv').exists():  # pragma: no cover
         warn('Dataset uses a local ./etc/concepts.csv rather than a conceptlist from Concepticon')
 
     cldf = ds.cldf_reader()
@@ -38,7 +38,7 @@ def check(ds, args, warnings=None):
                 if not ds.lexemes[r] and r in values:  # removal of form x -> ""
                     warn("lexemes.csv contains un-handled removal '{0}' -> '{1}'".format(
                         r, ds.lexemes[r]))
-        except KeyError:
+        except KeyError:  # pragma: no cover
             warn('Dataset does not seem to be a lexibank dataset - FormTable has no Value column!')
 
     if (not getattr(ds, 'cross_concept_cognates', False)) and cldf.get('CognateTable'):

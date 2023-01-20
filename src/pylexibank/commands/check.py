@@ -25,4 +25,4 @@ def run(args):
     if args.warnings:
         args.log.warning('{0} warnings issued'.format(len(args.warnings)))
         return 2
-    args.log.info('OK')
+    args.log.info('OK')  # pragma: no cover
