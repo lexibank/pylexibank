@@ -128,14 +128,14 @@ def test_check_phonotactics(dataset, capsys):
 | 1 | lang2-param2-2 | a~b-c | ab | | + a + + b + |"""
 
 
-def test_check_profile(dataset, repos):
+def test_check_profile(dataset, repos, caplog, capsys):
     _main('lexibank.check_profile {0} --clts {1}'.format(str(dataset.dir / 'td.py'), repos))
-    d = repos / 'datasets' / 'test_dataset_multi_profile'
-    _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
-        str(d / 'tdmp.py'),
-        str(repos),
-    ))
-    _main('lexibank.check_profile {0} --clts {1}'.format(str(d / 'tdmp.py'), repos))
+    assert len(caplog.records) == 2
+    d = repos / 'datasets' / 'test_dataset_multi_profile_with_cldf'
+    _main('lexibank.check_profile {0} --clts {1}'.format(str(d / 'tdmpcldf.py'), repos))
+    assert len(caplog.records) == 4
+    out, _ = capsys.readouterr()
+    assert all(w in out for w in 'modified generated slashed unknown missing'.split())
 
 
 def test_init_profile(dataset, repos):
@@ -148,6 +148,8 @@ def test_init_profile(dataset, repos):
 def test_language_profiles(dataset_cldf, repos):
     with pytest.raises(ValueError):
         _main('lexibank.language_profiles {0}'.format(str(dataset_cldf.dir / 'tdc.py')))
+    d = repos / 'datasets' / 'test_dataset_cldf_capitalisation'
+    _main('lexibank.language_profiles {0}'.format(str(d / 'tdc.py')))
 
 
 def test_readme(dataset, repos):

@@ -26,23 +26,22 @@ def run(args):
     wordlist = Dataset.from_metadata(ds.cldf_dir / "cldf-metadata.json")
     p = ds.etc_dir / "orthography.tsv"
     if not p.exists():
-        raise ParserError("profile does not exist but is needed for creation")
+        raise ParserError("profile does not exist but is needed for creation")  # pragma: no cover
     if not ds.etc_dir.joinpath("orthography").exists():
         ds.etc_dir.joinpath("orthography").mkdir(parents=True, exist_ok=True)
     profile = {row["Grapheme"]: row["IPA"] for row in reader(p, dicts=True, delimiter='\t')}
 
-    for language in progressbar(
-            wordlist.objects("LanguageTable"),
-            desc="creating profiles"):
+    for language in progressbar(wordlist.objects("LanguageTable"), desc="creating profiles"):
         data = defaultdict(int)
         for form in language.forms:
-            if form.data.get("Graphemes"):
-                for grapheme in form.data["Graphemes"].split():
+            graphemes = form.data.get("Graphemes")
+            if graphemes:
+                for grapheme in (graphemes.split() if isinstance(graphemes, str) else graphemes):
                     data[grapheme, profile.get(grapheme, "?")] += 1
             else:
                 raise ValueError("Grapheme information missing in CLDF data")
         new_path = ds.etc_dir / "orthography" / "{0}.tsv".format(language.id)
-        if new_path.exists() and not args.force:
+        if new_path.exists() and not args.force:  # pragma: no cover
             raise ParserError("Orthography profile exists, use --force to override")
         with UnicodeWriter(new_path, delimiter='\t') as writer:
             writer.writerow(["Grapheme", "IPA", "Frequency"])

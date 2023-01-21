@@ -1,0 +1,10 @@
+ID,Local_ID,Language_ID,Parameter_ID,Value,Form,Segments,Comment,Source,Cognacy,Loan,Graphemes,Profile
+lang1-param1-1,,lang1,param1,axg,axg,b x/y ɡʷ,,abc,,,^ a x g $,p1
+lang1-param1-2,,lang1,param1,azu,azu,c <<z>> A,,abc,,,^ a <z> u $,p2
+lang1-param1-3,,lang1,param1,ayz,ayz,b x/y ɣː ʒ’,,abc,,,^ a y z $,p1
+lang1-param1-4,,lang1,param1,ax,ax,b x/y,,abc,,,^ a x $,p1
+lang1-param1-5,,lang1,param1,azu,azu,c <<z>> A,,abc,,,^ a <z> u $,p2
+lang1-param1-6,,lang1,param1,ayz,ayz,b x/y ɣː ʒ’,,abc,,,^ a y z $,p1
+lang1-param1-7,,lang1,param1,axg,axg,b x/y ɡʷ,,abc,,,^ a x g $,p1
+lang1-param1-7,,lang1,param1,axd,axdou,b x/y dʱʷ,,abc,,,^ a x d $,p1
+lang1-param1-8,,lang1,param1,axd,axdou,b x/y dʱʷ,,abc,,,^ a x d $,p1

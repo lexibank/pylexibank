@@ -70,6 +70,10 @@
                     {
                         "name": "Loan",
                         "datatype": "boolean"
+                    },
+                    {
+                        "name": "Graphemes",
+                        "separator": " "
                     }
                 ],
                 "foreignKeys": [
