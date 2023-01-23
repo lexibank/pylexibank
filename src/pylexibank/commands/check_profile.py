@@ -46,7 +46,7 @@ def check_profile(dataset, args):
         ('modified', collections.defaultdict(list)),
         ('slashed', collections.defaultdict(list)),
         ('unknown', collections.defaultdict(list)),
-        ('missing',collections.defaultdict(list)),
+        ('missing', collections.defaultdict(list)),
     ])
     for row in dataset.cldf_dir.read_csv("forms.csv", dicts=True):
         if not args.language or args.language == row["Language_ID"]:
@@ -82,7 +82,7 @@ def check_profile(dataset, args):
         'Grapheme',
         'Grapheme-UC',
         'Non-normal',
-        'Diacritics'
+        'Diacritics',
         'BIPA',
         "BIPA-UC",
         "Segments",
