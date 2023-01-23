@@ -1,7 +1,6 @@
 # pylexibank
 
 [![Build Status](https://github.com/lexibank/pylexibank/workflows/tests/badge.svg)](https://github.com/lexibank/pylexibank/actions?query=workflow%3Atests)
-[![codecov](https://codecov.io/gh/lexibank/pylexibank/branch/master/graph/badge.svg)](https://codecov.io/gh/lexibank/pylexibank)
 [![PyPI](https://img.shields.io/pypi/v/pylexibank.svg)](https://pypi.org/project/pylexibank)
 
 `pylexibank` is a python package providing functionality to curate and aggregate
