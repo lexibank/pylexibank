@@ -35,11 +35,21 @@ def collect_consonant_clusters(dataset, args):
         for row in sorted(
             dataset.cldf_dir.read_csv("forms.csv", dicts=True), key=lambda r: r["ID"]
         ):
-            segments = row["Segments"].split(" + ")
+            if "<<" in row["Segments"]:
+                args.log.warning("Invalid segments in {0} (ID: {1}).".format(row["Segments"], row["ID"]))
+                continue
+            else:
+                segments = row["Segments"].split(" + ")
+
             for morpheme, sounds in map(
-                lambda x: (x.split(), [s.name for s in args.clts.api.bipa(x.split())]), segments
+                lambda x: (
+                        x.split(),
+                        [s.name for s in args.clts.api.bipa(x.split())]
+                ),
+                    segments
             ):
                 clusters = compute_consonant_cluster(morpheme, sounds)
+
                 for cluster in clusters:
                     by_lang[tuple(cluster)][row["Language_ID"]] += [row["Form"]]
 
