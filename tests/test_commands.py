@@ -128,6 +128,17 @@ def test_check_phonotactics(dataset, capsys):
 | 1 | lang2-param2-2 | a~b-c | ab | | + a + + b + |"""
 
 
+def test_consonant_clusters(dataset, repos, caplog, capsys):
+    d = repos / 'datasets' / 'test_dataset_multi_profile_with_cldf'
+    _main('lexibank.consonant_clusters {0} --clts {1}'.format(str(d / 'tdmpcldf.py'), repos))
+    out, _ = capsys.readouterr()
+
+    assert out.strip() == """| Language_ID | Length | Cluster | Words |
+|:--------------|---------:|:----------------------|:--------|
+| lang1 | 3 | ɡ̤ː ɡ̤ː b | axdou |
+| lang1 | 6 | ɡ̤ː ɡ̤ː b dʱʷ dʱʷ dʱʷ | axdou |"""
+
+
 def test_check_profile(dataset, repos, caplog, capsys):
     _main('lexibank.check_profile {0} --clts {1}'.format(str(dataset.dir / 'td.py'), repos))
     assert len(caplog.records) == 2
