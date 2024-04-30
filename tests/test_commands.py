@@ -130,13 +130,14 @@ def test_check_phonotactics(dataset, capsys):
 
 def test_consonant_clusters(dataset, repos, caplog, capsys):
     d = repos / 'datasets' / 'test_dataset_multi_profile_with_cldf'
-    _main('lexibank.consonant_clusters {0} --clts {1}'.format(str(d / 'tdmpcldf.py'), repos))
+    _main('lexibank.consonant_clusters -l 4 {0} --clts {1}'.format(str(d / 'tdmpcldf.py'), repos))
+    warnings = [r.message for r in caplog.records if r.levelname == 'WARNING']
     out, _ = capsys.readouterr()
 
+    assert any("Found 1 potentially problematic consonant cluster(s) with length 4" in w for w in warnings)
     assert out.strip() == """| Language_ID | Length | Cluster | Words |
-|:--------------|---------:|:----------------------|:--------|
-| lang1 | 3 | ɡ̤ː ɡ̤ː b | axdou |
-| lang1 | 6 | ɡ̤ː ɡ̤ː b dʱʷ dʱʷ dʱʷ | axdou |"""
+|:--------------|---------:|:----------------------|:-------------------------------|
+| lang1 | 6 | ɡ̤ː ɡ̤ː b dʱʷ dʱʷ dʱʷ | ɡ̤ː ɡ̤ː b dʱʷ dʱʷ dʱʷ // axdou |"""
 
 
 def test_check_profile(dataset, repos, caplog, capsys):
