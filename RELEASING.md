@@ -16,6 +16,8 @@ flake8 src
   - `setup.cfg`
   - `src/pylexibank/__init__.py`
 
+- In `CHANGELOG.md`, move the changes under the *Unreleased* heading to a new section with the new version number as its heading.
+
 - Create the release commit:
 ```shell
 git commit -a -m "release <VERSION>"
