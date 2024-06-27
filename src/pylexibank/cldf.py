@@ -113,8 +113,12 @@ class LexibankWriter(CLDFWriter):
             if (table == 'Parameter_ID' and self.options.keep_parameters) or \
                     (table == 'LanguageTable' and self.options.keep_languages):
                 continue
-            refs = set(obj[fk] for obj in self.objects['FormTable'])
-            self.objects[table] = [obj for obj in self.objects[table] if obj['ID'] in refs]
+            refs = {obj[fk] for obj in self.objects['FormTable']}
+            referenced_objects = [obj for obj in self.objects[table] if obj['ID'] in refs]
+            if len(referenced_objects) < len(self.objects[table]):
+                log.warning('{}: Ignoring {} rows because they are not referenced_objects by any forms.'.format(
+                    table, len(self.objects[table]) - len(referenced_objects)))
+            self.objects[table] = referenced_objects
         super().__exit__(exc_type, exc_val, exc_tb)
 
     def add_sources(self, *args):
