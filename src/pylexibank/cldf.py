@@ -107,18 +107,6 @@ class LexibankWriter(CLDFWriter):
                 t for t in self.cldf.tables if str(t.url) != 'cognates.csv']
             if 'CognateTable' in self.objects:
                 del self.objects['CognateTable']
-
-        # We only add concepts and languages that are referenced by forms!
-        for fk, table in [('Parameter_ID', 'ParameterTable'), ('Language_ID', 'LanguageTable')]:
-            if (table == 'Parameter_ID' and self.options.keep_parameters) or \
-                    (table == 'LanguageTable' and self.options.keep_languages):
-                continue
-            refs = {obj[fk] for obj in self.objects['FormTable']}
-            referenced_objects = [obj for obj in self.objects[table] if obj['ID'] in refs]
-            if len(referenced_objects) < len(self.objects[table]):
-                log.warning('{}: Ignoring {} rows because they are not referenced_objects by any forms.'.format(
-                    table, len(self.objects[table]) - len(referenced_objects)))
-            self.objects[table] = referenced_objects
         super().__exit__(exc_type, exc_val, exc_tb)
 
     def add_sources(self, *args):
