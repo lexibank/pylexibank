@@ -52,7 +52,7 @@ def check_profile(dataset, args):
         if not args.language or args.language == row["Language_ID"]:
             kw = dict(column="IPA")
             if 'Profile' in row:  # A multi-profile dataset.
-                kw['profile'] = row['Profile']
+                kw['profile'] = None if row['Profile'] == 'default' else row['Profile']
             tokens = [normalized(t) for t in (
                 dataset.tokenizer(row, row["Form"], **kw)
                 if dataset.tokenizer and not args.noprofile
