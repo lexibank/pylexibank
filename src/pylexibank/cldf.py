@@ -107,6 +107,13 @@ class LexibankWriter(CLDFWriter):
                 t for t in self.cldf.tables if str(t.url) != 'cognates.csv']
             if 'CognateTable' in self.objects:
                 del self.objects['CognateTable']
+        for fk, table in [('Parameter_ID', 'ParameterTable'), ('Language_ID', 'LanguageTable')]:
+            if (table == 'ParameterTable' and self.options.keep_parameters) or \
+                    (table == 'LanguageTable' and self.options.keep_languages):
+                continue  #
+            # If opt-in, we only add concepts and languages that are referenced by forms.
+            refs = set(obj[fk] for obj in self.objects['FormTable'])
+            self.objects[table] = [obj for obj in self.objects[table] if obj['ID'] in refs]
         super().__exit__(exc_type, exc_val, exc_tb)
 
     def add_sources(self, *args):

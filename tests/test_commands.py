@@ -39,6 +39,11 @@ def test_makecldf_multi_profiles(repos):
         str(d / 'tdmp.py'),
         str(repos),
     ))
+    assert len(list(dsv.reader(d / 'cldf' / 'languages.csv', dicts=True))) == 1, \
+        'languages not pruned!'
+    assert len(list(dsv.reader(d / 'cldf' / 'parameters.csv', dicts=True))) == 1, \
+        'parameters not pruned!'
+
     forms = list(dsv.reader(d / 'cldf' / 'forms.csv', dicts=True))
     assert forms[0]['Profile'] == 'p1'
 
