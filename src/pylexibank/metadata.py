@@ -385,7 +385,10 @@ def iter_rows(fname_or_lines):
     def row(line):
         return [li.strip() for li in line.split('|')]
 
-    for line in (fname_or_lines if isinstance(fname_or_lines, list) else fname_or_lines.open(encoding='utf-8')):
+    for line in (
+        fname_or_lines if isinstance(fname_or_lines, list)
+        else fname_or_lines.open(encoding='utf-8')
+    ):
         if in_table:
             if '|' not in line:  # Last row of table was already read
                 break

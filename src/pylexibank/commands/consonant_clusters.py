@@ -45,17 +45,15 @@ def collect_consonant_clusters(dataset, args):
             dataset.cldf_dir.read_csv("forms.csv", dicts=True), key=lambda r: r["ID"]
         ):
             if "<<" in row["Segments"]:
-                args.log.warning("Invalid segments in {0} (ID: {1}).".format(row["Segments"], row["ID"]))
+                args.log.warning(
+                    "Invalid segments in {0} (ID: {1}).".format(row["Segments"], row["ID"]))
                 continue
             else:
                 segments = row["Segments"].split(" + ")
 
             for morpheme, sounds in map(
-                lambda x: (
-                        x.split(),
-                        [s.name for s in args.clts.api.bipa(x.split())]
-                ),
-                    segments
+                lambda x: (x.split(), [s.name for s in args.clts.api.bipa(x.split())]),
+                segments
             ):
                 clusters = compute_consonant_cluster(morpheme, sounds)
 
@@ -68,6 +66,8 @@ def collect_consonant_clusters(dataset, args):
             if len(cluster) >= args.length:
                 cases += 1
                 for language, words in data.items():
-                    table.append([language, str(len(cluster)), " ".join(cluster), " // ".join(words)])
+                    table.append(
+                        [language, str(len(cluster)), " ".join(cluster), " // ".join(words)])
 
-    args.log.warning(f"Found {cases} potentially problematic consonant cluster(s) with length {args.length}.")
+    args.log.warning(
+        f"Found {cases} potentially problematic consonant cluster(s) with length {args.length}.")
