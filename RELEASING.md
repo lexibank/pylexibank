@@ -3,12 +3,12 @@ Releasing pylexibank
 ====================
 
 - Do platform test via tox:
-```
+```shell
 tox -r
 ```
 
 - Make sure flake8 passes:
-```
+```shell
 flake8 src
 ```
 
