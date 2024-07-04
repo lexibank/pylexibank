@@ -36,7 +36,7 @@ twine upload dist/*
 ```
 
 - Push to github:
-```
+```shell
 git push origin
 git push --tags
 ```
