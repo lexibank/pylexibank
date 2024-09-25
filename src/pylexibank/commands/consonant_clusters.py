@@ -32,7 +32,7 @@ def compute_consonant_cluster(word, sound_names):
     for i, sound in enumerate(sound_names):
         if sound.split(" ")[-1] in ["diphthong", "vowel", "tone", "�", "marker"]:
             out += [[]]
-        elif sound.split(" ")[0] == 'syllabic':
+        elif 'syllabic' in sound.split(" "):
             out += [[]]
         else:
             out[-1] += [word[i]]
