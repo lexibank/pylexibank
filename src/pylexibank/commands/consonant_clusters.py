@@ -28,9 +28,11 @@ def run(args):
 
 
 def compute_consonant_cluster(word, sound_names):
-    out = [[]] if sound_names[0].split(" ")[-1] in ["consonant", "cluster"] else []
+    out = [[]] if sound_names[0].split(" ")[-1] in ["consonant", "cluster", "∼"] else []
     for i, sound in enumerate(sound_names):
         if sound.split(" ")[-1] in ["diphthong", "vowel", "tone", "�", "marker"]:
+            out += [[]]
+        elif 'syllabic' in sound.split(" "):
             out += [[]]
         else:
             out[-1] += [word[i]]
