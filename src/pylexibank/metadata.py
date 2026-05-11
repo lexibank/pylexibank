@@ -1,7 +1,8 @@
 import re
 import collections
+import dataclasses
+from typing import Optional
 
-import attr
 from clldutils.misc import nfilter
 from cldfbench.metadata import Metadata
 
@@ -402,23 +403,16 @@ def iter_rows(fname_or_lines):
                 header = r
 
 
-@attr.s
+@dataclasses.dataclass
 class LexibankMetadata(Metadata):
-    aboutUrl = attr.ib(default=None)
-    conceptlist = attr.ib(
-        default=[],
-        converter=lambda s: [] if not s else (s if isinstance(s, list) else [s]))
-    lingpy_schema = attr.ib(default=None)
-    derived_from = attr.ib(default=None)
-    related = attr.ib(default=None)
-    source = attr.ib(default=None)
-    patron = attr.ib(default=None)
-    version = attr.ib(default=None)
+    aboutUrl: Optional[str] = None
+    conceptlist: list[str] = dataclasses.field(default_factory=list)
+    patron: Optional[str] = None
+    version: Optional[str] = None
 
-    def __attrs_post_init__(self):
-        import pylexibank
-
-        self.version = self.version or pylexibank.__version__
+    def __post_init__(self):
+        if not isinstance(self.conceptlist, list):
+            self.conceptlist = [] if not self.conceptlist else [self.conceptlist]
 
     @property
     def zenodo_license(self):
@@ -431,18 +425,12 @@ class LexibankMetadata(Metadata):
             "dc:format": [
                 "http://concepticon.clld.org/contributions/{0}".format(cl)
                 for cl in self.conceptlist],
-            "dc:isVersionOf": "http://lexibank.clld.org/contributions/{0}".format(
-                self.derived_from) if self.derived_from else None,
-            "dc:related": self.related,
             "aboutUrl": self.aboutUrl
         })
         return res
 
     def markdown(self):
         lines = [super().markdown(), '']
-
-        if self.related:
-            lines.append('See also %s\n' % self.related)
 
         if self.conceptlist:
             lines.append('Conceptlists in Concepticon:')

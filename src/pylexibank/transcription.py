@@ -1,32 +1,33 @@
 import collections
+import dataclasses
 
-import attr
 import pyclts
 import pyclts.models
 from clldutils.markup import Table
 
 
-@attr.s
-class Analysis(object):
+@dataclasses.dataclass
+class Analysis:
     # map segments to frequency
-    segments = attr.ib(default=attr.Factory(collections.Counter))
+    segments: collections.Counter = dataclasses.field(default_factory=collections.Counter)
     # aggregate segments which are invalid for lingpy
-    bipa_errors = attr.ib(default=attr.Factory(set))
+    bipa_errors: set = dataclasses.field(default_factory=set)
     # aggregate segments which are invalid for clpa
-    sclass_errors = attr.ib(default=attr.Factory(set))
+    sclass_errors: set = dataclasses.field(default_factory=set)
     # map clpa-replaceable segments to their replacements
-    replacements = attr.ib(default=collections.defaultdict(set))
+    replacements: dict[str, set] = dataclasses.field(
+        default_factory=lambda: collections.defaultdict(set))
     # count number of errors
-    general_errors = attr.ib(default=0)
+    general_errors: int = 0
 
 
-@attr.s
+@dataclasses.dataclass
 class Stats(Analysis):
-    inventory_size = attr.ib(default=0)
-    invalid_words = attr.ib(default=attr.Factory(list))
-    invalid_words_count = attr.ib(default=0)
-    bad_words = attr.ib(default=attr.Factory(list))
-    bad_words_count = attr.ib(default=0)
+    inventory_size: int = 0
+    invalid_words: list = dataclasses.field(default_factory=list)
+    invalid_words_count: int = 0
+    bad_words: list = dataclasses.field(default_factory=list)
+    bad_words_count: int = 0
 
 
 def valid_sequence(segments):

@@ -3,7 +3,7 @@
 [![Build Status](https://github.com/lexibank/pylexibank/workflows/tests/badge.svg)](https://github.com/lexibank/pylexibank/actions?query=workflow%3Atests)
 [![PyPI](https://img.shields.io/pypi/v/pylexibank.svg)](https://pypi.org/project/pylexibank)
 
-`pylexibank` is a python package providing functionality to curate and aggregate
+`pylexibank` is a python package providing functionality to curate
 [Lexibank](https://github.com/lexibank/lexibank) datasets.
 
 
@@ -85,7 +85,6 @@ easier, `pylexibank` provides
 While some level of support for reading and writing any [CLDF](https://cldf.clld.org) dataset is already provided by the [`pycldf` package](https://pypi.org/projects/pycldf), `pylexibank` (building on `cldfbench`) adds another layer of abstraction which supports 
 - treating Lexibank datasets as Python packages (and managing them via `pip`),
 - a multi-step curation workflow
-- aggregating collections of Lexibank datasets into a single SQLite database for efficient analysis.
 
 
 ### Installable and `pylexibank` enabled datasets

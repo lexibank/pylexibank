@@ -34,6 +34,7 @@ class TOB(Dataset):
     }
 
     def _url(self, page):
+        # https://starlingdb.org/cgi-bin/response.cgi
         return 'http://starling.rinet.ru/cgi-bin/response.cgi?' + \
             'root=new100&morpho=0&basename=new100' + \
             r'\{0}\{1}&first={2}'.format(self.dset, self.name, page)

@@ -5,8 +5,8 @@ import textwrap
 import itertools
 import collections
 import collections.abc
+import dataclasses
 
-import attr
 from csvw.metadata import Column
 from pycldf.dataset import Wordlist
 import pyclts.models
@@ -24,10 +24,10 @@ MD_NAME = 'cldf-metadata.json'
 ID_PATTERN = re.compile(r'[A-Za-z0-9_\-]+$')
 
 
-@attr.s
+@dataclasses.dataclass
 class Options:
-    keep_languages = attr.ib(default=False, validator=attr.validators.instance_of(bool))
-    keep_parameters = attr.ib(default=False, validator=attr.validators.instance_of(bool))
+    keep_languages: bool = False
+    keep_parameters: bool = False
 
 
 class LexibankWriter(CLDFWriter):
@@ -77,6 +77,7 @@ class LexibankWriter(CLDFWriter):
             properties = set(
                 col.propertyUrl.uri for col in self.cldf[cls.__cldf_table__()].tableSchema.columns
                 if col.propertyUrl)
+            fields_dict = {f.name: f for f in dataclasses.fields(cls)}
             for field in cls.fieldnames():
                 try:
                     col = default_cldf[cls.__cldf_table__(), field]
@@ -90,7 +91,7 @@ class LexibankWriter(CLDFWriter):
                         self.cldf[cls.__cldf_table__(), field].propertyUrl = col.propertyUrl
                         self.cldf[cls.__cldf_table__(), field].datatype = col.datatype
                 except KeyError:
-                    kw = {k: v for k, v in attr.fields_dict(cls)[field].metadata.items()}
+                    kw = {k: v for k, v in fields_dict[field].metadata.items()}
                     kw.setdefault('datatype', 'string')
                     kw.setdefault('name', field)
                     col = Column.fromvalue(kw)
@@ -247,7 +248,7 @@ class LexibankWriter(CLDFWriter):
 
     def _add_object(self, cls, **kw):
         # Instantiating an object will trigger potential validators:
-        d = attr.asdict(cls(**kw))
+        d = dataclasses.asdict(cls(**kw))
         #
         # FIXME: check whether certain attributes should not be written to the table.
         #

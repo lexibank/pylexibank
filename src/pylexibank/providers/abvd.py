@@ -1,6 +1,6 @@
 import re
+import dataclasses
 
-import attr
 from clldutils.misc import slug, nfilter
 from pycldf.sources import Source
 from pybtex.database import parse_string  # dependency of pycldf, so should be installed.
@@ -10,7 +10,7 @@ BASE_URL = "https://abvd.eva.mpg.de"
 URL = BASE_URL + "/utils/save/?type=xml&section=%s&language=%d"
 
 
-@attr.s
+@dataclasses.dataclass
 class BVDLanguage(Language):
     author = attr.ib(default=None)
     url = attr.ib(default=None)

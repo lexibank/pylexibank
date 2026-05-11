@@ -1,4 +1,5 @@
-import attr
+import dataclasses
+from typing import Optional
 
 __all__ = [
     'Language', 'Lexeme', 'Concept', 'Cognate', 'CONCEPTICON_CONCEPTS', 'concepticon_concepts']
@@ -14,33 +15,38 @@ def non_empty(_, attribute, value):
 class FieldnamesMixin(object):
     @classmethod
     def fieldnames(cls):
-        return [f.name for f in attr.fields(cls)]
+        return [f.name for f in dataclasses.fields(cls)]
 
 
-@attr.s(hash=False)
+@dataclasses.dataclass
 class Language(FieldnamesMixin):
-    ID = attr.ib(default='', hash=True)
-    Name = attr.ib(default=None)
-    ISO639P3code = attr.ib(default=None)
-    Glottocode = attr.ib(default=None)
-    Macroarea = attr.ib(default=None)
-    Latitude = attr.ib(default=None)
-    Longitude = attr.ib(default=None)
+    ID: str = ''
+    Name: Optional[str] = None
+    ISO639P3code: Optional[str] = None
+    Glottocode: Optional[str] = None
+    Macroarea: Optional[str] = None
+    Latitude: Optional[float] = None
+    Longitude: Optional[float] = None
+    Glottolog_Name: Optional[str] = None
+    Family: Optional[str] = None
 
-    Glottolog_Name = attr.ib(default=None)
-    Family = attr.ib(default=None)
+    def __hash__(self):
+        return hash(self.ID)
 
     @classmethod
     def __cldf_table__(cls):
         return 'LanguageTable'
 
 
-@attr.s(hash=False)
+@dataclasses.dataclass
 class Concept(FieldnamesMixin):
-    ID = attr.ib(default='', hash=True)
-    Name = attr.ib(default='')
-    Concepticon_ID = attr.ib(default=None)
-    Concepticon_Gloss = attr.ib(default=None)
+    ID: Optional[str] = ''
+    Name: Optional[str] = ''
+    Concepticon_ID: Optional[str] = None
+    Concepticon_Gloss: Optional[str] = None
+
+    def __hash__(self):
+        return hash(self.ID)
 
     @classmethod
     def __cldf_table__(cls):
@@ -48,15 +54,15 @@ class Concept(FieldnamesMixin):
 
 
 def concepticon_concepts(concept_lists):
-    attrib = {}
+    attrib = []
     for cl in concept_lists:
         for col in cl.metadata.tableSchema.columns:
             if col.name not in ['ID', 'CONCEPTICON_ID', 'CONCEPTICON_GLOSS']:
-                attrib[col.name] = attr.ib(default=None)
-    return attr.make_class("ConcepticonConcept", attrib, bases=(Concept,))
+                attrib.append((col.name, str, dataclasses.field(default=None)))
+    return dataclasses.make_dataclass("ConcepticonConcept", attrib, bases=(Concept,))
 
 
-@attr.s
+@dataclasses.dataclass
 class Lexeme(FieldnamesMixin):
     """
     Raw lexical data item as it can be pulled out of the original datasets.
@@ -66,51 +72,52 @@ class Lexeme(FieldnamesMixin):
     - cleaning the forms
     - potentially tokenizing the form
     """
-    ID = attr.ib()
-    Form = attr.ib()
-    Value = attr.ib(validator=non_empty)  # the lexical item
-    Language_ID = attr.ib(validator=non_empty)
-    Parameter_ID = attr.ib(validator=non_empty)
-    Local_ID = attr.ib(default=None)  # local ID of a lexeme in the source dataset
-    Segments = attr.ib(
-        default=attr.Factory(list),
-        validator=attr.validators.instance_of(list))
-    Graphemes = attr.ib(default=None)
-    Profile = attr.ib(default=None)  # key of the profile used to create the segmentation
-    Source = attr.ib(
-        default=attr.Factory(list),
-        validator=attr.validators.instance_of(list),
-        converter=lambda v: [v] if isinstance(v, str) else v)
-    Comment = attr.ib(default=None)
-    Cognacy = attr.ib(default=None)
-    Loan = attr.ib(
-        default=None,
-        validator=attr.validators.optional(attr.validators.instance_of(bool)))
+    ID: str
+    Form: str
+    Value: str  # the lexical item
+    Language_ID: str
+    Parameter_ID: str
+    Local_ID: Optional[str] = None  # local ID of a lexeme in the source dataset
+    Segments: list[str] = dataclasses.field(default_factory=list)
+    Graphemes: Optional[list[str]] = None
+    Profile: Optional[str] = None  # key of the profile used to create the segmentation
+    Source: list[str] = dataclasses.field(default_factory=list)
+    Comment: Optional[str] = None
+    Cognacy: Optional[str] = None
+    Loan: Optional[bool] = None
+
+    def __post_init__(self):
+        assert self.Value
+        assert self.Language_ID
+        assert self.Parameter_ID
+        if isinstance(self.Source, str):
+            self.Source = [self.Source]
 
     @classmethod
     def __cldf_table__(cls):
         return 'FormTable'
 
 
-@attr.s
+@dataclasses.dataclass
 class Cognate(FieldnamesMixin):
-    ID = attr.ib(default=None)
-    Form_ID = attr.ib(default=None)
-    Form = attr.ib(default=None)
-    Cognateset_ID = attr.ib(default=None)
-    Doubt = attr.ib(
-        default=False,
-        converter=lambda v: v if isinstance(v, bool) else eval(v))
-    Cognate_Detection_Method = attr.ib(default='expert')
-    Source = attr.ib(
-        default=attr.Factory(list),
-        validator=attr.validators.instance_of(list),
-        converter=lambda v: [v] if isinstance(v, str) else v)
-    Alignment = attr.ib(
-        default=None,
-        converter=lambda v: v if isinstance(v, list) or v is None else v.split())
-    Alignment_Method = attr.ib(default=None)
-    Alignment_Source = attr.ib(default=None)
+    ID: Optional[str] = None
+    Form_ID: Optional[str] = None
+    Form: Optional[str] = None
+    Cognateset_ID: Optional[str] = None
+    Doubt: bool = False
+    Cognate_Detection_Method: str = 'expert'
+    Source: list[str] = dataclasses.field(default_factory=list)
+    Alignment: Optional[list[str]] = None
+    Alignment_Method: Optional[str] = None
+    Alignment_Source: Optional[str] = None
+
+    def __post_init__(self):
+        if isinstance(self.Alignment, str):
+            self.Alignment = self.Alignment.split()
+        if not isinstance(self.Doubt, bool):
+            self.Doubt = eval(self.Doubt)
+        if isinstance(self.Source, str):
+            self.Source = [self.Source]
 
     @classmethod
     def __cldf_table__(cls):
