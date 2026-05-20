@@ -1,5 +1,10 @@
+"""
+Functionality to analyze transcriptions.
+"""
 import collections
+from collections.abc import Iterable
 import dataclasses
+from typing import Any
 
 import pyclts
 import pyclts.models
@@ -8,21 +13,22 @@ from clldutils.markup import Table
 
 @dataclasses.dataclass
 class Analysis:
+    """Results of a transcription analysis."""
     # map segments to frequency
-    segments: collections.Counter = dataclasses.field(default_factory=collections.Counter)
+    segments: dict = dataclasses.field(default_factory=collections.Counter)
     # aggregate segments which are invalid for lingpy
     bipa_errors: set = dataclasses.field(default_factory=set)
     # aggregate segments which are invalid for clpa
     sclass_errors: set = dataclasses.field(default_factory=set)
     # map clpa-replaceable segments to their replacements
-    replacements: dict[str, set] = dataclasses.field(
-        default_factory=lambda: collections.defaultdict(set))
+    replacements: dict[str, set] = dataclasses.field(default_factory=dict)
     # count number of errors
     general_errors: int = 0
 
 
 @dataclasses.dataclass
 class Stats(Analysis):
+    """Summary stats about a transcription analysis."""
     inventory_size: int = 0
     invalid_words: list = dataclasses.field(default_factory=list)
     invalid_words_count: int = 0
@@ -36,19 +42,39 @@ def valid_sequence(segments):
     """
     if not ''.join(segments).strip():
         return False
-    elif (
-        '_' in segments or  # noqa: W504
-        '#' in segments or  # noqa: W504
-        segments[0] == "+" or  # noqa: W504
-        segments[-1] == "+" or  # noqa: W504
-        ("+" in segments and segments[segments.index("+") + 1] == "+")
-    ):
+    if any((
+        '_' in segments,
+        '#' in segments,
+        segments[0] == "+",
+        segments[-1] == "+",
+        "+" in segments and segments[segments.index("+") + 1] == "+"
+    )):
         return False
     return segments
 
 
+@dataclasses.dataclass
+class CachedSegments:
+    """We cache lookups in CLTS, since these may be expensive."""
+    bipa: dict[str, Any] = dataclasses.field(default_factory=dict)
+    dolgo: dict[str, Any] = dataclasses.field(default_factory=dict)
+
+    def get_bipa(self, grapheme: str, clts: pyclts.CLTS):
+        """Lookup a BIPA sound."""
+        return self.bipa.get(grapheme) or self.bipa.setdefault(grapheme, clts.bipa[grapheme])
+
+    def get_dolgo(self, grapheme: str, clts: pyclts.CLTS):
+        """Lookup a Dolgopolsky soundclass."""
+        return self.dolgo.get(grapheme) or self.dolgo.setdefault(
+            grapheme, clts.bipa.translate(grapheme, clts.soundclass('dolgo')))
+
+
+# A global segments cache:
+SEGMENTS_CACHE = CachedSegments()
+
+
 # Note: We use a mutable default argument intentionally to serve as a cache.
-def analyze(clts, segments, analysis, lookup=dict(bipa={}, dolgo={})):
+def analyze(clts: pyclts.CLTS, segments: Iterable[str], analysis: Analysis):
     """
     Test a sequence for compatibility with CLPA and LingPy.
 
@@ -64,22 +90,11 @@ def analyze(clts, segments, analysis, lookup=dict(bipa={}, dolgo={})):
         raise ValueError('No information in the sequence.')
 
     # build the phonologic and sound class analyses
-    try:
-        bipa_analysis, sc_analysis = [], []
+    bipa_analysis, sc_analysis = [], []
 
-        for s in segments:
-            a = lookup['bipa'].get(s)
-            if a is None:
-                a = lookup['bipa'].setdefault(s, clts.bipa[s])
-            bipa_analysis.append(a)
-
-            sc = lookup['dolgo'].get(s)
-            if sc is None:
-                sc = lookup['dolgo'].setdefault(s, clts.bipa.translate(s, clts.soundclass('dolgo')))
-            sc_analysis.append(sc)
-    except:  # noqa; pragma: no cover
-        print(segments)
-        raise
+    for s in segments:
+        bipa_analysis.append(SEGMENTS_CACHE.get_bipa(s, clts))
+        sc_analysis.append(SEGMENTS_CACHE.get_dolgo(s, clts))
 
     # compute general errors; this loop must take place outside the
     # following one because the code for computing single errors (either
@@ -100,6 +115,8 @@ def analyze(clts, segments, analysis, lookup=dict(bipa={}, dolgo={})):
         if isinstance(sound_bipa, pyclts.models.UnknownSound):
             analysis.bipa_errors.add(segment)
         else:
+            if sound_bipa.source not in analysis.replacements:
+                analysis.replacements[sound_bipa.source] = set()
             analysis.replacements[sound_bipa.source].add(str(sound_bipa))
 
         # update sound class errors, if any
@@ -126,7 +143,8 @@ TEMPLATE = """
 """
 
 
-def report(analysis):
+def report(analysis: dict) -> str:
+    """Format the transcription report as Markdown suitable for inclusion in the README."""
     segments = Table('Segment', 'Occurrence', 'BIPA', 'CLTS SoundClass')
     for a, b in sorted(
             analysis['stats']['segments'].items(), key=lambda x: (-x[1], x[0])):

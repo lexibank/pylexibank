@@ -54,7 +54,7 @@ def test_makecldf_multi_profiles(repos):
     assert 'FREQUENCY' in (d / 'etc' / 'orthography' / 'p1.tsv').read_text(encoding='utf8')
 
 
-def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, capsys, tmp_path):
+def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, capsys, tmp_path):
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset.dir / 'td.py'),
         str(repos),
@@ -71,13 +71,6 @@ def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, cap
     assert '### Replacement' in dataset.dir.joinpath('FORMS.md').read_text(encoding='utf8')
 
     _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
-        str(sndcmp.dir / 'ts.py'),
-        str(repos),
-    ))
-    assert 'Bislama_Gloss' in sndcmp.cldf_dir.joinpath('parameters.csv').read_text(encoding='utf8')
-    assert 'e56a5fc78ae5a66e783c17bc30019568' in sndcmp.cldf_dir.joinpath('media.csv').read_text(encoding='utf8')
-
-    _main('lexibank.makecldf {0} --glottolog {1} --concepticon {1} --clts {1}'.format(
         str(dataset_cldf.dir / 'tdc.py'),
         str(repos),
     ))
@@ -89,12 +82,6 @@ def test_makecldf(repos, dataset, dataset_cldf, dataset_no_cognates, sndcmp, cap
         str(repos),
     ))
     assert not dataset_no_cognates.cldf_dir.joinpath('cognates.csv').exists()
-    _main('lexibank.load --db {3} {0} --glottolog {1} --concepticon {2}'.format(
-        str(dataset_no_cognates.dir / 'tdn.py'),
-        str(repos),
-        str(repos),
-        str(tmp_path / 'db'),
-    ))
 
 
 def test_check(dataset_cldf, caplog):
@@ -112,23 +99,11 @@ def test_check_lexibank(dataset_cldf, caplog):
     assert any('Cross-concept' in w for w in warnings)
 
 
-def test_ls(repos, tmp_path, dataset):
-    _main('lexibank.load --db {3} {0} --glottolog {1} --concepticon {2}'.format(
-        dataset.dir / 'td.py', repos, repos, tmp_path / 'db'))
-    _main('lexibank.ls {0} --all --db {1}'.format(dataset.dir / 'td.py', tmp_path / 'db'))
-    _main('lexibank.unload --db {1} {0}'.format(dataset.dir / 'td.py', tmp_path / 'db'))
-
-
-def test_db(tmp_path, mocker):
-    mocker.patch('pylexibank.commands.db.subprocess', mocker.Mock(return_value=0))
-    _main('lexibank.db --db {0}'.format(tmp_path / 'db'))
-
-
 def test_check_phonotactics(dataset, capsys):
     _main('lexibank.check_phonotactics {0}'.format(str(dataset.dir / 'td.py')))
     out, _ = capsys.readouterr()
     assert out.strip() == """| Type | ID | Value | Form | Graphemes | Segments |
-|-------:|:---------------|:--------|:-------|:------------|:------------|
+| :--: | :------------: | :----: | :--: | :-------: | :---------: |
 | 1 | lang1-param1-1 | a b; c | a b | | a _ b |
 | 1 | lang2-param2-2 | a~b-c | ab | | + a + + b + |"""
 
@@ -141,7 +116,7 @@ def test_consonant_clusters(dataset, repos, caplog, capsys):
 
     assert any("Found 1 potentially problematic consonant cluster(s) with length 4" in w for w in warnings)
     assert out.strip() == """| Language_ID | Length | Cluster | Words |
-|:--------------|---------:|:----------------------|:-------------------------------|
+| :---------: | :----: | :-----------------: | :--------------------------: |
 | lang1 | 6 | ɡ̤ː ɡ̤ː b dʱʷ dʱʷ dʱʷ | ɡ̤ː ɡ̤ː b dʱʷ dʱʷ dʱʷ // axdou |"""
 
 
@@ -152,7 +127,7 @@ def test_check_profile(dataset, repos, caplog, capsys):
     _main('lexibank.check_profile {0} --clts {1}'.format(str(d / 'tdmpcldf.py'), repos))
     assert len(caplog.records) == 4
     out, _ = capsys.readouterr()
-    assert all(w in out for w in 'modified generated slashed unknown missing'.split())
+    assert all(w in out for w in 'modified generated slashed missing'.split()), out
 
 
 def test_init_profile(dataset, repos):

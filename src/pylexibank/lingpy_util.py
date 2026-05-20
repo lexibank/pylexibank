@@ -1,4 +1,6 @@
 import collections
+from collections.abc import Iterable, Generator
+from typing import Union, Optional, Any
 
 import lingpy
 from clldutils.misc import slug
@@ -101,9 +103,15 @@ def iter_cognates(dataset, column='Segments', method='turchin', threshold=0.5, *
                 Cognate_Detection_Method=method + '-t{0:.2f}'.format(threshold))
 
 
-def iter_alignments(dataset, cognate_sets, column='Segments', method='library', almkw=None):
+def iter_alignments(
+        dataset: Union[pycldf.Dataset, lingpy.basic.parser.QLCParser],
+        cognate_sets: Iterable[dict[str, Any]],
+        column: str = 'Segments',
+        method: str = 'library',
+        almkw: Optional[dict[str, Any]] = None,
+) -> None:
     """
-    Function computes automatic alignments and writes them to file.
+    Function computes automatic alignments and adds them to the cognate objects.
     """
     if not isinstance(dataset, lingpy.basic.parser.QLCParser):
         try:

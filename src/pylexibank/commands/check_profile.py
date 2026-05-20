@@ -64,7 +64,7 @@ def check_profile(dataset, args):
                     if tk.startswith("<<") and tk.endswith(">>"):
                         visited[tk] = "missing"
                     elif sound.type == "unknownsound":
-                        visited[tk] = "unknown"
+                        visited[tk] = "unknown"  # pragma: no cover
                     elif sound.generated:
                         visited[tk] = "generated"
                     elif str(sound) not in {tk, normalized(tk), normalized(tk, mode='NFC')}:

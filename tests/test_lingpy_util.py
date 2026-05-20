@@ -1,4 +1,5 @@
-import attr
+import dataclasses
+
 from lingpy import Wordlist
 import pyclts
 
@@ -33,13 +34,13 @@ def test_iter_cognates_and_alignments(dataset_cldf):
 
 
 def test_wordlist2cognates(repos, mocker, dataset):
-    @attr.s
+    @dataclasses.dataclass
     class Lexeme(pbds.Lexeme):
-        Concept = attr.ib(default=None)
-        Segments = attr.ib(default=[])
-    @attr.s
+        Concept: str = None
+        Segments: list[str] = dataclasses.field(default_factory=list)
+    @dataclasses.dataclass
     class Lexeme2(pbds.Lexeme):
-        Concept = attr.ib(default=None)
+        Concept: str = None
 
     dsdir = repos / 'datasets' / 'test_dataset'
     if not dsdir.joinpath('cldf').exists():

@@ -1,15 +1,60 @@
+import pathlib
 import collections
+import dataclasses
+from typing import Optional, Union
 
-from clldutils.misc import nfilter
+import pycldf
+from cldfbench.catalogs import Glottolog
+import anybadge
 
-from pylexibank.util import get_badge
+
+@dataclasses.dataclass
+class Badge:
+    alt: str
+    img_url: Union[str, pathlib.Path]
+    href: Optional[str] = None
+
+    def as_string(self, dataset):
+        img_url = self.img_url
+        if isinstance(img_url, pathlib.Path):
+            img_url = img_url.relative_to(dataset.dir)
+        img = f"![{self.alt}]({img_url})"
+        if self.href is None:
+            return img
+        return f'[{img}]({self.href})'
+
+    @classmethod
+    def from_ratio(cls, name: str, ratio: float, fname: pathlib.Path):
+        thresholds = {
+            60: 'red',
+            70: 'orange',
+            80: 'yellow',
+            90: 'yellowgreen',
+            99: 'greenyellow',
+            101: 'green',
+        }
+        fname.parent.mkdir(exist_ok=True)
+        if fname.exists():
+            fname.unlink()
+        anybadge.Badge(
+            label=name,
+            value=int(round(ratio * 100)),
+            value_suffix='%',
+            thresholds=thresholds,
+        ).write_badge(fname)
+        return cls(alt=f'{name}: {int(round(ratio * 100))}%', img_url=fname)
+
+    @classmethod
+    def for_github_action(cls, github_repo):
+        return cls(
+            alt='CLDF validation',
+            img_url=f'https://github.com/{github_repo}/workflows/CLDF-validation/badge.svg',
+            href=f'https://github.com/{github_repo}/actions?query=workflow%3ACLDF-validation',
+        )
 
 
 def build_status_badge(dataset):
     if dataset.repo and dataset.repo.github_repo:
-        if dataset.dir.joinpath('.travis.yml').exists():
-            return "[![Build Status](https://travis-ci.org/{0}.svg?branch=master)]" \
-                   "(https://travis-ci.org/{0})".format(dataset.repo.github_repo)
         if dataset.dir.joinpath('.github/workflows').exists():  # pragma: no cover
             return "[![CLDF validation]" \
                    "(https://github.com/{0}/workflows/CLDF-validation/badge.svg)]" \
@@ -31,117 +76,155 @@ def report(dataset, tr_analysis=None, glottolog=None, log=None):
         lines.append('## Notes\n')
         lines.append(dataset.dir.joinpath('NOTES.md').read_text() + '\n\n')
 
-    badges = nfilter([build_status_badge(dataset)])
+    badges = []
+    if dataset.repo and dataset.repo.github_repo:
+        badges.append(Badge.for_github_action(dataset.repo.github_repo))
 
     for cldf_spec in dataset.cldf_specs_dict.values():
-        lines.extend(cldf_report(cldf_spec, tr_analysis, badges, log, glottolog))
+        lines.extend(cldf_report(cldf_spec, tr_analysis, badges, log, glottolog, dataset))
         break
     return '\n'.join(lines)
 
 
-def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
+@dataclasses.dataclass
+class Counts:
+    languages: collections.Counter = dataclasses.field(default_factory=collections.Counter)
+    concepts: collections.Counter = dataclasses.field(default_factory=collections.Counter)
+    sources: collections.Counter = dataclasses.field(default_factory=collections.Counter)
+    cognate_sets: collections.Counter = dataclasses.field(default_factory=collections.Counter)
+    lexemes: int = 0
+    lids: collections.Counter = dataclasses.field(default_factory=collections.Counter)
+    cids: collections.Counter = dataclasses.field(default_factory=collections.Counter)
+    sids: collections.Counter = dataclasses.field(default_factory=collections.Counter)
+    synonyms: dict[str, collections.Counter] = dataclasses.field(
+        default_factory=lambda: collections.defaultdict(collections.Counter))
+    missing_source: list[dict] = dataclasses.field(default_factory=list)
+    missing_glottocode: list[dict] = dataclasses.field(default_factory=list)
+    bookkeeping_languoids: list[dict] = dataclasses.field(default_factory=list)
+
+    @classmethod
+    def from_dataset(cls, cldf: pycldf.Dataset, glottolog: Optional[Glottolog]):
+        """Update with the data of a row in FormTable"""
+        param2concepticon = {r['ID']: r['Concepticon_ID'] for r in cldf['ParameterTable']}
+        lang2glottolog = {r['ID']: r['Glottocode'] for r in cldf['LanguageTable']}
+
+        cnt = cls()
+
+        for row in cldf['FormTable']:
+            if row['Source']:
+                cnt.sources.update(['y'])
+                cnt.sids.update(row['Source'])
+            else:
+                cnt.missing_source.append(row)
+            cnt.concepts.update([param2concepticon[row['Parameter_ID']]])
+            cnt.languages.update([lang2glottolog[row['Language_ID']]])
+            cnt.lexemes += 1
+            cnt.lids.update([row['Language_ID']])
+            cnt.cids.update([row['Parameter_ID']])
+            cnt.synonyms[row['Language_ID']].update([row['Parameter_ID']])
+
+        for row in cldf.get('CognateTable') or []:
+            cnt.cognate_sets.update([row['Cognateset_ID']])
+
+        bookkeeping_languoids_in_gl = set()
+        if glottolog:
+            for lang in glottolog.api.languoids():
+                if lang.category == 'Bookkeeping':
+                    bookkeeping_languoids_in_gl.add(lang.id)  # pragma: no cover
+        for lang in cldf.iter_rows('LanguageTable', 'glottocode'):
+            if lang.get('glottocode'):
+                if lang['glottocode'] in bookkeeping_languoids_in_gl:
+                    cnt.bookkeeping_languoids.append(lang)  # pragma: no cover
+            else:
+                cnt.missing_glottocode.append(lang)
+        return cnt
+
+    @property
+    def SI(self) -> float:
+        sindex = sum(
+            [sum(list(cnts.values())) / float(len(cnts)) for cnts in self.synonyms.values()])
+        langs = set(self.synonyms.keys())
+        if langs:
+            return sindex / float(len(langs))
+        return 0.0  # pragma: no cover
+
+    @property
+    def num_cognates(self) -> int:
+        return len(self.cognate_sets)
+
+    @property
+    def cog_diversity(self) -> float:
+        """
+        see List et al. 2017
+        diff between cognate sets and meanings / diff between words and meanings
+        """
+        try:
+            return (self.num_cognates - len(self.cids)) / (self.lexemes - len(self.cids))
+        except ZeroDivisionError:
+            return 0.0  # no lexemes.
+
+    def ratio(self, prop: str) -> float:
+        if self.lexemes == 0:
+            return 0.0  # pragma: no cover
+        return sum(v for k, v in getattr(self, prop).items() if k) / float(self.lexemes)
+
+
+def format_ratio(cnt, total):
+    return f"{cnt}/{total} ({(cnt / float(total)) * 100:.2f}%%)"
+
+
+def cldf_report(
+        cldf_spec,
+        tr_analysis,
+        badges,
+        log,
+        glottolog,
+        dataset,
+) -> list[str]:
+    """Create a report for the dataset."""
     lines = []
-    if not list(cldf_spec.dir.glob('*.csv')):
+    if (not list(cldf_spec.dir.glob('*.csv'))) or (cldf_spec.module != 'Wordlist'):
         return lines
 
-    if cldf_spec.module != 'Wordlist':
-        return lines  # pragma: no cover
+    counts = Counts.from_dataset(cldf_spec.get_dataset(), glottolog)
 
-    cldf = cldf_spec.get_dataset()
-
-    synonyms = collections.defaultdict(collections.Counter)
-    totals = {
-        'languages': collections.Counter(),
-        'concepts': collections.Counter(),
-        'sources': collections.Counter(),
-        'cognate_sets': collections.Counter(),
-        'lexemes': 0,
-        'lids': collections.Counter(),
-        'cids': collections.Counter(),
-        'sids': collections.Counter(),
-    }
-
-    missing_source = []
-    missing_lang = []
-
-    param2concepticon = {r['ID']: r['Concepticon_ID'] for r in cldf['ParameterTable']}
-    lang2glottolog = {r['ID']: r['Glottocode'] for r in cldf['LanguageTable']}
-
-    for row in cldf['FormTable']:
-        if row['Source']:
-            totals['sources'].update(['y'])
-            totals['sids'].update(row['Source'])
-        else:
-            missing_source.append(row)
-        totals['concepts'].update([param2concepticon[row['Parameter_ID']]])
-        totals['languages'].update([lang2glottolog[row['Language_ID']]])
-        totals['lexemes'] += 1
-        totals['lids'].update([row['Language_ID']])
-        totals['cids'].update([row['Parameter_ID']])
-        synonyms[row['Language_ID']].update([row['Parameter_ID']])
-
-    for row in cldf.get('CognateTable') or []:
-        totals['cognate_sets'].update([row['Cognateset_ID']])
-
-    sindex = sum(
-        [sum(list(counts.values())) / float(len(counts)) for counts in synonyms.values()])
-    langs = set(synonyms.keys())
-    if langs:
-        sindex /= float(len(langs))
-    else:
-        sindex = 0  # pragma: no cover
-    totals['SI'] = sindex
-
-    if tr_analysis:
-        stats = tr_analysis['stats']
-    else:
-        stats = collections.defaultdict(list)
-
+    stats = tr_analysis['stats'] if tr_analysis else collections.defaultdict(list)
     lsegments = len(stats['segments'])
     lbipapyerr = len(stats['bipa_errors'])
     lsclasserr = len(stats['sclass_errors'])
 
-    def ratio(prop):
-        if float(totals['lexemes']) == 0:
-            return 0  # pragma: no cover
-        return sum(v for k, v in totals[prop].items() if k) / float(totals['lexemes'])
-
-    num_cognates = sum(1 for k, v in totals['cognate_sets'].items())
-    # see List et al. 2017
-    # diff between cognate sets and meanings / diff between words and meanings
-    try:
-        cog_diversity = (num_cognates - len(totals['cids'])) \
-            / (totals['lexemes'] - len(totals['cids']))
-    except ZeroDivisionError:
-        cog_diversity = 0.0  # no lexemes.
-
     badges = badges[:]
-    badges.extend([
-        get_badge(ratio('languages'), 'Glottolog'),
-        get_badge(ratio('concepts'), 'Concepticon'),
-        get_badge(ratio('sources'), 'Source'),
-    ])
+    for name, prop in [
+            ('Glottolog', 'languages'), ('Concepticon', 'concepts'), ('Source', 'sources')]:
+        badges.append(
+            Badge.from_ratio(name, counts.ratio(prop), dataset.etc_dir / f'badge_{prop}.svg'))
     if lsegments:
         badges.extend([
-            get_badge((lsegments - lbipapyerr) / lsegments, 'BIPA'),
-            get_badge((lsegments - lsclasserr) / lsegments, 'CLTS SoundClass'),
+            Badge.from_ratio(
+                'BIPA', (lsegments - lbipapyerr) / lsegments, dataset.etc_dir / 'badge_bipa.svg'),
+            Badge.from_ratio(
+                'CLTS SoundClass',
+                (lsegments - lsclasserr) / lsegments,
+                dataset.etc_dir / 'badge_sc.svg'),
         ])
-    lines.extend(['## Statistics', '\n', '\n'.join(badges), ''])
+
+    lines.extend(['## Statistics', '\n', '\n'.join(b.as_string(dataset) for b in badges), ''])
+
     stats_lines = [
         '- **Varieties:** {0:,} (linked to {1:,} different Glottocodes)'.format(
-            len(totals['lids']), sum(1 if gc else 0 for gc in totals['languages'])),
+            len(counts.lids), sum(1 if gc else 0 for gc in counts.languages)),
         '- **Concepts:** {0:,} (linked to {1:,} different Concepticon concept sets)'.format(
-            len(totals['cids']), sum(1 if csid else 0 for csid in totals['concepts'])),
-        '- **Lexemes:** {0:,}'.format(totals['lexemes']),
-        '- **Sources:** {0:,}'.format(len(totals['sids'])),
-        '- **Synonymy:** {:0.2f}'.format(totals['SI']),
+            len(counts.cids), sum(1 if csid else 0 for csid in counts.concepts)),
+        '- **Lexemes:** {0:,}'.format(counts.lexemes),
+        '- **Sources:** {0:,}'.format(len(counts.sids)),
+        '- **Synonymy:** {:0.2f}'.format(counts.SI),
     ]
-    if num_cognates:
+    if counts.num_cognates:
         stats_lines.extend([
             '- **Cognacy:** {0:,} cognates in {1:,} cognate sets ({2:,} singletons)'.format(
-                sum(v for k, v in totals['cognate_sets'].items()),
-                num_cognates, len([k for k, v in totals['cognate_sets'].items() if v == 1])),
-            '- **Cognate Diversity:** {:0.2f}'.format(cog_diversity)
+                sum(v for k, v in counts.cognate_sets.items()),
+                counts.num_cognates, len([k for k, v in counts.cognate_sets.items() if v == 1])),
+            '- **Cognate Diversity:** {:0.2f}'.format(counts.cog_diversity)
         ])
     if stats['segments']:
         stats_lines.extend([
@@ -154,52 +237,32 @@ def cldf_report(cldf_spec, tr_analysis, badges, log, glottolog):
         ])
 
     if log:
-        log.info(
-            '\n'.join(['Summary for dataset {}'.format(cldf_spec.metadata_path)] + stats_lines))
+        log.info('\n'.join([f'Summary for dataset {cldf_spec.metadata_path}'] + stats_lines))
     lines.extend(stats_lines)
 
-    totals['languages'] = len(totals['lids'])
-    totals['concepts'] = len(totals['cids'])
-    totals['cognate_sets'] = bool(1 for k, v in totals['cognate_sets'].items() if v > 1)
-
-    bookkeeping_languoids_in_gl = set()
-    if glottolog:
-        for lang in glottolog.api.languoids():
-            if lang.category == 'Bookkeeping':
-                bookkeeping_languoids_in_gl.add(lang.id)  # pragma: no cover
-
-    bookkeeping_languoids = []
-    for lang in cldf['LanguageTable']:
-        if lang.get('Glottocode') in bookkeeping_languoids_in_gl:
-            bookkeeping_languoids.append(lang)  # pragma: no cover
-
     # improvements section
-    if missing_lang or missing_source or bookkeeping_languoids:
+    if counts.missing_glottocode or counts.missing_source or counts.bookkeeping_languoids:
         lines.extend(['\n## Possible Improvements:\n', ])
 
-        if missing_lang:  # pragma: no cover
-            lines.append("- Languages missing glottocodes: %d/%d (%.2f%%)" % (
-                len(missing_lang),
-                totals['languages'],
-                (len(missing_lang) / totals['languages']) * 100
-            ))
+        if counts.missing_glottocode:  # pragma: no cover
+            lines.append(
+                f"- Languages missing glottocodes: "
+                f"{format_ratio(len(counts.missing_glottocode), len(counts.lids))}")
 
-        if bookkeeping_languoids:  # pragma: no cover
+        if counts.bookkeeping_languoids:  # pragma: no cover
             lines.append(
                 "- Languages linked to [bookkeeping languoids in Glottolog]"
-                "(http://glottolog.org/glottolog/glottologinformation"
+                "(https://glottolog.org/glottolog/glottologinformation"
                 "#bookkeepinglanguoids):")
-        for lang in bookkeeping_languoids:  # pragma: no cover
+        for lang in counts.bookkeeping_languoids:  # pragma: no cover
             lines.append(
-                '  - {0} [{1}](http://glottolog.org/resource/languoid/id/{1})'.format(
-                    lang.get('Name', lang.get('ID')), lang['Glottocode']))
-        lines.append('\n')
+                f"  - {lang.get('Name', lang.get('ID'))} [{lang['Glottocode']}]"
+                f"(https://glottolog.org/resource/languoid/id/{lang['Glottocode']})")
 
-    if missing_source:
-        lines.append("- Entries missing sources: %d/%d (%.2f%%)" % (
-            len(missing_source),
-            totals['lexemes'],
-            (len(missing_source) / totals['lexemes']) * 100
-        ))
+        if counts.missing_source:
+            lines.append(
+                f"- Entries missing sources: "
+                f"{format_ratio(len(counts.missing_source), counts.lexemes)}")
+        lines.append('\n')
 
     return lines

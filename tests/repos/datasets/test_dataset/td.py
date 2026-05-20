@@ -1,13 +1,13 @@
+import functools
+import dataclasses
 from pathlib import Path
-from clldutils.misc import lazyproperty
-import attr
 
 from pylexibank import Dataset, Concept
 
 
-@attr.s
+@dataclasses.dataclass
 class TestConcept(Concept):
-    Chinese = attr.ib(default=None)
+    Chinese: str = None
 
 
 class Test(Dataset):
@@ -16,7 +16,7 @@ class Test(Dataset):
     concept_class = TestConcept
     github_repo = 'x/y'
 
-    @lazyproperty
+    @functools.cached_property
     def tokenizer(self):
         from lingpy.sequence.sound_classes import clean_string
         return lambda _, s, **kw: clean_string(s)

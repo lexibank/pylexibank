@@ -1,4 +1,4 @@
-from pathlib import Path
+import io
 import argparse
 
 from pylexibank.providers.tob import TOB
@@ -25,13 +25,10 @@ def test_TOB(tmp_path, mocker, concepticon, glottolog):
 
     tmp_path.joinpath('metadata.json').write_text('{"conceptlist": "Wang-2004-471"}', encoding='utf8')
 
-    class Requests(mocker.Mock):
-        def get(self, *args, **kw):
-            return mocker.Mock(
-                status_code=200,
-                iter_content=mocker.Mock(return_value=[HTML.encode('utf8')]))
+    class Response(io.BytesIO):
+        status = 200
 
     ds = DS(concepticon=concepticon, glottolog=glottolog)
-    mocker.patch('cldfbench.datadir.requests', Requests())
+    mocker.patch('cldfbench.datadir.urlopen', lambda _: Response(HTML.encode('utf8')))
     ds._cmd_download(mocker.Mock())
     ds._cmd_makecldf(argparse.Namespace(verbose=False, log=None, dev=False))

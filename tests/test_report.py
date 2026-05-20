@@ -14,12 +14,8 @@ def ds(tmp_path, git_repo_factory):
     return ds_
 
 
-def test_no_travis_badge():
+def test_build_badge():
     assert not build_status_badge(Dataset())
-
-
-def test_travis_badge(ds):
-    assert build_status_badge(ds)
 
 
 def test_report(ds):

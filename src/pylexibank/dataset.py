@@ -1,11 +1,11 @@
 import pathlib
+import functools
 import collections
+import dataclasses
 import unicodedata
-
-import attr
+from typing import Optional, Protocol
 
 from csvw.dsv import reader
-from clldutils.misc import lazyproperty
 from clldutils import jsonlib
 from pyglottolog.languoids import Glottocode
 
@@ -14,7 +14,7 @@ from segments import Tokenizer
 from cldfbench.dataset import Dataset as BaseDataset
 from cldfbench.cldf import CLDFSpec
 
-from pylexibank.util import jsondump, log_dump
+from pylexibank.util import jsondump, log_dump, sorted_obj
 from pylexibank import cldf
 from pylexibank import models
 from pylexibank import transcription
@@ -22,10 +22,16 @@ from pylexibank import metadata
 from pylexibank import forms
 from pylexibank import report
 from pylexibank.profile import Profile
+from pylexibank.util import ENTRY_POINT
 from pylexibank.lingpy_util import settings
 
-__all__ = ['Dataset', 'ENTRY_POINT']
-ENTRY_POINT = 'lexibank.dataset'
+__all__ = ['Dataset']
+assert ENTRY_POINT  # ENTRY_POINT used to be imported from here.
+
+
+class TokenizerType(Protocol):
+    def __call__(self, item: dict, string: str, **kw) -> list[str]:
+        ...  # pragma: no cover
 
 
 class Dataset(BaseDataset):
@@ -103,15 +109,15 @@ class Dataset(BaseDataset):
             return metadata.get_creators_and_contributors(self.contributors_path, strict=strict)
         return [], []
 
-    @lazyproperty
+    @functools.cached_property
     def sources(self):
         return list(self._iter_etc('sources'))
 
-    @lazyproperty
+    @functools.cached_property
     def concepts(self):
         return list(self._iter_etc('concepts'))
 
-    @lazyproperty
+    @functools.cached_property
     def languages(self):
         res = []
         for item in self._iter_etc('languages'):
@@ -126,18 +132,18 @@ class Dataset(BaseDataset):
         return collections.OrderedDict(
             [(item[source_col], item[target_col]) for item in self._iter_etc(what)])
 
-    @lazyproperty
+    @functools.cached_property
     def lexemes(self):
         return self._replacements('lexemes', 'LEXEME')
 
-    @lazyproperty
+    @functools.cached_property
     def segments(self):
         return self._replacements('segments', 'SEGMENT')
 
     # ---------------------------------------------------------------
     # handling of lexemes/forms/words
     # ---------------------------------------------------------------
-    @lazyproperty
+    @functools.cached_property
     def orthography_profile_dict(self):
         res = {}
         profile = self.etc_dir / 'orthography.tsv'
@@ -154,8 +160,8 @@ class Dataset(BaseDataset):
     def form_for_segmentation(form):
         return unicodedata.normalize('NFC', '^' + form + '$')
 
-    @lazyproperty
-    def tokenizer(self):
+    @functools.cached_property
+    def tokenizer(self) -> Optional[TokenizerType]:
         """
         Datasets can provide support for segmentation (aka tokenization) in two ways:
         - by providing an orthography profile at etc/orthography.tsv or
@@ -263,11 +269,18 @@ class Dataset(BaseDataset):
                 row['Parameter_ID'],
                 row['Form']]
         # Aggregate transcription analysis results ...
+
         tr = dict(
-            by_language={k: attr.asdict(v) for k, v in self.tr_analyses.items()},
-            stats=attr.asdict(stats))
+            #
+            # FIXME: dataclasses.asdict does not handle collections.Counter in a way suitable for
+            # JSON.
+            #
+            by_language={k: dataclasses.asdict(v) for k, v in self.tr_analyses.items()},
+            stats=dataclasses.asdict(stats))
 
         jsondump(tr, self.cldf_dir / '.transcription-report.json', log=args.log)
+
+        tr = sorted_obj(tr)
 
         # ... and write a report:
         args.tr_analysis = tr
@@ -293,7 +306,7 @@ class Dataset(BaseDataset):
         return res
 
 
-class Unmapped(object):
+class Unmapped:
     def __init__(self):
         self.languages = set()
         self.concepts = set()
@@ -319,6 +332,6 @@ class Unmapped(object):
         for objs, cls in [(self.languages, models.Language), (self.concepts, models.Concept)]:
             if objs:
                 print('=== Unmapped %ss ===' % cls.__name__)
-                print(','.join([a.name.upper() for a in attr.fields(cls)]))
-                for row in sorted(map(attr.astuple, objs)):
+                print(','.join([a.name.upper() for a in dataclasses.fields(cls)]))
+                for row in sorted(map(dataclasses.astuple, objs)):
                     print(','.join(map(self.quote, row)))

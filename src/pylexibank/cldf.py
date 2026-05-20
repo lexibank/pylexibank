@@ -1,21 +1,29 @@
+"""
+Functionality bridging cldfbench and pycldf datasets.
+"""
 import re
 import logging
 import pathlib
 import textwrap
+import functools
 import itertools
 import collections
 import collections.abc
 import dataclasses
+from typing import Optional, Any, Callable, Union
 
 from csvw.metadata import Column
 from pycldf.dataset import Wordlist
+from pycldf.sources import Source
 import pyclts.models
+from pyconcepticon.api import Concept
 
 from cldfbench.cldf import CLDFWriter
 from cldfbench.util import iter_requirements, get_entrypoints
 
-from pylexibank.transcription import Analysis, analyze, valid_sequence
-from pylexibank.util import iter_repl, get_concepts, get_ids_and_attrs
+from pylexibank.transcription import Analysis, analyze, valid_sequence, CachedSegments
+from pylexibank.util import iter_repl, get_concepts, get_ids_and_attrs, ENTRY_POINT
+from pylexibank.lingpy_util import iter_alignments
 
 __all__ = ['LexibankWriter']
 log = logging.getLogger('pylexibank')
@@ -26,11 +34,15 @@ ID_PATTERN = re.compile(r'[A-Za-z0-9_\-]+$')
 
 @dataclasses.dataclass
 class Options:
+    """The Lexibank writer object is somewhat configurable."""
     keep_languages: bool = False
     keep_parameters: bool = False
 
 
 class LexibankWriter(CLDFWriter):
+    """
+    A Lexibank-specific CLDFWriter.
+    """
     def __init__(self, dataset=None, **kw):
         super().__init__(dataset=dataset, **kw)
         self._count = collections.defaultdict(int)
@@ -38,8 +50,7 @@ class LexibankWriter(CLDFWriter):
         self.options = Options(**getattr(dataset, 'writer_options', {}))
 
     def write(self, **kw):
-        from pylexibank import ENTRY_POINT
-
+        """Write the collected data to disk."""
         self.cldf.add_provenance(wasGeneratedBy=[
             collections.OrderedDict([
                 ('dc:title', "lingpy-rcParams"), ('dc:relation', 'lingpy-rcParams.json')])])
@@ -58,7 +69,7 @@ class LexibankWriter(CLDFWriter):
         super().__enter__()
         default_cldf = Wordlist.from_metadata(pathlib.Path(__file__).parent / MD_NAME)
 
-        self._obj_index = {}
+        self._obj_index = {}  # pylint: disable=W0201
         for cls in [
             self.dataset.lexeme_class,
             self.dataset.language_class,
@@ -91,7 +102,7 @@ class LexibankWriter(CLDFWriter):
                         self.cldf[cls.__cldf_table__(), field].propertyUrl = col.propertyUrl
                         self.cldf[cls.__cldf_table__(), field].datatype = col.datatype
                 except KeyError:
-                    kw = {k: v for k, v in fields_dict[field].metadata.items()}
+                    kw = dict(fields_dict[field].metadata.items())
                     kw.setdefault('datatype', 'string')
                     kw.setdefault('name', field)
                     col = Column.fromvalue(kw)
@@ -117,33 +128,60 @@ class LexibankWriter(CLDFWriter):
             self.objects[table] = [obj for obj in self.objects[table] if obj['ID'] in refs]
         super().__exit__(exc_type, exc_val, exc_tb)
 
-    def add_sources(self, *args):
+    @functools.cached_property
+    def with_morphemes(self) -> bool:
+        """Do we have morpheme segmentation on top of phonemes?"""
+        return '+' in self['FormTable', 'Segments'].separator
+
+    def add_sources(self, *args: Union[str, Source]):
+        """Add sources to the dataset."""
         if not args and self.dataset.raw_dir.joinpath('sources.bib').exists():
             args = self.dataset.raw_dir.read_bib()
         self.cldf.sources.add(*args)
 
-    def lexeme_id(self, kw):
+    def lexeme_id(self, kw: dict[str, Any]) -> str:
+        """A unique ID for a lexeme."""
         self._count[(kw['Language_ID'], kw['Parameter_ID'])] += 1
-        return '{0}-{1}-{2}'.format(
-            kw['Language_ID'],
-            kw['Parameter_ID'],
-            self._count[(kw['Language_ID'], kw['Parameter_ID'])])
+        return (f"{kw['Language_ID']}-{kw['Parameter_ID']}-"
+                f"{self._count[(kw['Language_ID'], kw['Parameter_ID'])]}")
 
-    def cognate_id(self, kw):
+    def cognate_id(self, kw) -> str:
+        """A unique cognate ID."""
         self._cognate_count[kw['Form_ID']] += 1
-        return '{0}-{1}'.format(kw['Form_ID'], self._cognate_count[kw['Form_ID']])
+        return f"{kw['Form_ID']}-{self._cognate_count[kw['Form_ID']]}"
 
-    def tokenize(self, item, string, **kw):
+    def tokenize(self, item, string, **kw) -> Optional[list[str]]:
+        """Tokenize a string."""
         if self.dataset.tokenizer:
             return self.dataset.tokenizer(item, string, **kw)
+        return None
+
+    def analyze_segments(self, form_data: dict[str, Any]):
+        """Analyze the segments, logging problems."""
+        analysis = self.dataset.tr_analyses.setdefault(form_data['Language_ID'], Analysis())
+        try:
+            segments = form_data['Segments']
+            if self.with_morphemes:
+                segments = list(itertools.chain(*[s.split() for s in segments]))
+            valid = valid_sequence(segments)
+            _, _bipa, _sc, _analysis = analyze(self.args.clts.api, segments, analysis)
+
+            # update the list of `bad_words` if necessary; we precompute a
+            # list of data types in `_bipa` just to make the conditional
+            # checking easier
+            _bipa_types = [type(s) for s in _bipa]
+            if (pyclts.models.UnknownSound in _bipa_types) or '?' in _sc or not valid:
+                self.dataset.tr_bad_words.append(form_data)
+        except ValueError:  # pragma: no cover
+            self.dataset.tr_invalid_words.append(form_data)
+        except (KeyError, AttributeError):  # pragma: no cover
+            print(form_data['Form'], form_data)
+            raise
 
     def add_form_with_segments(self, **kw):
         """
         :return: dict with the newly created lexeme
         """
-        # Do we have morpheme segmentation on top of phonemes?
-        with_morphemes = '+' in self['FormTable', 'Segments'].separator
-
         language, concept, value, form, segments = (kw.get(v) for v in [
             'Language_ID', 'Parameter_ID', 'Value', 'Form', 'Segments'])
 
@@ -156,30 +194,10 @@ class LexibankWriter(CLDFWriter):
             segments = list(iter_repl(segments, k.split(), v.split()))
         kw['Segments'] = segments
         kw.update(ID=self.lexeme_id(kw), Form=form)
-        lexeme = self._add_object(self.dataset.lexeme_class, **kw)
+        self.analyze_segments(kw)
+        return self._add_object(self.dataset.lexeme_class, **kw)
 
-        analysis = self.dataset.tr_analyses.setdefault(kw['Language_ID'], Analysis())
-        try:
-            segments = kw['Segments']
-            if with_morphemes:
-                segments = list(itertools.chain(*[s.split() for s in segments]))
-            valid = valid_sequence(segments)
-            _, _bipa, _sc, _analysis = analyze(self.args.clts.api, segments, analysis)
-
-            # update the list of `bad_words` if necessary; we precompute a
-            # list of data types in `_bipa` just to make the conditional
-            # checking easier
-            _bipa_types = [type(s) for s in _bipa]
-            if (pyclts.models.UnknownSound in _bipa_types) or '?' in _sc or not valid:
-                self.dataset.tr_bad_words.append(kw)
-        except ValueError:  # pragma: no cover
-            self.dataset.tr_invalid_words.append(kw)
-        except (KeyError, AttributeError):  # pragma: no cover
-            print(kw['Form'], kw)
-            raise
-        return lexeme
-
-    def add_form(self, with_morphemes=False, **kw):
+    def add_form(self, **kw):
         """
         :return: dict with the newly created form
         """
@@ -197,21 +215,22 @@ class LexibankWriter(CLDFWriter):
 
         # point to difference in value and form
         if form != value:
-            log.debug('iter_forms split: "{0}" -> "{1}"'.format(value, form))
+            log.debug('iter_forms split: "%s" -> "%s"', value, form)
 
         if form and form not in self.dataset.form_spec.missing_data:
             # try to segment the data now
             profile = kw.pop('profile', None)
             kw.setdefault(
                 'Segments',
-                self.tokenize(kw, form, **(dict(profile=profile) if profile else {})) or [])
+                self.tokenize(kw, form, **({'profile': profile} if profile else {})) or [])
             if kw['Segments']:
                 return self.add_form_with_segments(**kw)
 
             kw.update(ID=self.lexeme_id(kw), Form=form)
             return self._add_object(self.dataset.lexeme_class, **kw)
+        return None  # pragma: no cover
 
-    def add_forms_from_value(self, split_value=None, **kw):
+    def add_forms_from_value(self, split_value=None, **kw) -> list[dict]:
         """
         :return: list of dicts corresponding to newly created Lexemes
         """
@@ -225,16 +244,13 @@ class LexibankWriter(CLDFWriter):
         svkw = {}
         if split_value is None:
             split_value = self.dataset.form_spec.split
-            svkw = dict(lexemes=self.dataset.lexemes)
+            svkw = {'lexemes': self.dataset.lexemes}
 
-        # Do we have morpheme segmentation on top of phonemes?
-        with_morphemes = '+' in self['FormTable', 'Segments'].separator
-
-        for i, form in enumerate(split_value(kw, kw['Value'], **svkw)):
+        for form in split_value(kw, kw['Value'], **svkw):
             kw_ = kw.copy()
             kw_['Form'] = form
             if kw_['Form']:
-                kw_ = self.add_form(with_morphemes=with_morphemes, **kw_)
+                kw_ = self.add_form(**kw_)
                 if kw_:
                     lexemes.append(kw_)
 
@@ -249,17 +265,13 @@ class LexibankWriter(CLDFWriter):
     def _add_object(self, cls, **kw):
         # Instantiating an object will trigger potential validators:
         d = dataclasses.asdict(cls(**kw))
-        #
-        # FIXME: check whether certain attributes should not be written to the table.
-        #
         t = cls.__cldf_table__()
         for key in ['ID', 'Language_ID', 'Parameter_ID', 'Cognateset_ID']:
             # stringify/sluggify identifiers:
             if d.get(key) is not None:
-                d[key] = '{0}'.format(d[key])
+                d[key] = f'{d[key]}'
                 if not ID_PATTERN.match(d[key]):
-                    raise ValueError(
-                        'invalid CLDF identifier {0}-{1}: {2}'.format(t, key, d[key]))
+                    raise ValueError(f'invalid CLDF identifier {t}-{key}: {d[key]}')
         if 'ID' not in d or d['ID'] not in self._obj_index[t]:
             if 'ID' in d:
                 self._obj_index[t].add(d['ID'])
@@ -284,6 +296,7 @@ class LexibankWriter(CLDFWriter):
         return self._add_object(self.dataset.cognate_class, **kw)
 
     def add_language(self, **kw):
+        """Add a language to the dataset based on the data in `kw`."""
         if (not getattr(self.args, 'dev', False)) and 'Glottocode' in kw \
                 and hasattr(self.args, 'glottolog') \
                 and kw['Glottocode'] in self.args.glottolog.api.cached_languoids:
@@ -303,7 +316,11 @@ class LexibankWriter(CLDFWriter):
 
         return self._add_object(self.dataset.language_class, **kw)
 
-    def add_languages(self, id_factory='ID', lookup_factory=None):
+    def add_languages(
+            self,
+            id_factory: Union[str, Callable[[dict[str, Any]], str]] = 'ID',
+            lookup_factory: Union[None, str, Callable[[dict[str, Any]], str]] = None,
+    ) -> Union[collections.OrderedDict[str, str], list[str]]:
         """
         Add languages as specified in a dataset's etc/languages.csv
 
@@ -331,16 +348,20 @@ class LexibankWriter(CLDFWriter):
         return ids if lookup_factory else list(ids.values())
 
     def add_concept(self, **kw):
+        """Add a concept to the dataset using using the data in `kw`."""
         if kw.get('Concepticon_ID'):
             gloss = self.dataset.concepticon.cached_glosses[int(kw['Concepticon_ID'])]
             if kw.get('Concepticon_Gloss') and kw.get('Concepticon_Gloss') != gloss:
-                raise ValueError('Concepticon ID / Gloss mismatch %s != %s' % (
-                    kw.get('Concepticon_Gloss'), gloss
-                ))
+                raise ValueError(
+                    f"Concepticon ID / Gloss mismatch {kw.get('Concepticon_Gloss')} != {gloss}")
             kw['Concepticon_Gloss'] = gloss
         return self._add_object(self.dataset.concept_class, **kw)
 
-    def add_concepts(self, id_factory=lambda d: d.number, lookup_factory=None):
+    def add_concepts(
+            self,
+            id_factory: Union[str, Callable[[Concept], str]] = lambda d: d.number,
+            lookup_factory: Union[None, str, Callable[[Union[Concept, dict[str, Any]]], str]] = None
+    ):
         """
         Add concepts as specified in a dataset's associated Concepticon concept list or in
         etc/concepts.csv
@@ -369,11 +390,12 @@ class LexibankWriter(CLDFWriter):
 
     def align_cognates(self,
                        alm=None,
-                       cognates=None,
-                       column='Segments',
-                       method='library'):
-        from pylexibank.lingpy_util import iter_alignments
-
+                       cognates: Optional[list[dict[str, Any]]] = None,
+                       column: str = 'Segments',
+                       method: str = 'library'):
+        """Add alignments to cognates."""
+        # iter_alignments does **not** yield anything but aligns the cognates "in-place", i.e.
+        # adding the alignments to the cognate dicts.
         iter_alignments(
             alm or self,
             cognates or self.objects['CognateTable'],

@@ -7,12 +7,7 @@ __all__ = [
 CONCEPTICON_CONCEPTS = 1
 
 
-def non_empty(_, attribute, value):
-    if not value:
-        raise ValueError('{0} must be non-empty'.format(attribute))
-
-
-class FieldnamesMixin(object):
+class FieldnamesMixin:
     @classmethod
     def fieldnames(cls):
         return [f.name for f in dataclasses.fields(cls)]
@@ -87,11 +82,14 @@ class Lexeme(FieldnamesMixin):
     Loan: Optional[bool] = None
 
     def __post_init__(self):
-        assert self.Value
-        assert self.Language_ID
-        assert self.Parameter_ID
+        try:
+            assert self.Value
+            assert self.Language_ID
+            assert self.Parameter_ID
+        except AssertionError as e:
+            raise ValueError('Illegal NULL value') from e
         if isinstance(self.Source, str):
-            self.Source = [self.Source]
+            self.Source = [self.Source]  # pragma: no cover
 
     @classmethod
     def __cldf_table__(cls):
@@ -113,11 +111,11 @@ class Cognate(FieldnamesMixin):
 
     def __post_init__(self):
         if isinstance(self.Alignment, str):
-            self.Alignment = self.Alignment.split()
+            self.Alignment = self.Alignment.split()  # pragma: no cover
         if not isinstance(self.Doubt, bool):
-            self.Doubt = eval(self.Doubt)
+            self.Doubt = eval(self.Doubt)  # pragma: no cover
         if isinstance(self.Source, str):
-            self.Source = [self.Source]
+            self.Source = [self.Source]  # pragma: no cover
 
     @classmethod
     def __cldf_table__(cls):

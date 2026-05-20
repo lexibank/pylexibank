@@ -1,9 +1,10 @@
 import re
 import dataclasses
+from typing import Optional
 
 from clldutils.misc import slug, nfilter
 from pycldf.sources import Source
-from pybtex.database import parse_string  # dependency of pycldf, so should be installed.
+from simplepybtex.database import parse_string
 from pylexibank import Dataset, Language
 
 BASE_URL = "https://abvd.eva.mpg.de"
@@ -12,12 +13,12 @@ URL = BASE_URL + "/utils/save/?type=xml&section=%s&language=%d"
 
 @dataclasses.dataclass
 class BVDLanguage(Language):
-    author = attr.ib(default=None)
-    url = attr.ib(default=None)
-    typedby = attr.ib(default=None)
-    checkedby = attr.ib(default=None)
-    notes = attr.ib(default=None)
-    source = attr.ib(default=None)
+    author: Optional[str] = None
+    url: Optional[str] = None
+    typedby: Optional[str] = None
+    checkedby: Optional[str] = None
+    notes: Optional[str] = None
+    source: Optional[str] = None
 
 
 class BVD(Dataset):

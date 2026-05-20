@@ -1,8 +1,10 @@
 import re
 import logging
+import dataclasses
 import unicodedata
+from typing import Literal, Optional
+from collections.abc import Iterable
 
-import attr
 from clldutils import text
 from clldutils import misc
 
@@ -10,7 +12,7 @@ __all__ = ['FormSpec']
 log = logging.getLogger('pylexibank')
 
 
-def valid_replacements(instance, attribute, value):
+def valid_replacements(value):
     if not isinstance(value, list):
         raise ValueError('replacements must be list of pairs')
     for v in value:
@@ -21,7 +23,7 @@ def valid_replacements(instance, attribute, value):
             raise ValueError('replacements must be list of pairs')
 
 
-def valid_separators(instance, attribute, value):
+def valid_separators(value):
     if not isinstance(value, str):
         if not isinstance(value, (list, tuple)):
             raise ValueError('separators must be an iterable of single character strings')
@@ -30,13 +32,13 @@ def valid_separators(instance, attribute, value):
                 raise ValueError('separators must be an iterable of single character strings')
 
 
-def attrib(help, **kw):
+def dcfield(help, **kw):
     kw['metadata'] = dict(help=help)
-    return attr.ib(**kw)
+    return dataclasses.field(**kw)
 
 
-@attr.s
-class FormSpec(object):
+@dataclasses.dataclass
+class FormSpec:
     """
     Specification of the value-to-form processing in Lexibank datasets:
 
@@ -46,49 +48,56 @@ class FormSpec(object):
 
     These methods use the attributes of a `FormSpec` instance to configure their behaviour.
     """
-    brackets = attrib(
+    brackets: dict = dcfield(
         "Pairs of strings that should be recognized as brackets, specified as `dict` "
         "mapping opening string to closing string",
-        default={"(": ")"},
-        validator=attr.validators.instance_of(dict),
+        default_factory=lambda: {"(": ")"},
     )
-    separators = attrib(
+    separators: Iterable[str] = dcfield(
         "Iterable of single character tokens that should be recognized as word separator",
         default=(";", "/", ","),
-        validator=valid_separators,
     )
-    missing_data = attrib(
+    missing_data: Iterable[str] = dcfield(
         "Iterable of strings that are used to mark missing data",
         default=('?', '-'),
-        validator=attr.validators.instance_of((tuple, list)),
     )
-    strip_inside_brackets = attrib(
+    strip_inside_brackets: bool = dcfield(
         "Flag signaling whether to strip content in brackets "
         "(**and** strip leading and trailing whitespace)",
         default=True,
-        validator=attr.validators.instance_of(bool))
-    replacements = attrib(
+    )
+    replacements: list[tuple[str, str]] = dcfield(
         "List of pairs (`source`, `target`) used to replace occurrences of `source` in forms"
         "with `target` (before stripping content in brackets)",
-        default=attr.Factory(list),
-        validator=valid_replacements)
-    first_form_only = attrib(
+        default_factory=list,
+    )
+    first_form_only: bool = dcfield(
         "Flag signaling whether at most one form should be returned from `split` - "
         "effectively ignoring any spelling variants, etc.",
         default=False,
-        validator=attr.validators.instance_of(bool),
     )
-    normalize_whitespace = attrib(
+    normalize_whitespace: bool = dcfield(
         "Flag signaling whether to normalize whitespace - stripping leading and trailing "
         "whitespace and collapsing multi-character whitespace to single spaces",
         default=True,
-        validator=attr.validators.instance_of(bool),
     )
-    normalize_unicode = attrib(
+    normalize_unicode: Optional[Literal['NFD', 'NFC']] = dcfield(
         "UNICODE normalization form to use for input of `split` (`None`, 'NFD' or 'NFC')",
         default=None,
-        validator=attr.validators.in_(['NFD', 'NFC', None]),
     )
+
+    def __post_init__(self):
+        try:
+            assert isinstance(self.brackets, dict)
+            assert isinstance(self.missing_data, (tuple, list))
+            assert isinstance(self.strip_inside_brackets, bool)
+            assert isinstance(self.first_form_only, bool)
+            assert isinstance(self.normalize_whitespace, bool)
+            assert self.normalize_unicode in ['NFD', 'NFC', None], self.normalize_unicode
+        except AssertionError as e:
+            raise ValueError('Illegal type') from e
+        valid_separators(self.separators)
+        valid_replacements(self.replacements)
 
     def as_markdown(self, dataset=None):
         """
@@ -96,7 +105,7 @@ class FormSpec(object):
         """
         res = ['## Specification of form manipulation\n']
         res.extend([line.strip() for line in self.__class__.__doc__.splitlines()])
-        for field in attr.fields(self.__class__):
+        for field in dataclasses.fields(self.__class__):
             res.extend([
                 '- `{0}`: `{1}`'.format(field.name, getattr(self, field.name)),
                 '  {0}'.format(field.metadata['help'])
