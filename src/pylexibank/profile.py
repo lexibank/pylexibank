@@ -18,21 +18,34 @@ __all__ = ['Profile', 'IPA_COLUMN']
 IPA_COLUMN = 'IPA'
 
 
-def unicode2codepointstr(text):
-    return " ".join(["U+{0:0{1}X}".format(ord(char), 4) for char in text])
+def unicode2codepointstr(text: str) -> str:
+    """
+    >>> unicode2codepointstr('a')
+    'U+0061'
+    """
+    return " ".join("U+{0:0{1}X}".format(ord(c), 4) for c in text)  # pylint: disable=C0209
 
 
-def ipa2tokens(text):
+def ipa2tokens(text: str) -> list[str]:
+    """
+    >>> ipa2tokens('ä/a b c')
+    ['a', 'b', 'c']
+    """
     return [t if "/" not in t else t.split("/")[1] for t in (text or '').split()]
 
 
-def ipa2sca(text, clts):
+def ipa2sca(text: str, clts: pyclts.CLTS) -> str:
+    """
+    >>> ipa2sca('a t au', pyclts.CLTS('PATH/TO/cldf-clts/clts-data'))
+    'A T A'
+    """
     sca = clts.soundclass("sca")
     return " ".join(
         clts.bipa.translate(t, sca) if t != "NULL" else "NULL" for t in ipa2tokens(text))
 
 
 class Profile(segments.Profile):
+    """We augment the Profile class from the segments package with some utility methods."""
     def __init__(self, *specs, **kw):
         super().__init__(*specs, **kw)
         default_spec = list(next(iter(self.graphemes.values())).keys())
@@ -53,19 +66,22 @@ class Profile(segments.Profile):
         return tg.tables[0].write(self.iteritems(), fname=None).decode('utf8').strip()
 
     def write(self, fname=None):
+        """Write the profile to a file."""
         (fname or self.fname).write_text(str(self), encoding='utf8')
 
     def recreate_tree(self):
+        """Rebuild the parse tree."""
         self.tree = Tree(list(self.graphemes.keys()))
 
     def sort(self, clts=None, ipa_col=IPA_COLUMN):
+        """Sort the graphemes in the profile."""
         self.graphemes = collections.OrderedDict(
             sorted(
                 self.graphemes.items(),
                 key=lambda e: (
                     e[0] not in ["^", "$"],
                     e[0] != "^",
-                    e[1][ipa_col] != None,
+                    e[1][ipa_col] is not None,
                     re.match(r"\^.*\$", e[0]) is None,
                     len(ipa2sca(e[1][ipa_col], clts)) if clts else False,
                     ipa2sca(e[1][ipa_col], clts) if clts else False,
@@ -75,7 +91,8 @@ class Profile(segments.Profile):
             )
         )
 
-    def trim(self, ipa_col=IPA_COLUMN):
+    def trim(self, ipa_col=IPA_COLUMN) -> int:
+        """Trime the profile, removing redundant rules."""
         # Make a copy of the profile (so we don't change in place)
         new_profile = collections.OrderedDict()
         for g, entry in self.graphemes.items():
@@ -86,21 +103,13 @@ class Profile(segments.Profile):
         # Collect all keys, so that we will gradually remove them; those with
         # ^ and $ go first
         graphemes = list(new_profile.keys())
-        bound_graphemes = [
-            grapheme for grapheme in graphemes if grapheme[0] == "^" and grapheme[-1] == "$"]
-        bound_graphemes += [
-            grapheme for grapheme in graphemes if grapheme[0] == "^" and grapheme[-1] != "$"]
-        bound_graphemes += [
-            grapheme for grapheme in graphemes if grapheme[0] != "^" and grapheme[-1] == "$"]
+        bound_graphemes = [graph for graph in graphemes if graph[0] == "^" and graph[-1] == "$"]
+        bound_graphemes += [graph for graph in graphemes if graph[0] == "^" and graph[-1] != "$"]
+        bound_graphemes += [graph for graph in graphemes if graph[0] != "^" and graph[-1] == "$"]
 
         check_graphemes = bound_graphemes + sorted(
-            [
-                grapheme
-                for grapheme in graphemes if len(grapheme) > 1 and grapheme not in bound_graphemes
-            ],
-            key=len,
-            reverse=True,
-        )
+            [graph for graph in graphemes if len(graph) > 1 and graph not in bound_graphemes],
+            key=lambda x: -len(x))
 
         # For each entry, we will remove it from `segment_map`, apply the resulting
         # profile, and add the entry back at the end of loop (still expansive, but
@@ -125,7 +134,8 @@ class Profile(segments.Profile):
         return removed
 
     @staticmethod
-    def segmentable_form(form):
+    def segmentable_form(form: str) -> str:
+        """Make sure a form is wrapped in start- and end-string markers."""
         form = form.strip()
         if not form.startswith('^'):
             form = '^' + form
@@ -162,7 +172,7 @@ class Profile(segments.Profile):
         def clean_segment(segment, clts):
             if "/" in segment:
                 left, right = segment.split("/")
-                return "%s/%s" % (left, str(clts.bipa[right]))
+                return f"{left}/{str(clts.bipa[right])}"
             return str(clts.bipa[segment])
 
         for grapheme, entry in self.graphemes.items():
@@ -196,32 +206,28 @@ class Profile(segments.Profile):
             if len(mapping[grapheme]) >= 2:
                 if len(set(mapping[grapheme])) == 1:
                     log_or_raise(
-                        "Duplicate, redundant entry or entries for grapheme [{}].".format(grapheme),
+                        f"Duplicate, redundant entry or entries for grapheme [{grapheme}].",
                         log=log,
                         level='warning')
                 else:
                     log_or_raise(
-                        "Inconsist entries for grapheme [{}]: multiple mappings {}.".format(
-                            grapheme,
-                            str(mapping[grapheme])),
+                        f"Inconsist entries for grapheme [{grapheme}]: "
+                        f"multiple mappings {str(mapping[grapheme])}.",
                         log=log,
                         level='error')
 
             # check BIPA consistency
-            if clts:
-                for value in mapping[grapheme]:
-                    if value:
-                        # check for unknown sounds
-                        unknown = [
-                            isinstance(clts.bipa[segment], pyclts.models.UnknownSound)
-                            for segment in ipa2tokens(value) if segment and segment != 'NULL']
-                        if any(unknown):
-                            log_or_raise(
-                                "Mapping [{}] ({}) -> [{}] ({}) includes an unknown sound.".format(
-                                    grapheme,
-                                    unicode2codepointstr(grapheme),
-                                    value,
-                                    unicode2codepointstr(value)),
-                                log=log,
-                                level='error'
-                            )
+            if not clts:
+                continue
+            for value in mapping[grapheme]:
+                if not value:
+                    continue  # pragma: no cover
+                # check for unknown sounds
+                segs = [seg for seg in ipa2tokens(value) if seg and seg != 'NULL']
+                if any(isinstance(clts.bipa[seg], pyclts.models.UnknownSound) for seg in segs):
+                    log_or_raise(
+                        f"Mapping [{grapheme}] ({unicode2codepointstr(grapheme)}) -> "
+                        f"[{value}] ({unicode2codepointstr(value)}) includes an unknown sound.",
+                        log=log,
+                        level='error'
+                    )

@@ -6,7 +6,6 @@ import logging
 import pathlib
 import textwrap
 import functools
-import itertools
 import collections
 import collections.abc
 import dataclasses
@@ -15,13 +14,12 @@ from typing import Optional, Any, Callable, Union
 from csvw.metadata import Column
 from pycldf.dataset import Wordlist
 from pycldf.sources import Source
-import pyclts.models
 from pyconcepticon.api import Concept
 
 from cldfbench.cldf import CLDFWriter
 from cldfbench.util import iter_requirements, get_entrypoints
 
-from pylexibank.transcription import Analysis, analyze, valid_sequence, CachedSegments
+from pylexibank.transcription import analyze_segments
 from pylexibank.util import iter_repl, get_concepts, get_ids_and_attrs, ENTRY_POINT
 from pylexibank.lingpy_util import iter_alignments
 
@@ -158,25 +156,7 @@ class LexibankWriter(CLDFWriter):
 
     def analyze_segments(self, form_data: dict[str, Any]):
         """Analyze the segments, logging problems."""
-        analysis = self.dataset.tr_analyses.setdefault(form_data['Language_ID'], Analysis())
-        try:
-            segments = form_data['Segments']
-            if self.with_morphemes:
-                segments = list(itertools.chain(*[s.split() for s in segments]))
-            valid = valid_sequence(segments)
-            _, _bipa, _sc, _analysis = analyze(self.args.clts.api, segments, analysis)
-
-            # update the list of `bad_words` if necessary; we precompute a
-            # list of data types in `_bipa` just to make the conditional
-            # checking easier
-            _bipa_types = [type(s) for s in _bipa]
-            if (pyclts.models.UnknownSound in _bipa_types) or '?' in _sc or not valid:
-                self.dataset.tr_bad_words.append(form_data)
-        except ValueError:  # pragma: no cover
-            self.dataset.tr_invalid_words.append(form_data)
-        except (KeyError, AttributeError):  # pragma: no cover
-            print(form_data['Form'], form_data)
-            raise
+        analyze_segments(self.args.clts.api, form_data, self.dataset.tr, self.with_morphemes)
 
     def add_form_with_segments(self, **kw):
         """

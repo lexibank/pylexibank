@@ -1,3 +1,6 @@
+"""
+Form handling.
+"""
 import re
 import logging
 import dataclasses
@@ -12,33 +15,14 @@ __all__ = ['FormSpec']
 log = logging.getLogger('pylexibank')
 
 
-def valid_replacements(value):
-    if not isinstance(value, list):
-        raise ValueError('replacements must be list of pairs')
-    for v in value:
-        if not (isinstance(v, tuple)
-                and len(v) == 2
-                and isinstance(v[0], str)
-                and isinstance(v[1], str)):
-            raise ValueError('replacements must be list of pairs')
-
-
-def valid_separators(value):
-    if not isinstance(value, str):
-        if not isinstance(value, (list, tuple)):
-            raise ValueError('separators must be an iterable of single character strings')
-        for v in value:
-            if (not isinstance(v, str)) or len(v) > 1:
-                raise ValueError('separators must be an iterable of single character strings')
-
-
-def dcfield(help, **kw):
-    kw['metadata'] = dict(help=help)
-    return dataclasses.field(**kw)
+def dcfield(help_, **kw):
+    """A dataclasses field with help."""
+    kw['metadata'] = {"help": help_}
+    return dataclasses.field(**kw)  # pylint: disable=E3701
 
 
 @dataclasses.dataclass
-class FormSpec:
+class FormSpec:  # pylint: disable=R0902
     """
     Specification of the value-to-form processing in Lexibank datasets:
 
@@ -96,10 +80,24 @@ class FormSpec:
             assert self.normalize_unicode in ['NFD', 'NFC', None], self.normalize_unicode
         except AssertionError as e:
             raise ValueError('Illegal type') from e
-        valid_separators(self.separators)
-        valid_replacements(self.replacements)
 
-    def as_markdown(self, dataset=None):
+        if not isinstance(self.separators, str):
+            if not isinstance(self.separators, (list, tuple)):
+                raise ValueError('separators must be an iterable of single character strings')
+            for v in self.separators:
+                if (not isinstance(v, str)) or len(v) > 1:
+                    raise ValueError('separators must be an iterable of single character strings')
+
+        if not isinstance(self.replacements, list):
+            raise ValueError('replacements must be list of pairs')
+        for v in self.replacements:
+            if not (isinstance(v, tuple)
+                    and len(v) == 2
+                    and isinstance(v[0], str)
+                    and isinstance(v[1], str)):
+                raise ValueError('replacements must be list of pairs')
+
+    def as_markdown(self, dataset=None) -> str:
         """
         :return: Description of `FormSpec` in markdown.
         """
@@ -107,29 +105,29 @@ class FormSpec:
         res.extend([line.strip() for line in self.__class__.__doc__.splitlines()])
         for field in dataclasses.fields(self.__class__):
             res.extend([
-                '- `{0}`: `{1}`'.format(field.name, getattr(self, field.name)),
-                '  {0}'.format(field.metadata['help'])
+                f'- `{field.name}`: `{getattr(self, field.name)}`',
+                f'  {field.metadata["help"]}'
             ])
         if dataset:
             if dataset.lexemes:
-                res.append("""
-### Replacement of invalid lexemes
-
-Source lexemes may be impossible to interpret correctly. {0} such lexemes are listed
-in [`etc/lexemes.csv`](etc/lexemes.csv) and replaced as specified in this file.
-""".format(len(dataset.lexemes)))
+                res.extend([
+                    '### Replacement of invalid lexemes\n',
+                    f'Source lexemes may be impossible to interpret correctly. '
+                    f'{len(dataset.lexemes)} such lexemes are listed in '
+                    f'[`etc/lexemes.csv`](etc/lexemes.csv) and replaced as specified in this file.',
+                ])
 
             if dataset.segments:
-                res.append("""
-### Replacement of invalid segmentation
-
-Segments provided in the source data may not be valid according to CLTS.
-{0} such segments are listed in [`etc/segments.csv`](etc/segments.csv) and replaced
-as specified in this file.
-""".format(len(dataset.segments)))
+                res.extend([
+                    '### Replacement of invalid segmentation\n',
+                    f'Segments provided in the source data may not be valid according to CLTS. '
+                    f'{len(dataset.segments)} such segments are listed in '
+                    f'[`etc/segments.csv`](etc/segments.csv) and replaced as specified in this '
+                    f'file.',
+                ])
         return '\n'.join(res)
 
-    def clean(self, form, item=None):
+    def clean(self, form: str, item=None) -> Optional[str]:  # pylint: disable=W0613
         """
         Called when a row is added to a CLDF dataset.
 
@@ -144,11 +142,13 @@ as specified in this file.
             if self.normalize_whitespace:
                 return re.sub(r'\s+', ' ', form.strip())
             return form
+        return None
 
     def split(self, item, value, lexemes=None):
+        """Splits lexemes as found in Value field."""
         lexemes = lexemes or {}
         if value in lexemes:
-            log.debug('overriding via lexemes.csv: %r -> %r' % (value, lexemes[value]))
+            log.debug('overriding via lexemes.csv: %r -> %r', value, lexemes[value])
             value = lexemes[value]
         if self.normalize_unicode:
             value = unicodedata.normalize(self.normalize_unicode, value)

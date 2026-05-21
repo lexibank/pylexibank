@@ -1,7 +1,7 @@
 import pytest
 
 from pylexibank import Dataset
-from pylexibank.report import build_status_badge, report
+from pylexibank.report import report
 
 
 @pytest.fixture
@@ -12,10 +12,6 @@ def ds(tmp_path, git_repo_factory):
     ds_.dir.joinpath('.travis.yml').write_text('#', encoding='utf8')
     ds_.dir.joinpath('NOTES.md').write_text('#', encoding='utf8')
     return ds_
-
-
-def test_build_badge():
-    assert not build_status_badge(Dataset())
 
 
 def test_report(ds):

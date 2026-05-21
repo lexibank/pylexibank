@@ -1,5 +1,9 @@
+"""
+Functionality to create a human readable report on a dataset.
+"""
 import pathlib
 import collections
+from collections.abc import Generator
 import dataclasses
 from typing import Optional, Union
 
@@ -10,11 +14,13 @@ import anybadge
 
 @dataclasses.dataclass
 class Badge:
+    """A badge."""
     alt: str
     img_url: Union[str, pathlib.Path]
     href: Optional[str] = None
 
-    def as_string(self, dataset):
+    def as_string(self, dataset) -> str:
+        """Serialize the badge as markdown image link."""
         img_url = self.img_url
         if isinstance(img_url, pathlib.Path):
             img_url = img_url.relative_to(dataset.dir)
@@ -25,6 +31,7 @@ class Badge:
 
     @classmethod
     def from_ratio(cls, name: str, ratio: float, fname: pathlib.Path):
+        """Create a badge displaying some generic ratio."""
         thresholds = {
             60: 'red',
             70: 'orange',
@@ -45,7 +52,8 @@ class Badge:
         return cls(alt=f'{name}: {int(round(ratio * 100))}%', img_url=fname)
 
     @classmethod
-    def for_github_action(cls, github_repo):
+    def for_github_action(cls, github_repo) -> 'Badge':
+        """Create a GitHub actions badge for the CLDF validation task."""
         return cls(
             alt='CLDF validation',
             img_url=f'https://github.com/{github_repo}/workflows/CLDF-validation/badge.svg',
@@ -53,19 +61,10 @@ class Badge:
         )
 
 
-def build_status_badge(dataset):
-    if dataset.repo and dataset.repo.github_repo:
-        if dataset.dir.joinpath('.github/workflows').exists():  # pragma: no cover
-            return "[![CLDF validation]" \
-                   "(https://github.com/{0}/workflows/CLDF-validation/badge.svg)]" \
-                   "(https://github.com/{0}/actions?query=workflow%3ACLDF-validation)" \
-                   "".format(dataset.repo.github_repo)
-    return ''
-
-
-def report(dataset, tr_analysis=None, glottolog=None, log=None):
+def report(dataset, tr_analysis=None, glottolog=None, log=None) -> str:
+    """Create a markdown-formatted report for a dataset."""
     #
-    # FIXME: in case of multiple cldf datasets:
+    # FIXME: in case of multiple cldf datasets:  # pylint: disable=fixme
     # - write only summary into README.md
     # - separate lexemes.md and transcriptions.md
     #
@@ -76,18 +75,19 @@ def report(dataset, tr_analysis=None, glottolog=None, log=None):
         lines.append('## Notes\n')
         lines.append(dataset.dir.joinpath('NOTES.md').read_text() + '\n\n')
 
-    badges = []
-    if dataset.repo and dataset.repo.github_repo:
-        badges.append(Badge.for_github_action(dataset.repo.github_repo))
-
     for cldf_spec in dataset.cldf_specs_dict.values():
-        lines.extend(cldf_report(cldf_spec, tr_analysis, badges, log, glottolog, dataset))
-        break
+        if list(cldf_spec.dir.glob('*.csv')) and cldf_spec.module == 'Wordlist':
+            lines.extend(
+                iter_cldf_report_lines(cldf_spec, tr_analysis, log, glottolog, dataset))
+            break
     return '\n'.join(lines)
 
 
 @dataclasses.dataclass
-class Counts:
+class Counts:  # pylint: disable=R0902
+    """
+    Counts of stuff in a dataset to compute summary statistics from.
+    """
     languages: collections.Counter = dataclasses.field(default_factory=collections.Counter)
     concepts: collections.Counter = dataclasses.field(default_factory=collections.Counter)
     sources: collections.Counter = dataclasses.field(default_factory=collections.Counter)
@@ -140,9 +140,9 @@ class Counts:
         return cnt
 
     @property
-    def SI(self) -> float:
-        sindex = sum(
-            [sum(list(cnts.values())) / float(len(cnts)) for cnts in self.synonyms.values()])
+    def synonymy_index(self) -> float:
+        """A measure for the amount of synonyms in a dataset."""
+        sindex = sum(sum(cnts.values()) / float(len(cnts)) for cnts in self.synonyms.values())
         langs = set(self.synonyms.keys())
         if langs:
             return sindex / float(len(langs))
@@ -150,6 +150,7 @@ class Counts:
 
     @property
     def num_cognates(self) -> int:
+        """The number of cognate sets."""
         return len(self.cognate_sets)
 
     @property
@@ -164,28 +165,35 @@ class Counts:
             return 0.0  # no lexemes.
 
     def ratio(self, prop: str) -> float:
+        """Ratio for a given property, relative to the number of lexemes."""
         if self.lexemes == 0:
             return 0.0  # pragma: no cover
         return sum(v for k, v in getattr(self, prop).items() if k) / float(self.lexemes)
 
+    @property
+    def distinct_glottocodes(self):
+        """The number of distinct glottocodes linked to in a dataset."""
+        return sum(1 if gc else 0 for gc in self.languages)
 
-def format_ratio(cnt, total):
+    @property
+    def distinct_conceptsets(self) -> int:
+        """The number of distinct conceptsets linked to in a dataset."""
+        return sum(1 if cs else 0 for cs in self.concepts)
+
+
+def format_ratio(cnt: int, total: int) -> str:
+    """Format a ration as fraction and as percentage."""
     return f"{cnt}/{total} ({(cnt / float(total)) * 100:.2f}%%)"
 
 
-def cldf_report(
+def iter_cldf_report_lines(
         cldf_spec,
         tr_analysis,
-        badges,
         log,
         glottolog,
         dataset,
-) -> list[str]:
+) -> Generator[str, None, None]:
     """Create a report for the dataset."""
-    lines = []
-    if (not list(cldf_spec.dir.glob('*.csv'))) or (cldf_spec.module != 'Wordlist'):
-        return lines
-
     counts = Counts.from_dataset(cldf_spec.get_dataset(), glottolog)
 
     stats = tr_analysis['stats'] if tr_analysis else collections.defaultdict(list)
@@ -193,7 +201,10 @@ def cldf_report(
     lbipapyerr = len(stats['bipa_errors'])
     lsclasserr = len(stats['sclass_errors'])
 
-    badges = badges[:]
+    badges = []
+    if dataset.repo and dataset.repo.github_repo:
+        badges.append(Badge.for_github_action(dataset.repo.github_repo))
+
     for name, prop in [
             ('Glottolog', 'languages'), ('Concepticon', 'concepts'), ('Source', 'sources')]:
         badges.append(
@@ -208,61 +219,53 @@ def cldf_report(
                 dataset.etc_dir / 'badge_sc.svg'),
         ])
 
-    lines.extend(['## Statistics', '\n', '\n'.join(b.as_string(dataset) for b in badges), ''])
+    yield from ['## Statistics', '\n', '\n'.join(b.as_string(dataset) for b in badges), '']
 
     stats_lines = [
-        '- **Varieties:** {0:,} (linked to {1:,} different Glottocodes)'.format(
-            len(counts.lids), sum(1 if gc else 0 for gc in counts.languages)),
-        '- **Concepts:** {0:,} (linked to {1:,} different Concepticon concept sets)'.format(
-            len(counts.cids), sum(1 if csid else 0 for csid in counts.concepts)),
-        '- **Lexemes:** {0:,}'.format(counts.lexemes),
-        '- **Sources:** {0:,}'.format(len(counts.sids)),
-        '- **Synonymy:** {:0.2f}'.format(counts.SI),
+        f'- **Varieties:** {len(counts.lids):,} (linked to '
+        f'{counts.distinct_glottocodes:,} different Glottocodes)',
+        f'- **Concepts:** {len(counts.cids):,} (linked to '
+        f'{counts.distinct_conceptsets:,} different Concepticon concept sets)',
+        f'- **Lexemes:** {counts.lexemes:,}',
+        f'- **Sources:** {len(counts.sids):,}',
+        f'- **Synonymy:** {counts.synonymy_index:0.2f}',
     ]
     if counts.num_cognates:
         stats_lines.extend([
-            '- **Cognacy:** {0:,} cognates in {1:,} cognate sets ({2:,} singletons)'.format(
-                sum(v for k, v in counts.cognate_sets.items()),
-                counts.num_cognates, len([k for k, v in counts.cognate_sets.items() if v == 1])),
-            '- **Cognate Diversity:** {:0.2f}'.format(counts.cog_diversity)
+            f'- **Cognacy:** {sum(v for k, v in counts.cognate_sets.items()):,} '
+            f'cognates in {counts.num_cognates:,} cognate sets '
+            f'({len([k for k, v in counts.cognate_sets.items() if v == 1]):,} singletons)',
+            f'- **Cognate Diversity:** {counts.cog_diversity:0.2f}'
         ])
     if stats['segments']:
         stats_lines.extend([
-            '- **Invalid lexemes:** {0:,}'.format(stats['invalid_words_count']),
-            '- **Tokens:** {0:,}'.format(sum(stats['segments'].values())),
-            '- **Segments:** {0:,} ({1} BIPA errors, {2} CLTS sound class errors, '
-            '{3} CLTS modified)'
-            .format(lsegments, lbipapyerr, lsclasserr, len(stats['replacements'])),
-            '- **Inventory size (avg):** {:0.2f}'.format(stats['inventory_size']),
+            '- **Invalid lexemes:** {stats["invalid_words_count"]:,}',
+            '- **Tokens:** {sum(stats["segments"].values()):,}',
+            f'- **Segments:** {lsegments:,} ({lbipapyerr} BIPA errors, '
+            f'{lsclasserr} CLTS sound class errors, {len(stats["replacements"])} CLTS modified)',
+            f'- **Inventory size (avg):** {stats["inventory_size"]:0.2f}',
         ])
 
     if log:
         log.info('\n'.join([f'Summary for dataset {cldf_spec.metadata_path}'] + stats_lines))
-    lines.extend(stats_lines)
+    yield from stats_lines
 
     # improvements section
     if counts.missing_glottocode or counts.missing_source or counts.bookkeeping_languoids:
-        lines.extend(['\n## Possible Improvements:\n', ])
+        yield '\n## Possible Improvements:\n'
 
         if counts.missing_glottocode:  # pragma: no cover
-            lines.append(
-                f"- Languages missing glottocodes: "
-                f"{format_ratio(len(counts.missing_glottocode), len(counts.lids))}")
+            yield (f"- Languages missing glottocodes: "
+                   f"{format_ratio(len(counts.missing_glottocode), len(counts.lids))}")
 
         if counts.bookkeeping_languoids:  # pragma: no cover
-            lines.append(
-                "- Languages linked to [bookkeeping languoids in Glottolog]"
-                "(https://glottolog.org/glottolog/glottologinformation"
-                "#bookkeepinglanguoids):")
+            yield ("- Languages linked to [bookkeeping languoids in Glottolog]"
+                   "(https://glottolog.org/glottolog/glottologinformation#bookkeepinglanguoids):")
         for lang in counts.bookkeeping_languoids:  # pragma: no cover
-            lines.append(
-                f"  - {lang.get('Name', lang.get('ID'))} [{lang['Glottocode']}]"
-                f"(https://glottolog.org/resource/languoid/id/{lang['Glottocode']})")
+            yield (f"  - {lang.get('Name', lang.get('ID'))} [{lang['Glottocode']}]"
+                   f"(https://glottolog.org/resource/languoid/id/{lang['Glottocode']})")
 
         if counts.missing_source:
-            lines.append(
-                f"- Entries missing sources: "
-                f"{format_ratio(len(counts.missing_source), counts.lexemes)}")
-        lines.append('\n')
-
-    return lines
+            yield (f"- Entries missing sources: "
+                   f"{format_ratio(len(counts.missing_source), counts.lexemes)}")
+        yield ''

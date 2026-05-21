@@ -1,12 +1,17 @@
+"""
+A Lexibank-specific cldfbench.Dataset subclass.
+"""
+import argparse
 import pathlib
 import functools
 import collections
 import dataclasses
 import unicodedata
-from typing import Optional, Protocol
+from typing import Optional, Protocol, Union
 
 from csvw.dsv import reader
 from clldutils import jsonlib
+from pyconcepticon.models import Conceptlist
 from pyglottolog.languoids import Glottocode
 
 from segments import Tokenizer
@@ -14,7 +19,7 @@ from segments import Tokenizer
 from cldfbench.dataset import Dataset as BaseDataset
 from cldfbench.cldf import CLDFSpec
 
-from pylexibank.util import jsondump, log_dump, sorted_obj
+from pylexibank.util import jsondump, log_dump
 from pylexibank import cldf
 from pylexibank import models
 from pylexibank import transcription
@@ -29,12 +34,12 @@ __all__ = ['Dataset']
 assert ENTRY_POINT  # ENTRY_POINT used to be imported from here.
 
 
-class TokenizerType(Protocol):
+class TokenizerType(Protocol):  # pylint: disable=R0903,C0115
     def __call__(self, item: dict, string: str, **kw) -> list[str]:
         ...  # pragma: no cover
 
 
-class Dataset(BaseDataset):
+class Dataset(BaseDataset):  # pylint: disable=R0902
     """
     A lexibank dataset.
 
@@ -46,7 +51,7 @@ class Dataset(BaseDataset):
     metadata_cls = metadata.LexibankMetadata
     # The CLDFWriter can be instructed to keep only objects which are referenced from FormTable by
     # setting the following options to `False`.
-    writer_options = dict(keep_languages=True, keep_parameters=True)
+    writer_options = {'keep_languages': True, 'keep_parameters': True}
 
     lexeme_class = models.Lexeme
     cognate_class = models.Cognate
@@ -59,30 +64,23 @@ class Dataset(BaseDataset):
     # flag to True.
     cross_concept_cognates = False
 
-    @property
-    def stats(self):
-        if self.dir.joinpath('README.json').exists():
-            return jsonlib.load(self.dir / 'README.json')
-        return {}
-
     def __init__(self, concepticon=None, glottolog=None):
         super().__init__()
         if self.__class__ != Dataset:
             if not self.id:
                 raise ValueError(
-                    "Dataset.id needs to be specified in subclass for %s!" % self.__class__)
+                    f"Dataset.id needs to be specified in subclass for {self.__class__}!")
         self.unmapped = Unmapped()
         self._json = self.dir / 'lexibank.json'
-        self.contributors_path = self.dir / 'CONTRIBUTORS.md'
+        self.contributors_path: pathlib.Path = self.dir / 'CONTRIBUTORS.md'
 
-        self.conceptlists = []
+        self.conceptlists: list[Conceptlist] = []
         self.glottolog = glottolog
         self.concepticon = concepticon
-        self.tr_analyses = {}
-        self.tr_bad_words = []
-        self.tr_invalid_words = []
+        self.tr: Optional[transcription.Report] = None
 
-    def cldf_specs(self):
+    def cldf_specs(self) -> CLDFSpec:
+        """Specification of the CLDF dataset."""
         return CLDFSpec(
             module='Wordlist',
             writer_cls=cldf.LexibankWriter,
@@ -99,32 +97,37 @@ class Dataset(BaseDataset):
         return reader(path, dicts=True, delimiter=delimiter) if path.exists() else []
 
     def read_json(self):  # pragma: no cover
+        """Read an object from a JSON file."""
         return jsonlib.load(self._json) if self._json.exists() else {}
 
     def write_json(self, obj):  # pragma: no cover
+        """Write an object serialized as JSON to a file."""
         jsondump(obj, self._json)
 
-    def get_creators_and_contributors(self, strict=False):
+    def get_creators_and_contributors(self, strict: bool = False) -> tuple[list, list]:
+        """Get lists of dataset collaborators."""
         if self.contributors_path.exists():
             return metadata.get_creators_and_contributors(self.contributors_path, strict=strict)
         return [], []
 
     @functools.cached_property
-    def sources(self):
+    def sources(self) -> list[dict]:
+        """Rows of etc/sources.csv"""
         return list(self._iter_etc('sources'))
 
     @functools.cached_property
-    def concepts(self):
+    def concepts(self) -> list[dict]:
+        """Rows of etc/concepts.csv"""
         return list(self._iter_etc('concepts'))
 
     @functools.cached_property
-    def languages(self):
+    def languages(self) -> list[dict]:
+        """Rows of etc/languages.csv"""
         res = []
         for item in self._iter_etc('languages'):
             if item.get('GLOTTOCODE', None) and not \
                     Glottocode.pattern.match(item['GLOTTOCODE']):  # pragma: no cover
-                raise ValueError(
-                    "Invalid glottocode {0}".format(item['GLOTTOCODE']))
+                raise ValueError(f"Invalid glottocode {item['GLOTTOCODE']}")
             res.append(item)
         return res
 
@@ -133,18 +136,21 @@ class Dataset(BaseDataset):
             [(item[source_col], item[target_col]) for item in self._iter_etc(what)])
 
     @functools.cached_property
-    def lexemes(self):
+    def lexemes(self) -> collections.OrderedDict[str, str]:
+        """Lexemes marked for replacement."""
         return self._replacements('lexemes', 'LEXEME')
 
     @functools.cached_property
-    def segments(self):
+    def segments(self) -> collections.OrderedDict[str, str]:
+        """Segments marked for replacement."""
         return self._replacements('segments', 'SEGMENT')
 
     # ---------------------------------------------------------------
     # handling of lexemes/forms/words
     # ---------------------------------------------------------------
     @functools.cached_property
-    def orthography_profile_dict(self):
+    def orthography_profile_dict(self) -> dict[Union[None, str], Profile]:
+        """A dict of orthography profiles."""
         res = {}
         profile = self.etc_dir / 'orthography.tsv'
         profile_dir = self.etc_dir / 'orthography'
@@ -157,7 +163,8 @@ class Dataset(BaseDataset):
         return {k: Profile.from_file(str(p), form='NFC') for k, p in res.items()}
 
     @staticmethod
-    def form_for_segmentation(form):
+    def form_for_segmentation(form: str) -> str:
+        """Normalized form to be segmented."""
         return unicodedata.normalize('NFC', '^' + form + '$')
 
     @functools.cached_property
@@ -180,7 +187,7 @@ class Dataset(BaseDataset):
           explicitly.
         """
         tokenizers = {
-            k: Tokenizer(profile=p, errors_replace=lambda c: '<{0}>'.format(c))
+            k: Tokenizer(profile=p, errors_replace=lambda c: f'<{c}>')  # pylint: disable=W0108
             for k, p in self.orthography_profile_dict.items()}
 
         if tokenizers:
@@ -208,13 +215,16 @@ class Dataset(BaseDataset):
                 item['Graphemes'] = tokenizer(form, **kw)
                 return res
             return _tokenizer
+        return None  # pragma: no cover
+
+    @property
+    def _transcription_report_path(self):
+        return self.cldf_dir / '.transcription-report.json'
 
     def _cmd_makecldf(self, args):
         # Inject the appropriate CLDFWriter instance:
         self.unmapped.clear()
-        self.tr_analyses = {}
-        self.tr_bad_words = []
-        self.tr_invalid_words = []
+        self.tr = transcription.Report()
 
         if len(self.metadata.conceptlist):
             self.conceptlists = [
@@ -224,11 +234,10 @@ class Dataset(BaseDataset):
             assert self.conceptlists
             self.concept_class = models.concepticon_concepts(self.conceptlists)
 
+        # During _cmd_makecldf the transcription report will be updated.
         super()._cmd_makecldf(args)
 
-        #
         # make sure properties have the appropriate datatypes:
-        #
         ds = self.cldf_reader()
         for col in ds['LanguageTable'].tableSchema.columns:
             if col.name.lower() == 'population':  # pragma: no cover
@@ -239,60 +248,22 @@ class Dataset(BaseDataset):
         if not args.dev:
             assert self.cldf_reader().validate(args.log)
 
-        stats = transcription.Stats(
-            bad_words=sorted(self.tr_bad_words[:100], key=lambda x: x['ID']),
-            bad_words_count=len(self.tr_bad_words),
-            invalid_words=sorted(self.tr_invalid_words[:100], key=lambda x: x['ID']),
-            invalid_words_count=len(self.tr_invalid_words))
-        for lid, analysis in self.tr_analyses.items():
-            for attribute in ['segments', 'bipa_errors', 'sclass_errors', 'replacements']:
-                getattr(stats, attribute).update(getattr(analysis, attribute))
-            stats.general_errors += analysis.general_errors
-            stats.inventory_size += len(analysis.segments) / len(self.tr_analyses)
+        # Compute summary stats for the updated transcription analyses.
+        self.tr.compute_stats()
 
-        error_segments = stats.bipa_errors.union(stats.sclass_errors)
-        for i, row in enumerate(stats.bad_words):
-            analyzed_segments = []
-            for s in row['Segments']:
-                analyzed_segments.append('<s> %s </s>' % s if s in error_segments else s)
-            stats.bad_words[i] = [
-                row['ID'],
-                row['Language_ID'],
-                row['Parameter_ID'],
-                row['Form'],
-                ' '.join(analyzed_segments)]
-
-        for i, row in enumerate(stats.invalid_words):
-            stats.invalid_words[i] = [
-                row['ID'],
-                row['Language_ID'],
-                row['Parameter_ID'],
-                row['Form']]
         # Aggregate transcription analysis results ...
-
-        tr = dict(
-            #
-            # FIXME: dataclasses.asdict does not handle collections.Counter in a way suitable for
-            # JSON.
-            #
-            by_language={k: dataclasses.asdict(v) for k, v in self.tr_analyses.items()},
-            stats=dataclasses.asdict(stats))
-
-        jsondump(tr, self.cldf_dir / '.transcription-report.json', log=args.log)
-
-        tr = sorted_obj(tr)
+        jsondump(self.tr.to_json(), self._transcription_report_path, log=args.log)
 
         # ... and write a report:
-        args.tr_analysis = tr
         self._cmd_readme(args)
-        (self.dir / 'TRANSCRIPTION.md').write_text(transcription.report(tr), encoding='utf8')
+        (self.dir / 'TRANSCRIPTION.md').write_text(str(self.tr), encoding='utf8')
         log_dump(self.dir / 'TRANSCRIPTION.md', args.log)
 
         jsondump(settings(), self.cldf_dir / 'lingpy-rcParams.json', log=args.log)
 
-    def cmd_readme(self, args):
+    def cmd_readme(self, args: argparse.Namespace) -> str:
         res = self.metadata.markdown()
-        tr = self.cldf_dir / '.transcription-report.json'
+        tr = self._transcription_report_path
         tr = jsonlib.load(tr) if tr.exists() else None
         res += report.report(
             self,
@@ -301,37 +272,40 @@ class Dataset(BaseDataset):
             args.log,
         )
         if self.contributors_path.exists():
-            res += '\n\n{0}\n\n'.format(self.contributors_path.read_text(encoding='utf8'))
+            res += f'\n\n{self.contributors_path.read_text(encoding="utf8")}\n\n'
         self.dir.write('FORMS.md', self.form_spec.as_markdown(self))
         return res
 
 
+@dataclasses.dataclass
 class Unmapped:
-    def __init__(self):
+    """Functionality to keep track of unmapped objects."""
+    languages: set[models.Language] = dataclasses.field(default_factory=set)
+    concepts: set[models.Concept] = dataclasses.field(default_factory=set)
+
+    def clear(self):  # pylint: disable=C0116
         self.languages = set()
         self.concepts = set()
 
-    def clear(self):
-        self.languages = set()
-        self.concepts = set()
-
-    def add_concept(self, **kw):
+    def add_concept(self, **kw):  # pylint: disable=C0116
         self.concepts.add(models.Concept(**kw))
 
-    def add_language(self, **kw):
+    def add_language(self, **kw):  # pylint: disable=C0116
         self.languages.add(models.Language(**kw))
 
     @staticmethod
-    def quote(v):
-        v = '{0}'.format(v or '')
+    def quote(v) -> str:
+        """Quote a string."""
+        v = f"{v or ''}"
         if ',' in v or len(v.split()) > 1:
-            v = '"%s"' % v.replace('"', '""')
+            v = '"%s"' % v.replace('"', '""')  # pylint: disable=C0209
         return v
 
     def pprint(self):
+        """Pretty print unmapped objects."""
         for objs, cls in [(self.languages, models.Language), (self.concepts, models.Concept)]:
             if objs:
-                print('=== Unmapped %ss ===' % cls.__name__)
+                print(f'=== Unmapped {cls.__name__}s ===')
                 print(','.join([a.name.upper() for a in dataclasses.fields(cls)]))
                 for row in sorted(map(dataclasses.astuple, objs)):
                     print(','.join(map(self.quote, row)))

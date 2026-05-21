@@ -1,4 +1,6 @@
-#
+"""
+pylexibank - extends cldfbench to curate Lexibank datasets.
+"""
 from pylexibank.dataset import *  # noqa: F401, F403
 from pylexibank.models import *  # noqa: F401, F403
 from pylexibank.forms import *  # noqa: F401, F403

@@ -1,15 +1,22 @@
+"""
+Functionality used in pylexibank commands.
+"""
+import argparse
+
 from cldfbench import cli_util
 from termcolor import colored
 
 from pylexibank.util import ENTRY_POINT
 
 
-def add_dataset_spec(parser, **kw):
+def add_dataset_spec(parser: argparse.ArgumentParser, **kw):
+    """Add a dataset spec that also knows the lexibank dataset entry-point."""
     kw.setdefault('ep', ENTRY_POINT)
     return cli_util.add_dataset_spec(parser, **kw)
 
 
-def add_catalogs(parser, with_clts=False):
+def add_catalogs(parser: argparse.ArgumentParser, with_clts: bool = False):
+    """Add the relevant reference catalogs for Lexibank."""
     cli_util.add_catalog_spec(parser, 'glottolog')
     cli_util.add_catalog_spec(parser, 'concepticon')
     if with_clts:
@@ -17,8 +24,9 @@ def add_catalogs(parser, with_clts=False):
 
 
 def warning(args, msg, dataset=None, warnings=None):
+    """Emit a warning."""
     if dataset:
-        msg = '{0}: {1}'.format(colored(dataset.id, 'blue', attrs=['bold']), msg)
+        msg = f"{colored(dataset.id, 'blue', attrs=['bold'])}: {msg}"
     args.log.warning(msg)
     if warnings is not None:
         warnings.append(msg)

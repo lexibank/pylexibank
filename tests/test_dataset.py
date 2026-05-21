@@ -75,10 +75,6 @@ def test_BaseDataset(mocker, repos):
     assert ds.languages
     assert len(ds.raw_dir.read_bib('sources_ext.bib')) == 96
 
-    assert not ds.stats
-    ds.dir.write('README.json', json.dumps({'a': 1}))
-    assert ds.stats['a'] == 1
-
 
 @pytest.mark.parametrize(
     'string,segments,graphemes',
