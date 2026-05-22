@@ -239,8 +239,8 @@ def iter_cldf_report_lines(
         ])
     if stats['segments']:
         stats_lines.extend([
-            '- **Invalid lexemes:** {stats["invalid_words_count"]:,}',
-            '- **Tokens:** {sum(stats["segments"].values()):,}',
+            f'- **Invalid lexemes:** {stats["invalid_words_count"]:,}',
+            f'- **Tokens:** {sum(stats["segments"].values()):,}',
             f'- **Segments:** {lsegments:,} ({lbipapyerr} BIPA errors, '
             f'{lsclasserr} CLTS sound class errors, {len(stats["replacements"])} CLTS modified)',
             f'- **Inventory size (avg):** {stats["inventory_size"]:0.2f}',

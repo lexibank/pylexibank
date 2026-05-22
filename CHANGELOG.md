@@ -5,6 +5,7 @@ The `pylexibank` package adheres to [Semantic Versioning](http://semver.org/spec
 ## unreleased
 
 - Removed lexibank db functionality.
+- Compatibility with pycldf 2.x
 
 
 ## 3.5.0 - 2024-07-04
