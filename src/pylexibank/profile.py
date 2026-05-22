@@ -4,7 +4,11 @@ functionality to check and consistently format in a diff-friendly way.
 """
 import re
 import copy
+import enum
 import collections
+import dataclasses
+import unicodedata
+from typing import Optional, Literal
 
 import pyclts
 import segments
@@ -13,9 +17,35 @@ from clldutils.misc import log_or_raise
 from csvw import dsv
 from csvw.metadata import TableGroup, Column
 
-__all__ = ['Profile', 'IPA_COLUMN']
+__all__ = [
+    'Profile', 'IPA_COLUMN', 'Checker', 'unicode2codepointstr', 'normalized', 'SegmentProblem']
 
 IPA_COLUMN = 'IPA'
+
+
+class SegmentProblem(enum.Enum):
+    """Enumeration of relevant issues with segments."""
+    generated = 1  # pylint: disable=C0103
+    modified = 2  # pylint: disable=C0103
+    slashed = 3  # pylint: disable=C0103
+    unknown = 4  # pylint: disable=C0103
+    missing = 5  # pylint: disable=C0103
+
+    @staticmethod
+    def check(tk: str, clts: pyclts.CLTS) -> Optional['SegmentProblem']:
+        """Check whether tk falls in any of the SegmentProblem categories."""
+        sound = clts.bipa[tk]
+        if tk.startswith("<<") and tk.endswith(">>"):
+            return SegmentProblem.missing
+        if sound.type == "unknownsound":
+            return SegmentProblem.unknown  # pragma: no cover
+        if sound.generated:
+            return SegmentProblem.generated
+        if str(sound) not in {tk, normalized(tk), normalized(tk, mode='NFC')}:
+            if "/" in tk and str(sound) == tk.split('/')[1]:
+                return SegmentProblem.slashed
+            return SegmentProblem.modified
+        return None
 
 
 def unicode2codepointstr(text: str) -> str:
@@ -24,6 +54,11 @@ def unicode2codepointstr(text: str) -> str:
     'U+0061'
     """
     return " ".join("U+{0:0{1}X}".format(ord(c), 4) for c in text)  # pylint: disable=C0209
+
+
+def normalized(string: str, mode: Literal['NFD', 'NFC'] = "NFD") -> str:
+    """Shortcut to UNICODE normalize a string."""
+    return unicodedata.normalize(mode, string)
 
 
 def ipa2tokens(text: str) -> list[str]:
@@ -231,3 +266,34 @@ class Profile(segments.Profile):
                         log=log,
                         level='error'
                     )
+
+
+@dataclasses.dataclass(frozen=True)
+class SegmentedForm:
+    """Bag of attributes characterizing a segmented form."""
+    segments: str
+    form: str
+    graphemes: str
+
+
+@dataclasses.dataclass
+class Checker:
+    """Checks segments, aggregates encountered problems."""
+    clts: pyclts.CLTS
+    problems: dict[SegmentProblem, dict[str, list[SegmentedForm]]] = dataclasses.field(
+        default_factory=dict)
+    lookup: dict[str, tuple[Optional[SegmentProblem], str]] = dataclasses.field(
+        default_factory=dict)
+
+    def __call__(self, tokens, form, graphemes):
+        for tk in set(tokens):
+            if tk not in self.lookup:
+                self.lookup[tk] = (
+                    SegmentProblem.check(tk, self.clts),
+                    re.sub('>>$', '', re.sub(r'^<<', '', tk)))
+            category, ntk = self.lookup[tk]
+            if category is not None:
+                if category not in self.problems:
+                    self.problems[category] = collections.defaultdict(list)
+                self.problems[category][ntk].append(
+                    SegmentedForm(" ".join(tokens), form, graphemes))

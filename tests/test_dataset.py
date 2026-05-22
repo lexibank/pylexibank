@@ -99,3 +99,7 @@ def test_tokenizer(repos, string, segments, graphemes):
 def test_contributors(dataset, dataset_cldf):
     assert len(dataset.get_creators_and_contributors()[0]) == 1
     assert len(dataset_cldf.get_creators_and_contributors()[0]) == 0
+
+
+def test_dataset_get_lexibank_wordlist(dataset):
+    assert dataset.get_lexibank_wordlist()

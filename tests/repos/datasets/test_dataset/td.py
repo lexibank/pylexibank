@@ -2,6 +2,8 @@ import functools
 import dataclasses
 from pathlib import Path
 
+from cldfbench import CLDFSpec
+
 from pylexibank import Dataset, Concept
 
 
@@ -15,6 +17,9 @@ class Test(Dataset):
     id = 'test_dataset'
     concept_class = TestConcept
     github_repo = 'x/y'
+
+    def cldf_specs(self):
+        return {None: super().cldf_specs()}
 
     @functools.cached_property
     def tokenizer(self):

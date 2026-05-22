@@ -97,9 +97,6 @@ def sorted_obj(obj: Union[list, dict, set, Any]) -> Union[dict, list, Any]:
         res = collections.OrderedDict()
         obj.pop(None, None)
         for k, v in sorted(obj.items()):
-            # Fix weirdly dictified collection.Counter from dataclasses.asdict.
-            if isinstance(k, tuple) and isinstance(k[1], int) and v == 1:
-                k, v = k
             res[k] = sorted_obj(v)
         return res
     if isinstance(obj, (list, set)):

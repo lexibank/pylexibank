@@ -9,6 +9,7 @@ import dataclasses
 import unicodedata
 from typing import Optional, Protocol, Union
 
+import pycldf
 from csvw.dsv import reader
 from clldutils import jsonlib
 from pyconcepticon.models import Conceptlist
@@ -87,6 +88,20 @@ class Dataset(BaseDataset):  # pylint: disable=R0902
             dir=self.cldf_dir,
             metadata_fname=cldf.MD_NAME,
             default_metadata_path=pathlib.Path(__file__).parent / cldf.MD_NAME)
+
+    def get_lexibank_cldf_spec(self) -> CLDFSpec:
+        """Return the CLDF Wordlist created from this lexibank dataset."""
+        spec = self.cldf_specs()
+        if isinstance(spec, dict):
+            for s in spec.values():
+                if s.module == 'Wordlist':
+                    return s
+            raise ValueError('No Wordlist dataset specified.')  # pragma: no cover
+        return spec
+
+    def get_lexibank_wordlist(self) -> pycldf.Dataset:
+        """Return the CLDF Wordlist created from this lexibank dataset."""
+        return self.cldf_reader(self.get_lexibank_cldf_spec())
 
     def _iter_etc(self, what):
         delimiter = '\t'

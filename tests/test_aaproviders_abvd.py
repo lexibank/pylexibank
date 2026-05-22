@@ -17,6 +17,11 @@ def abvd_dataset(repos, tmp_path, glottolog, concepticon):
     return Dataset(glottolog=glottolog, concepticon=concepticon)
 
 
+def test_Entry(abvd_dataset):
+    wl = next(abvd_dataset.iter_wordlists())
+    assert len(wl.entries[0].cognates) == 2
+
+
 def test_Wordlist(abvd_dataset, mocker):
     with abvd_dataset.cldf_writer(mocker.MagicMock()) as ds:
         for wl in abvd_dataset.iter_wordlists():

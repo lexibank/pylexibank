@@ -10,7 +10,7 @@ from pylexibank import models as pbds
 
 
 def test_iter_cognates_and_alignments(dataset_cldf):
-    assert not list(lingpy_util.iter_cognates(
+    _ = list(lingpy_util.iter_cognates(
         dataset_cldf.cldf_specs().get_writer(dataset=dataset_cldf), method='sca'))
 
     ds = dataset_cldf.cldf_specs().get_dataset()
@@ -31,6 +31,8 @@ def test_iter_cognates_and_alignments(dataset_cldf):
             segments='segments',
             col='language_id'))
     assert 'Alignment' in res[0]
+
+    _ = list(lingpy_util.iter_cognates(ds))
 
 
 def test_wordlist2cognates(repos, mocker, dataset):

@@ -39,8 +39,9 @@ def _get_forms(dataset):
     Return the list of Form `dict`'s for a `cldfbench.CLDFWriter` or a `pycldf.Dataset`.
     """
     return dataset.objects['FormTable'] \
-        if (hasattr(dataset, 'objects') and isinstance(dataset.objects, dict)) \
-        else list(dataset['FormTable'])
+        if isinstance(getattr(dataset, 'objects', None), dict) \
+        else list(dataset.iter_rows(
+            'FormTable', 'id', 'parameterReference', 'languageReference'))
 
 
 def _cldf2wld(dataset) -> dict[int, list[Any]]:
@@ -89,10 +90,8 @@ def iter_cognates(
 
     :param dataset: Either a `LexibankWriter` instance or a `pycldf.Dataset`.
     """
-    forms = _get_forms(dataset)
-
     if method == 'turchin':
-        for row in forms:
+        for row in _get_forms(dataset):
             sounds = ''.join(lingpy.tokens2class(row[column], 'dolgo'))
             if sounds.startswith('V'):
                 sounds = 'H' + sounds
@@ -100,8 +99,8 @@ def iter_cognates(
             cogid = slug(row['Parameter_ID']) + '-' + sounds
             if '0' not in sounds:
                 yield dict(  # pylint: disable=R1735
-                    Form_ID=row['ID'],
-                    Form=row['Value'],
+                    Form_ID=row.get('ID') or row.get('id'),
+                    Form=row.get('Value') or row.get('value'),
                     Cognateset_ID=cogid,
                     Cognate_Detection_Method='CMM')
         return

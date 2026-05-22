@@ -11,7 +11,7 @@ from collections.abc import Iterable
 from clldutils import text
 from clldutils import misc
 
-__all__ = ['FormSpec']
+__all__ = ['FormSpec', 'compute_consonant_cluster']
 log = logging.getLogger('pylexibank')
 
 
@@ -78,7 +78,7 @@ class FormSpec:  # pylint: disable=R0902
             assert isinstance(self.first_form_only, bool)
             assert isinstance(self.normalize_whitespace, bool)
             assert self.normalize_unicode in ['NFD', 'NFC', None], self.normalize_unicode
-        except AssertionError as e:
+        except AssertionError as e:  # pragma: no cover
             raise ValueError('Illegal type') from e
 
         if not isinstance(self.separators, str):
@@ -159,3 +159,21 @@ class FormSpec:  # pylint: disable=R0902
         if self.first_form_only:
             return res[:1]
         return res
+
+
+def compute_consonant_cluster(segments: list[str], clts) -> list:
+    """Infer consonant clusters in a list of segments."""
+    out = []
+    for i, (grapheme, sound) in enumerate(zip(segments, [s.name for s in clts.bipa(segments)])):
+        sndcls = sound.split(" ")[-1]
+        if i == 0:
+            if sndcls in ["consonant", "cluster", "∼"]:
+                out.append([])
+        if sndcls in ["diphthong", "vowel", "tone", "�", "marker"]:
+            out.append([])  # Ends a consonant cluster.
+        elif 'syllabic' in sound.split(" "):
+            out.append([])  # Ends a consonant cluster.
+        else:
+            assert sndcls in ["consonant", "cluster", "∼"], f'Unexpected soundclass {sndcls}'
+            out[-1].append(grapheme)
+    return [chunk for chunk in out if chunk]

@@ -56,3 +56,18 @@ def test_replacements():
 
     with pytest.raises(ValueError):
         FormSpec(replacements=[(1, 2)])
+
+
+@pytest.mark.parametrize(
+    'morpheme,num,maxlen',
+    [
+        ('a c h', 1, 2),
+        ('s c h w i m m e n', 3, 4),
+        ('a z̞̩ o', 0, 0),
+    ]
+)
+def test_compute_consonant_cluster(morpheme, num, maxlen, clts):
+    clusters = compute_consonant_cluster(morpheme.split(), clts)
+    assert len(clusters) == num
+    if clusters:
+        assert max(len(c) for c in clusters) == maxlen

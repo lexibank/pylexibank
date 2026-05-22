@@ -114,10 +114,10 @@ def test_consonant_clusters(dataset, repos, caplog, capsys):
     warnings = [r.message for r in caplog.records if r.levelname == 'WARNING']
     out, _ = capsys.readouterr()
 
-    assert any("Found 1 potentially problematic consonant cluster(s) with length 4" in w for w in warnings)
+    assert any("1 potentially problematic consonant cluster(s) with length >= 4" in w for w in warnings)
     assert out.strip() == """| Language_ID | Length | Cluster | Words |
-| :---------: | :----: | :-----------------: | :--------------------------: |
-| lang1 | 6 | ɡ̤ː ɡ̤ː b dʱʷ dʱʷ dʱʷ | ɡ̤ː ɡ̤ː b dʱʷ dʱʷ dʱʷ // axdou |"""
+| :---------: | :----: | :-----------------: | :---: |
+| lang1 | 6 | ɡ̤ː ɡ̤ː b dʱʷ dʱʷ dʱʷ | axdou |"""
 
 
 def test_check_profile(dataset, repos, caplog, capsys):

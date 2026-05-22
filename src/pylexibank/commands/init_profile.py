@@ -8,21 +8,17 @@ from cldfbench.cli_util import get_dataset, add_catalog_spec
 from csvw.dsv import UnicodeWriter
 from clldutils.clilib import ParserError
 
-from pylexibank.cli_util import add_dataset_spec
+from pylexibank.cli_util import add_dataset_spec, add_overwrite_profile_flag
 
 
-def register(parser):
+def register(parser):  # pylint: disable=C0116
     add_dataset_spec(parser)
     add_catalog_spec(parser, 'clts')
+    add_overwrite_profile_flag(parser)
     parser.add_argument(
         '--context',
         action='store_true',
         help='Create orthography profile with context',
-        default=False)
-    parser.add_argument(
-        '-f', '--force',
-        action='store_true',
-        help='Overwrite existing profile',
         default=False)
     parser.add_argument(
         '--semi-diacritics',
@@ -40,7 +36,7 @@ def register(parser):
         default=False)
 
 
-def run(args):
+def run(args):  # pylint: disable=C0116
     bipa = args.clts.api.bipa
     func = profile.simple_profile
     cols = ['Grapheme', 'IPA', 'Frequence', 'Codepoints']
@@ -61,17 +57,17 @@ def run(args):
     if profile_path.exists() and not args.force:
         raise ParserError('Orthography profile exists already. To overwrite, pass "-f" flag')
 
-    header, D = [], {}
+    header, d = [], {}
     for i, row in enumerate(ds.cldf_reader()['FormTable'], start=1):
         if i == 1:
             header = [f for f in row.keys() if f != 'ID']
-            D = {0: ['lid'] + [h.lower() for h in header]}
+            d = {0: ['lid'] + [h.lower() for h in header]}
 
         row['Segments'] = ' '.join(row['Segments'])
-        D[i] = [row['ID']] + [row[h] for h in header]
+        d[i] = [row['ID']] + [row[h] for h in header]
 
     with UnicodeWriter(profile_path, delimiter='\t') as writer:
         writer.writerow(cols)
-        for row in func(Wordlist(D, row='parameter_id', col='language_id'), **kw):
+        for row in func(Wordlist(d, row='parameter_id', col='language_id'), **kw):
             writer.writerow(row)
-    args.log.info('Orthography profile written to {0}'.format(profile_path))
+    args.log.info('Orthography profile written to %s', profile_path)

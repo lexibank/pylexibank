@@ -1,14 +1,17 @@
 """
 Format (and lint) the orthography profiles of a dataset.
 """
+import argparse
 import collections
 
 from cldfbench.cli_util import add_catalog_spec, get_dataset
+
+from pylexibank import Dataset
 from pylexibank.cli_util import add_dataset_spec
 from pylexibank.profile import IPA_COLUMN
 
 
-def register(parser):
+def register(parser: argparse.ArgumentParser):  # pylint: disable=C0116
     add_dataset_spec(parser)
     add_catalog_spec(parser, 'clts')
 
@@ -37,21 +40,21 @@ def register(parser):
     )
 
 
-def run(args):
-    ds = get_dataset(args)
+def run(args: argparse.Namespace):  # pylint: disable=C0116
+    ds: Dataset = get_dataset(args)
     clts = args.clts.api
 
     # Load the profile(s) specified for the dataset
     profiles = {k or 'default': v for k, v in ds.orthography_profile_dict.items()}
     forms = collections.defaultdict(list)
     if ds.cldf_dir.joinpath('forms.csv').exists():
-        for form in ds.cldf_reader()['FormTable']:
+        for form in ds.cldf_reader().iter_rows('FormTable'):
             forms[form.get('Profile')].append(ds.form_for_segmentation(form['Form']))
     if list(forms.keys()) == [None]:  # pragma: no cover
         forms['default'] = forms[None]
 
     for key, profile in profiles.items():
-        args.log.info('Processing {0}'.format(profile.fname))
+        args.log.info('Processing %s', profile.fname)
         profile.clean(clts, ipa_col=args.ipa)
 
         if args.trim:
@@ -63,7 +66,7 @@ def run(args):
                 if removed == 0:
                     break
             if total_removed:  # pragma: no cover
-                args.log.info("{} superfluous rules were removed.".format(total_removed))
+                args.log.info("%s superfluous rules were removed.", total_removed)
 
         if args.augment and forms[key]:
             profile.augment(forms[key], clts=args.clts.api)

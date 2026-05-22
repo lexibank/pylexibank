@@ -9,19 +9,15 @@ from pycldf import Dataset
 from csvw.dsv import reader, UnicodeWriter
 
 from pylexibank import progressbar
-from pylexibank.cli_util import add_dataset_spec
+from pylexibank.cli_util import add_dataset_spec, add_overwrite_profile_flag
 
 
-def register(parser):
+def register(parser):  # pylint: disable=C0116
     add_dataset_spec(parser)
-    parser.add_argument(
-        '-f', '--force',
-        action='store_true',
-        help='Overwrite existing profile',
-        default=False)
+    add_overwrite_profile_flag(parser)
 
 
-def run(args):
+def run(args):  # pylint: disable=C0116
     ds = get_dataset(args)
     wordlist = Dataset.from_metadata(ds.cldf_dir / "cldf-metadata.json")
     p = ds.etc_dir / "orthography.tsv"
@@ -40,7 +36,7 @@ def run(args):
                     data[grapheme, profile.get(grapheme, "?")] += 1
             else:
                 raise ValueError("Grapheme information missing in CLDF data")
-        new_path = ds.etc_dir / "orthography" / "{0}.tsv".format(language.id)
+        new_path = ds.etc_dir / "orthography" / f"{language.id}.tsv"
         if new_path.exists() and not args.force:  # pragma: no cover
             raise ParserError("Orthography profile exists, use --force to override")
         with UnicodeWriter(new_path, delimiter='\t') as writer:

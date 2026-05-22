@@ -10,7 +10,7 @@ from clldutils.jsonlib import load
 
 def test_align_cognates(dataset, clts, mocker):
     with LexibankWriter(
-        cldf_spec=dataset.cldf_specs(),
+        cldf_spec=dataset.get_lexibank_cldf_spec(),
         dataset=dataset,
         args=Namespace(clts=mocker.Mock(api=clts))
     ) as ds:
