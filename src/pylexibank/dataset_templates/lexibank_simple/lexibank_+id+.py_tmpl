@@ -5,9 +5,9 @@ import pylexibank
 # if you need to store other data in columns than the lexibank defaults, then over-ride
 # the table type (pylexibank.[Language|Lexeme|Concept|Cognate|]) and add the required columns e.g.
 #
-#import attr
+#import dataclasses
 #
-#@attr.s
+#@dataclasses.dataclass
 #class Concept(pylexibank.Concept):
 #    MyAttribute1 = attr.ib(default=None)
 

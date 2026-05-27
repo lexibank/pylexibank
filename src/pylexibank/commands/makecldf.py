@@ -10,21 +10,21 @@ from cldfbench.commands import cldfreadme
 from pylexibank.cli_util import add_catalogs, add_dataset_spec
 
 
-def register(parser):
+def register(parser):  # pylint: disable=C0116
     add_dataset_spec(parser)
     add_catalogs(parser, with_clts=True)
     parser.add_argument('--verbose', action='store_true', default=False)
     parser.add_argument('--dev', action='store_true', default=False)
 
 
-def run(args):
+def run(args):  # pylint: disable=C0116
     dataset = get_dataset(args)
     dataset.concepticon = args.concepticon.api
     dataset.glottolog = args.glottolog.api
     with_dataset(args, 'makecldf', dataset=dataset)
     if not dataset.cldf_dir.joinpath('sources.bib').exists():
         args.log.warning(
-            'The dataset has no sources at {0}'.format(dataset.cldf_dir.joinpath('sources.bib')))
+            'The dataset has no sources at %s', dataset.cldf_dir.joinpath('sources.bib'))
     creators, contributors = dataset.get_creators_and_contributors(strict=False)
 
     def contrib(d):
@@ -48,9 +48,8 @@ def run(args):
             }
         )
         if dataset.metadata.citation:
-            md['description'] = "<p>Cite the source of the dataset as:</p>\n\n" \
-                                "<blockquote>\n<p>{}</p>\n</blockquote>".format(
-                html.escape(dataset.metadata.citation))
+            md['description'] = (f"<p>Cite the source of the dataset as:</p>\n\n<blockquote>\n"
+                                 f"<p>{html.escape(dataset.metadata.citation)}</p>\n</blockquote>")
         if dataset.metadata.zenodo_license:
             md['license'] = {'id': dataset.metadata.zenodo_license}
     cldfreadme.run(args)

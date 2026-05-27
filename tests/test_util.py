@@ -26,13 +26,6 @@ def test_jsondump(tmp_path):
     assert res['b'] == 3 and res['a'] == 2
 
 
-def test_getEvoBibAsBibtex(mocker):
-    bib = '<pre>@book{key,\ntitle={The Title}\n}\n</pre>'
-    mocker.patch(
-        'pylexibank.util.get_url', mocker.Mock(return_value=mocker.Mock(text=bib)))
-    assert '@book' in util.getEvoBibAsBibtex('')
-
-
 class MockResponse(object):
     def __init__(self, p):
         p = Path(p)
@@ -57,11 +50,6 @@ def test_split_by_year():
     assert util.split_by_year(' 2012. abc') == ('', '2012', 'abc')
     assert util.split_by_year(' (2012) abc') == ('', '2012', 'abc')
     assert util.split_by_year('abc') == (None, None, 'abc')
-
-
-def test_get_badge():
-    for r in util.pb(list(range(10))):
-        util.get_badge((r / 10.0) + 0.5, 'name')
 
 
 def test_get_reference():

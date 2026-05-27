@@ -1,7 +1,7 @@
 from argparse import Namespace
+import dataclasses
 
 import pytest
-import attr
 
 from pylexibank.cldf import LexibankWriter
 from pylexibank import Language, Dataset
@@ -10,7 +10,7 @@ from clldutils.jsonlib import load
 
 def test_align_cognates(dataset, clts, mocker):
     with LexibankWriter(
-        cldf_spec=dataset.cldf_specs(),
+        cldf_spec=dataset.get_lexibank_cldf_spec(),
         dataset=dataset,
         args=Namespace(clts=mocker.Mock(api=clts))
     ) as ds:
@@ -70,12 +70,12 @@ def test_reqs(tmp_path, mocker, clts):
 
 
 def test_custom_columns(tmp_path, clts, mocker):
-    @attr.s
+    @dataclasses.dataclass
     class Variety(Language):
         """
         abcdefg
         """
-        x = attr.ib(default=None, metadata={'separator': ';', 'dc:description': "-+-+-"})
+        x: str = dataclasses.field(default=None, metadata={'separator': ';', 'dc:description': "-+-+-"})
 
     class D(Dataset):
         dir = tmp_path

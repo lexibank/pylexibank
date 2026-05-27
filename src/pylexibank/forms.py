@@ -1,42 +1,28 @@
+"""
+Form handling.
+"""
 import re
 import logging
+import dataclasses
 import unicodedata
+from typing import Literal, Optional
+from collections.abc import Iterable
 
-import attr
 from clldutils import text
 from clldutils import misc
 
-__all__ = ['FormSpec']
+__all__ = ['FormSpec', 'compute_consonant_cluster']
 log = logging.getLogger('pylexibank')
 
 
-def valid_replacements(instance, attribute, value):
-    if not isinstance(value, list):
-        raise ValueError('replacements must be list of pairs')
-    for v in value:
-        if not (isinstance(v, tuple)
-                and len(v) == 2
-                and isinstance(v[0], str)
-                and isinstance(v[1], str)):
-            raise ValueError('replacements must be list of pairs')
+def dcfield(help_, **kw):
+    """A dataclasses field with help."""
+    kw['metadata'] = {"help": help_}
+    return dataclasses.field(**kw)  # pylint: disable=E3701
 
 
-def valid_separators(instance, attribute, value):
-    if not isinstance(value, str):
-        if not isinstance(value, (list, tuple)):
-            raise ValueError('separators must be an iterable of single character strings')
-        for v in value:
-            if (not isinstance(v, str)) or len(v) > 1:
-                raise ValueError('separators must be an iterable of single character strings')
-
-
-def attrib(help, **kw):
-    kw['metadata'] = dict(help=help)
-    return attr.ib(**kw)
-
-
-@attr.s
-class FormSpec(object):
+@dataclasses.dataclass
+class FormSpec:  # pylint: disable=R0902
     """
     Specification of the value-to-form processing in Lexibank datasets:
 
@@ -46,81 +32,102 @@ class FormSpec(object):
 
     These methods use the attributes of a `FormSpec` instance to configure their behaviour.
     """
-    brackets = attrib(
+    brackets: dict = dcfield(
         "Pairs of strings that should be recognized as brackets, specified as `dict` "
         "mapping opening string to closing string",
-        default={"(": ")"},
-        validator=attr.validators.instance_of(dict),
+        default_factory=lambda: {"(": ")"},
     )
-    separators = attrib(
+    separators: Iterable[str] = dcfield(
         "Iterable of single character tokens that should be recognized as word separator",
         default=(";", "/", ","),
-        validator=valid_separators,
     )
-    missing_data = attrib(
+    missing_data: Iterable[str] = dcfield(
         "Iterable of strings that are used to mark missing data",
         default=('?', '-'),
-        validator=attr.validators.instance_of((tuple, list)),
     )
-    strip_inside_brackets = attrib(
+    strip_inside_brackets: bool = dcfield(
         "Flag signaling whether to strip content in brackets "
         "(**and** strip leading and trailing whitespace)",
         default=True,
-        validator=attr.validators.instance_of(bool))
-    replacements = attrib(
+    )
+    replacements: list[tuple[str, str]] = dcfield(
         "List of pairs (`source`, `target`) used to replace occurrences of `source` in forms"
         "with `target` (before stripping content in brackets)",
-        default=attr.Factory(list),
-        validator=valid_replacements)
-    first_form_only = attrib(
+        default_factory=list,
+    )
+    first_form_only: bool = dcfield(
         "Flag signaling whether at most one form should be returned from `split` - "
         "effectively ignoring any spelling variants, etc.",
         default=False,
-        validator=attr.validators.instance_of(bool),
     )
-    normalize_whitespace = attrib(
+    normalize_whitespace: bool = dcfield(
         "Flag signaling whether to normalize whitespace - stripping leading and trailing "
         "whitespace and collapsing multi-character whitespace to single spaces",
         default=True,
-        validator=attr.validators.instance_of(bool),
     )
-    normalize_unicode = attrib(
+    normalize_unicode: Optional[Literal['NFD', 'NFC']] = dcfield(
         "UNICODE normalization form to use for input of `split` (`None`, 'NFD' or 'NFC')",
         default=None,
-        validator=attr.validators.in_(['NFD', 'NFC', None]),
     )
 
-    def as_markdown(self, dataset=None):
+    def __post_init__(self):
+        try:
+            assert isinstance(self.brackets, dict)
+            assert isinstance(self.missing_data, (tuple, list))
+            assert isinstance(self.strip_inside_brackets, bool)
+            assert isinstance(self.first_form_only, bool)
+            assert isinstance(self.normalize_whitespace, bool)
+            assert self.normalize_unicode in ['NFD', 'NFC', None], self.normalize_unicode
+        except AssertionError as e:  # pragma: no cover
+            raise ValueError('Illegal type') from e
+
+        if not isinstance(self.separators, str):
+            if not isinstance(self.separators, (list, tuple)):
+                raise ValueError('separators must be an iterable of single character strings')
+            for v in self.separators:
+                if (not isinstance(v, str)) or len(v) > 1:
+                    raise ValueError('separators must be an iterable of single character strings')
+
+        if not isinstance(self.replacements, list):
+            raise ValueError('replacements must be list of pairs')
+        for v in self.replacements:
+            if not (isinstance(v, tuple)
+                    and len(v) == 2
+                    and isinstance(v[0], str)
+                    and isinstance(v[1], str)):
+                raise ValueError('replacements must be list of pairs')
+
+    def as_markdown(self, dataset=None) -> str:
         """
         :return: Description of `FormSpec` in markdown.
         """
         res = ['## Specification of form manipulation\n']
         res.extend([line.strip() for line in self.__class__.__doc__.splitlines()])
-        for field in attr.fields(self.__class__):
+        for field in dataclasses.fields(self.__class__):
             res.extend([
-                '- `{0}`: `{1}`'.format(field.name, getattr(self, field.name)),
-                '  {0}'.format(field.metadata['help'])
+                f'- `{field.name}`: `{getattr(self, field.name)}`',
+                f'  {field.metadata["help"]}'
             ])
         if dataset:
             if dataset.lexemes:
-                res.append("""
-### Replacement of invalid lexemes
-
-Source lexemes may be impossible to interpret correctly. {0} such lexemes are listed
-in [`etc/lexemes.csv`](etc/lexemes.csv) and replaced as specified in this file.
-""".format(len(dataset.lexemes)))
+                res.extend([
+                    '### Replacement of invalid lexemes\n',
+                    f'Source lexemes may be impossible to interpret correctly. '
+                    f'{len(dataset.lexemes)} such lexemes are listed in '
+                    f'[`etc/lexemes.csv`](etc/lexemes.csv) and replaced as specified in this file.',
+                ])
 
             if dataset.segments:
-                res.append("""
-### Replacement of invalid segmentation
-
-Segments provided in the source data may not be valid according to CLTS.
-{0} such segments are listed in [`etc/segments.csv`](etc/segments.csv) and replaced
-as specified in this file.
-""".format(len(dataset.segments)))
+                res.extend([
+                    '### Replacement of invalid segmentation\n',
+                    f'Segments provided in the source data may not be valid according to CLTS. '
+                    f'{len(dataset.segments)} such segments are listed in '
+                    f'[`etc/segments.csv`](etc/segments.csv) and replaced as specified in this '
+                    f'file.',
+                ])
         return '\n'.join(res)
 
-    def clean(self, form, item=None):
+    def clean(self, form: str, item=None) -> Optional[str]:  # pylint: disable=W0613
         """
         Called when a row is added to a CLDF dataset.
 
@@ -135,11 +142,13 @@ as specified in this file.
             if self.normalize_whitespace:
                 return re.sub(r'\s+', ' ', form.strip())
             return form
+        return None
 
     def split(self, item, value, lexemes=None):
+        """Splits lexemes as found in Value field."""
         lexemes = lexemes or {}
         if value in lexemes:
-            log.debug('overriding via lexemes.csv: %r -> %r' % (value, lexemes[value]))
+            log.debug('overriding via lexemes.csv: %r -> %r', value, lexemes[value])
             value = lexemes[value]
         if self.normalize_unicode:
             value = unicodedata.normalize(self.normalize_unicode, value)
@@ -150,3 +159,21 @@ as specified in this file.
         if self.first_form_only:
             return res[:1]
         return res
+
+
+def compute_consonant_cluster(segments: list[str], clts) -> list:
+    """Infer consonant clusters in a list of segments."""
+    out = []
+    for i, (grapheme, sound) in enumerate(zip(segments, [s.name for s in clts.bipa(segments)])):
+        sndcls = sound.split(" ")[-1]
+        if i == 0:
+            if sndcls in ["consonant", "cluster", "∼"]:
+                out.append([])
+        if sndcls in ["diphthong", "vowel", "tone", "�", "marker"]:
+            out.append([])  # Ends a consonant cluster.
+        elif 'syllabic' in sound.split(" "):
+            out.append([])  # Ends a consonant cluster.
+        else:
+            assert sndcls in ["consonant", "cluster", "∼"], f'Unexpected soundclass {sndcls}'
+            out[-1].append(grapheme)
+    return [chunk for chunk in out if chunk]

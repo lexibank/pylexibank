@@ -1,7 +1,13 @@
+"""
+Lexibank-specific additions to cldfbench metadata.
+"""
 import re
+import pathlib
 import collections
+from collections.abc import Generator
+import dataclasses
+from typing import Optional, Any, Union
 
-import attr
 from clldutils.misc import nfilter
 from cldfbench.metadata import Metadata
 
@@ -341,7 +347,7 @@ LICENSES = {
 }
 
 
-def check_standard_title(title):
+def check_standard_title(title: str):
     """
     Assert a title conforms to the standard format.
 
@@ -361,7 +367,11 @@ def check_standard_title(title):
     assert match and match.group('authors').strip().endswith(("'s", "s'"))
 
 
-def get_creators_and_contributors(fname, strict=True):
+def get_creators_and_contributors(
+        fname,
+        strict: bool = True,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Parse the table of contributors."""
     ctypes = {c.lower(): c for c in CONTRIBUTOR_TYPES}
     creators, contributors = [], []
     for row in iter_rows(fname):
@@ -379,7 +389,10 @@ def get_creators_and_contributors(fname, strict=True):
     return creators, contributors
 
 
-def iter_rows(fname_or_lines):
+def iter_rows(
+        fname_or_lines: Union[list[str], pathlib.Path]
+) -> Generator[dict[str, Any], None, None]:
+    """Yield rows from the first table identified in markdown text."""
     header, in_table = None, False
 
     def row(line):
@@ -402,52 +415,42 @@ def iter_rows(fname_or_lines):
                 header = r
 
 
-@attr.s
+@dataclasses.dataclass
 class LexibankMetadata(Metadata):
-    aboutUrl = attr.ib(default=None)
-    conceptlist = attr.ib(
-        default=[],
-        converter=lambda s: [] if not s else (s if isinstance(s, list) else [s]))
-    lingpy_schema = attr.ib(default=None)
-    derived_from = attr.ib(default=None)
-    related = attr.ib(default=None)
-    source = attr.ib(default=None)
-    patron = attr.ib(default=None)
-    version = attr.ib(default=None)
+    """Lexibank datasets have a handful of additional metadata fields."""
+    aboutUrl: Optional[str] = None  # pylint: disable=C0103
+    conceptlist: list[str] = dataclasses.field(default_factory=list)
+    patron: Optional[str] = None
+    version: Optional[str] = None
 
-    def __attrs_post_init__(self):
-        import pylexibank
-
-        self.version = self.version or pylexibank.__version__
+    def __post_init__(self):
+        if not isinstance(self.conceptlist, list):
+            self.conceptlist = [] if not self.conceptlist else [self.conceptlist]
 
     @property
-    def zenodo_license(self):
+    def zenodo_license(self) -> Optional[str]:
+        """The ID of a known license - if available."""
         if self.known_license and self.known_license.id in LICENSES:
             return self.known_license.id
+        return None  # pragma: no cover
 
-    def common_props(self):
+    def common_props(self) -> dict:
+        """To be included as common properties of a CLDF dataset's metadata."""
         res = super().common_props()
         res.update({
             "dc:format": [
-                "http://concepticon.clld.org/contributions/{0}".format(cl)
-                for cl in self.conceptlist],
-            "dc:isVersionOf": "http://lexibank.clld.org/contributions/{0}".format(
-                self.derived_from) if self.derived_from else None,
-            "dc:related": self.related,
+                f"https://concepticon.clld.org/contributions/{cl}" for cl in self.conceptlist],
             "aboutUrl": self.aboutUrl
         })
         return res
 
-    def markdown(self):
+    def markdown(self) -> str:
+        """The metadata as markdown-formatted text."""
         lines = [super().markdown(), '']
-
-        if self.related:
-            lines.append('See also %s\n' % self.related)
 
         if self.conceptlist:
             lines.append('Conceptlists in Concepticon:')
-            lines.extend([
-                '- [{0}](https://concepticon.clld.org/contributions/{0})'.format(cl)
-                for cl in self.conceptlist])
+            for cl in self.conceptlist:
+                lines.append(f'- [{cl}](https://concepticon.clld.org/contributions/{0})')
             lines.append('')
         return '\n'.join(lines)
