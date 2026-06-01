@@ -2,6 +2,12 @@
 
 The `pylexibank` package adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+
+## Unreleased
+
+- Make sorting of replacements less fragile.
+
+
 ## 4.0.0 - 2026-05-27
 
 - Removed lexibank db functionality.

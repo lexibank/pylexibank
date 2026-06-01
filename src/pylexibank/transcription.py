@@ -35,7 +35,8 @@ class Analysis:
             ('bipa_errors', sorted(self.bipa_errors)),
             ('general_errors', self.general_errors),
             ('replacements', collections.OrderedDict(
-                (k, sorted(v)) for k, v in sorted(self.replacements.items()))),
+                (k, sorted(list(v))) for k, v in sorted(
+                    self.replacements.items(), key=lambda i: i[0] or ''))),
             ('sclass_errors', sorted(self.sclass_errors)),
             ('segments', collections.OrderedDict(sorted(self.segments.items()))),
         ])
