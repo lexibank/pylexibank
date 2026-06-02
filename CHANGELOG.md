@@ -3,7 +3,7 @@
 The `pylexibank` package adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-## Unreleased
+## 4.0.1 - 2026-06-02
 
 - Make sorting of replacements less fragile.
 
