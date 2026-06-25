@@ -133,7 +133,7 @@ def test_check_profile(dataset, repos, caplog, capsys):
 def test_init_profile(dataset, repos):
     _main('lexibank.init_profile {0} --clts {1} -f --context --merge-vowels'.format(
         str(dataset.dir / 'td.py'), repos))
-    with pytest.raises(SystemExit):
+    with pytest.raises(ValueError):
         _main('lexibank.init_profile {0} --clts {1}'.format(str(dataset.dir / 'td.py'), repos))
 
 

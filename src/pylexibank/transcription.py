@@ -173,8 +173,10 @@ def valid_sequence(segments: list[str]) -> Union[bool, list[str]]:
         '#' in segments,
         segments[0] == "+",
         segments[-1] == "+",
+        #"+" in segments and not segments[-1] == '+' and segments[segments.index("+") + 1] == "+"
         "+" in segments and segments[segments.index("+") + 1] == "+"
     )):
+        print(segments)
         return False
     return segments
 

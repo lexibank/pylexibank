@@ -52,13 +52,24 @@ def run(args):  # pylint: disable=C0116
         cols = ['Grapheme', 'IPA', 'Examples', 'Languages', 'Frequence', 'Codepoints']
         kw['col'] = 'language_id'
 
-    ds = get_dataset(args)
-    profile_path = ds.etc_dir / 'orthography.tsv'
-    if profile_path.exists() and not args.force:
-        raise ParserError('Orthography profile exists already. To overwrite, pass "-f" flag')
+    ds, cldf, profile_path = None, None, None
+    try:
+        ds = get_dataset(args)
+        profile_path = ds.etc_dir / 'orthography.tsv'
+        if profile_path.exists() and not args.force:
+            raise ValueError('Orthography profile exists already. To overwrite, pass "-f" flag')
+    except ParserError:
+        from pycldf import cli_util
+        args.download_dir = None
+        cldf = cli_util.get_dataset(args)
+        # Check if we can just read CLDF data at args.dataset
+
+    if cldf is None:
+        assert ds
+        cldf = ds.cldf_reader()
 
     header, d = [], {}
-    for i, row in enumerate(ds.cldf_reader()['FormTable'], start=1):
+    for i, row in enumerate(cldf['FormTable'], start=1):
         if i == 1:
             header = [f for f in row.keys() if f != 'ID']
             d = {0: ['lid'] + [h.lower() for h in header]}
@@ -70,4 +81,7 @@ def run(args):  # pylint: disable=C0116
         writer.writerow(cols)
         for row in func(Wordlist(d, row='parameter_id', col='language_id'), **kw):
             writer.writerow(row)
-    args.log.info('Orthography profile written to %s', profile_path)
+    if profile_path:
+        args.log.info('Orthography profile written to %s', profile_path)
+    else:
+        print(writer.read().decode('utf8'))
