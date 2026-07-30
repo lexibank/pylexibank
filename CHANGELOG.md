@@ -3,7 +3,7 @@
 The `pylexibank` package adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-## Unreleased
+## 4.1.0 - 2026-07-30
 
 - Fixed bug whereby conceptlist URLs were not formatted correctly in the REAMDE.
 - Adapted provider `abvd` to be more lenient regarding missing wordlist metadata.
