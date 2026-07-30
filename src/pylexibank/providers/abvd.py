@@ -23,7 +23,6 @@ URL = BASE_URL + "/utils/save/?type=xml&section=%s&language=%d"
 class BVDLanguage(BaseLanguage):
     """BVD languages have some editorial metadata."""
     author: Optional[str] = None
-    url: Optional[str] = None
     typedby: Optional[str] = None
     checkedby: Optional[str] = None
     notes: Optional[str] = None
@@ -100,9 +99,9 @@ def kw_from_element(e: et.Element, fields: Iterable[dataclasses.Field]) -> dict[
 class Language:  # pylint: disable=R0902
     """A language as given in a BVD XML Wordlist."""
     id: str
-    author: str
-    name: str = dataclasses.field(metadata={'xml_name': 'language'})
-    iso: str = dataclasses.field(metadata={'xml_name': 'silcode'})
+    author: Optional[str] = None
+    name: Optional[str] = dataclasses.field(default=None, metadata={'xml_name': 'language'})
+    iso: Optional[str] = dataclasses.field(default=None, metadata={'xml_name': 'silcode'})
     glottocode: Optional[str] = None
     notes: Optional[str] = None
     problems: Optional[str] = None
@@ -114,7 +113,8 @@ class Language:  # pylint: disable=R0902
     @classmethod
     def from_element(cls, e) -> 'Language':
         """Initialize from an XML element."""
-        return cls(**kw_from_element(e, dataclasses.fields(cls)))
+        kw = kw_from_element(e, dataclasses.fields(cls))
+        return cls(**kw)
 
 
 @dataclasses.dataclass
@@ -198,7 +198,6 @@ class Wordlist:
             ISO639P3code=self.language.iso,
             Name=self.language.name,
             author=self.language.author,
-            url=self.url(f'language.php?id={self.language.id}'),
             typedby=self.language.typedby,
             checkedby=self.language.checkedby,
             notes=self.language.notes,

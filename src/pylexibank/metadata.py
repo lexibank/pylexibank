@@ -451,6 +451,6 @@ class LexibankMetadata(Metadata):
         if self.conceptlist:
             lines.append('Conceptlists in Concepticon:')
             for cl in self.conceptlist:
-                lines.append(f'- [{cl}](https://concepticon.clld.org/contributions/{0})')
+                lines.append(f'- [{cl}](https://concepticon.clld.org/contributions/{cl})')
             lines.append('')
         return '\n'.join(lines)
