@@ -59,7 +59,7 @@ def run(args):  # pylint: disable=C0116
         if profile_path.exists() and not args.force:
             raise ValueError('Orthography profile exists already. To overwrite, pass "-f" flag')
     except ParserError:
-        from pycldf import cli_util
+        from pycldf import cli_util  # pylint: disable=C0415
         args.download_dir = None
         cldf = cli_util.get_dataset(args)
         # Check if we can just read CLDF data at args.dataset

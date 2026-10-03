@@ -5,28 +5,34 @@ import re
 import logging
 import pathlib
 import argparse
+import functools
 import dataclasses
 from typing import Optional, Any
 from collections.abc import Generator, Iterable
 from xml.etree import ElementTree as et
 
+from csvw.dsv import reader
 from clldutils.misc import slug, nfilter
 from pycldf.sources import Source
 from simplepybtex.database import parse_string
-from pylexibank import Dataset, Language as BaseLanguage
+from pylexibank import Dataset, Lexeme
 
 BASE_URL = "https://abvd.eva.mpg.de"
 URL = BASE_URL + "/utils/save/?type=xml&section=%s&language=%d"
 
 
 @dataclasses.dataclass
-class BVDLanguage(BaseLanguage):
-    """BVD languages have some editorial metadata."""
-    author: Optional[str] = None
-    typedby: Optional[str] = None
-    checkedby: Optional[str] = None
-    notes: Optional[str] = None
-    source: Optional[str] = None
+class BVDLexeme(Lexeme):
+    """
+    BVD-specifics.
+    """
+    # Record x or s in cognacy column which marks problems with the meaning of a word.
+    Cognacy_Comment: Optional[str] = None  # pylint: disable=C0103
+    Contribution_ID: Optional[str] = dataclasses.field(  # pylint: disable=C0103
+        default=None,
+        metadata={'propertyUrl': 'http://cldf.clld.org/v1.0/terms.rdf#contributionReference'},
+    )
+    Loan_Raw: Optional[str] = None  # pylint: disable=C0103
 
 
 class BVD(Dataset):
@@ -34,21 +40,37 @@ class BVD(Dataset):
     SECTION = None
     invalid_ids = []
     language_ids = list(range(1, 50))  # list of language ids to look for.
-    language_class = BVDLanguage
+    lexeme_class = BVDLexeme
     cognate_pattern = re.compile(r'''\s*(?P<id>([A-z]?[0-9]+|[A-Z]))\s*(?P<doubt>\?+)?\s*$''')
+
+    @functools.cached_property
+    def language_corrections(self) -> dict[str, dict[str, Any]]:
+        """
+        A way to fix errors in language metadata.
+        """
+        p = self.etc_dir / 'corrections_languages.csv'
+        if p.exists():
+            return {r['id']: r for r in reader(p, dicts=True)}
+        return {}
 
     def iter_wordlists(self, log=None) -> Generator['Wordlist', None, None]:
         """Yield Wordlists initialized from XML files in raw dir."""
         for xml in sorted(self.raw_dir.glob('*.xml'), key=lambda p: int(p.stem)):
-            yield Wordlist(self, xml, log)
+            wl = Wordlist(self, xml, log)
+            if wl.language.id in self.language_corrections:
+                md = self.language_corrections[wl.language.id]
+                for prop in dataclasses.fields(Language):
+                    val = md.get(prop.name)
+                    if val:
+                        setattr(wl.language, prop.name, None if val == 'NA' else val)
+            yield wl
 
     def cmd_download(self, args: argparse.Namespace):  # pragma: no cover
         """Download BVD XML wordlists form the app."""
         assert self.SECTION in ['austronesian', 'mayan', 'utoaztecan']
         args.log.info('ABVD section set to %s', self.SECTION)
-        # remove
-        for fname in self.raw_dir.iterdir():
-            fname.unlink()
+        args.log.info('Only missing wordlists will be downloaded. To force full download, '
+                      'delete raw/*.xml before running this command.')
 
         for lid in self.language_ids:
             if lid in self.invalid_ids:
@@ -63,7 +85,9 @@ class BVD(Dataset):
 
     def get_data(self, lid):  # pragma: no cover
         """Download a wordlist for a specific language."""
-        fname = self.raw_dir.download(URL % (self.SECTION, lid), f'{lid}.xml')
+        fname = self.raw_dir / f'{lid}.xml'
+        if not fname.exists():
+            fname = self.raw_dir.download(URL % (self.SECTION, lid), fname.name)
         if fname.stat().st_size == 0:
             fname.unlink()
             return False
@@ -197,11 +221,6 @@ class Wordlist:
             Glottocode=self.language.glottocode,
             ISO639P3code=self.language.iso,
             Name=self.language.name,
-            author=self.language.author,
-            typedby=self.language.typedby,
-            checkedby=self.language.checkedby,
-            notes=self.language.notes,
-            source=";".join(source)
         )
 
         for entry in self.entries:
@@ -234,6 +253,7 @@ class Wordlist:
                     Cognacy=entry.cognacy,
                     Comment=entry.comment or '',
                     Loan=bool(entry.loan and len(entry.loan)),
+                    Loan_Raw=entry.loan or '',
                 )
             except:  # NOQA: E722; pragma: no cover
                 print(f"ERROR with {entry.id} -- {entry.name}")
