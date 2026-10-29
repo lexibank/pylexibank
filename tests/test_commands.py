@@ -90,6 +90,29 @@ def test_check(dataset_cldf, caplog):
     assert [r for r in caplog.records if 'CONTRIBUTORS.md' in r.message]
 
 
+def test_check_languages(dataset_cldf, repos, caplog):
+    book = repos / 'languoids' / 'tree' / 'book1242'
+    (book / 'xyzw1234').mkdir(parents=True)
+    book.joinpath('md.ini').write_text(
+        '[core]\nname = Bookkeeping\nlevel = family\n', encoding='utf8')
+    book.joinpath('xyzw1234', 'md.ini').write_text(
+        '[core]\nname = Retired\nlevel = language\n', encoding='utf8')
+    cldf_dir = dataset_cldf.dir / 'cldf'
+    with cldf_dir.joinpath('lects.csv').open('a', encoding='utf8') as f:
+        f.write('\n2,Lang Two,none1234,,,,\n3,Lang Three,xyzw1234,,,,\n')
+    md = jsonlib.load(cldf_dir / 'cldf-metadata.json')
+    md['prov:wasDerivedFrom'] = [{'dc:title': 'Glottolog', 'dc:created': 'v0.1'}]
+    jsonlib.dump(md, cldf_dir / 'cldf-metadata.json')
+
+    _main('lexibank.check_languages {0} --glottolog {1}'.format(
+        str(dataset_cldf.dir / 'tdc.py'), repos))
+    warnings = [r.message for r in caplog.records if r.levelname == 'WARNING']
+    assert any('compiled against Glottolog v0.1' in w for w in warnings)
+    assert any('Language 2 has Glottocode none1234, which is not in' in w for w in warnings)
+    assert any('Language 3 is mapped to Bookkeeping languoid xyzw1234' in w for w in warnings)
+    assert not any('abcd1234' in w for w in warnings)
+
+
 def test_check_lexibank(dataset_cldf, caplog):
     _main(
         'lexibank.check_lexibank {0}'.format(str(dataset_cldf.dir / 'tdc.py')),
